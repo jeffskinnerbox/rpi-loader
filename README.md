@@ -5,12 +5,13 @@ Version:      0.1
 
 Raspberry Pi Loader
 ===================
-I have written a detailed step-by-step guide of how to set up your Raspberry Pi as a "headless" computer.
+I have written a detailed [step-by-step guide][03]
+on how to set up your Raspberry Pi as a "headless" computer.
 This includes configuring the RPi for my local network, updating firmware,
 loading all my favorite development tools and utilities.
-This guide has been of great value to me to repeatedly and consistently establish my devices.
+This guide has been of great value to me to help repeatedly and consistently establish my devices.
 But the work is all manual requiring dozens of command line entries.
-This utility takes the drudgery out of setting up a new Raspberry Pi by automating the manual tasks.
+This utility takes the drudgery out of setting up a new Raspberry Pi by automating this manual tasks.
 
 Clearly, not all everything can be scripted.
 You still have to download the latest version of Raspbian,
@@ -146,7 +147,7 @@ From Github, you now need to install the `rpi-loader` scripts.
 cd ~
 mkdir src
 cd src
-git clone .....
+git clone https://github.com/jeffskinnerbox/rpi-loader.git
 ```
 ## Step 5: Run the part-2.sh Script
 Now your going to run `raspi-config` as a non-interactive command line tool
@@ -247,7 +248,7 @@ dtparam=audio=on
 
 [01]:https://www.52pi.com/blog/19-instructions-of-command-line-in-raspi-config
 [02]:https://raspberrypi.stackexchange.com/questions/28907/how-could-one-automate-the-raspbian-raspi-config-setup
-[03]:
+[03]:http://jeffskinnerbox.me/posts/2016/Apr/27/howto-set-up-the-raspberry-pi-as-a-headless-device/
 [04]:
 [05]:
 [06]:

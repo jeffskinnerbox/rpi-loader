@@ -27,6 +27,7 @@ Make the .bash directory, move into it, and initialize it as a git repository
     mkdir .bash
     cd .bash
     git init
+
 Now create the README, bash_aliases, bash_logout, bash_profile, and bashrc files.
 
 Also create the file .gitignore like this:
@@ -102,6 +103,26 @@ the remote repository (i.e. GitHub):
 Now to push your files to the GitHub repository
 
     git push -u origin master
+
+### To Clone .vim Environment on Another Machine
+Login into the target machine and go to its $HOME
+and clone the Vim environment by execute the following:
+
+    cd ~
+    git clone http://github.com/jeffskinnerbox/.vim.git ~/.vim
+    ln -s ~/.vim/vimrc ~/.vimrc
+    ln -s ~/.vim/gvimrc ~/.gvimrc
+    mkdir ~/.vim/backup
+    mkdir ~/.vim/tmp
+    cd ~/.vim
+    git submodule init
+    git submodule update
+
+### Upgrading Your .vim Directory From Remote GitHub Repository
+
+    cd ~/.vim
+    ?????????? git pull origin master ???????????
+
 
 ### Retrieving Update From Remote Repository (i.e. GitHub)
 To retrieve these updates on another system, use
