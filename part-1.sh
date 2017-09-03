@@ -74,7 +74,8 @@ sed -i 's/<your-network-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplica
 
 # Setting the hostname for the Raspberry Pi
 promptme "What is your host name?"
-echo $ANS > $DATA/etc/hostname
+sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hosts
+sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hostname
 
 # SSH can be enabled by placing a file named "ssh", without any extension, onto the boot partition of the SD card.
 touch $BOOT/ssh
