@@ -20,13 +20,20 @@
 #trap 'sys_abort' 0
 #set -e
 
-source "$HOME/src/rpi-loader/ansi.sh"
-source "$HOME/src/rpi-loader/functions.sh"
+# directory for where rpi-loader is installed
+ROOT="/home/jeff/src/-rpi-loader"
+
+source "$ROOT/ansi.sh"
+source "$ROOT/functions.sh"
+
+TMP="/tmp"
+LOCAL="$ROOT/rpi3"
+ANS="dummy-value"
 
 TMP="/tmp"
 BOOT="dummy-value"
 DATA="dummy-value"
-LOCAL="$HOME/src/rpi-loader/rpi3"
+LOCAL="$ROOT/rpi3"
 ANS="dummy-value"
 
 
