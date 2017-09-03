@@ -21,13 +21,12 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/-rpi-loader"
+ROOT="/home/jeff/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 TMP="/tmp"
-LOCAL="$ROOT/rpi3"
 ANS="dummy-value"
 
 
@@ -48,4 +47,7 @@ raspi-config nonint do_boot_behaviour B1       # require password to get console
 # set the time zone for your device
 timedatectl set-timezone America/New_York
 messme "The The Raspberry Pi should be rebooted now."
+
+# clean up before exiting
+echo -e -n ${NColor}
 

@@ -21,19 +21,14 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/-rpi-loader"
+ROOT="/home/jeff/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 TMP="/tmp"
-LOCAL="$ROOT/rpi3"
-ANS="dummy-value"
-
-TMP="/tmp"
 BOOT="dummy-value"
 DATA="dummy-value"
-LOCAL="$ROOT/rpi3"
 ANS="dummy-value"
 
 
@@ -68,8 +63,8 @@ fi
 ############################ ############################
 
 # Create the network interfaces and WPA Supplicant file
-cat $LOCAL/interfaces > $DATA/etc/network/interfaces
-cat $LOCAL/wpa_supplicant.conf > $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+cat $ROOT/rpi3/interfaces > $DATA/etc/network/interfaces
+cat $ROOT/rpi3/wpa_supplicant.conf > $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
 # Update the WPA Supplicant file with information about yoru WiFi
 promptme "What is your WiFi SSID?"
