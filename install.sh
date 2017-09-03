@@ -25,5 +25,6 @@ ANS="dummy-value"
 
 ############################ ############################
 
-sed 's/ROOT="\/home\/jeff\/src\/rpi-loader"/ROOT=\/home\/pi\/src\/rpi-loader/' part-1.sh
-sed 's/ROOT="\/home\/jeff\/src\/rpi-loader"/ROOT=\/home\/pi\/src\/rpi-loader/' part-2.sh
+#sed 's/ROOT="\/home\/jeff\/src\/rpi-loader"/ROOT=\/home\/pi\/src\/rpi-loader/' part-1.sh
+#sed 's/ROOT="\/home\/jeff\/src\/rpi-loader"/ROOT=\/home\/pi\/src\/rpi-loader/' part-2.sh
+sed -i 's/ROOT=\/home\/jeff/ROOT=\/home\/pi/' part-1.sh
