@@ -20,13 +20,13 @@
 #trap 'sys_abort' 0
 #set -e
 
-source "~/src/rpi-loader/ansi.sh"
-source "~/src/rpi-loader/functions.sh"
+source "$HOME/src/rpi-loader/ansi.sh"
+source "$HOME/src/rpi-loader/functions.sh"
 
 TMP="/tmp"
 BOOT="dummy-value"
 DATA="dummy-value"
-LOCAL="~/src/rpi-loader/rpi3"
+LOCAL="$HOME/src/rpi-loader/rpi3"
 ANS="dummy-value"
 
 
