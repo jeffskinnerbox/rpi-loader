@@ -173,7 +173,7 @@ could change without notice.
 ## Step 6: Run the part-3.sh Script
 
 ```bash
-# run raspi-config tool and ste the time zone
+# run raspi-config tool and set the time zone
 sudo ~/src/rpi-loader/part-3.sh
 
 # if packages were installed, reboot the raspberry pi
@@ -183,7 +183,7 @@ sudo shutdown -r now
 ## Step 7: Run the part-4.sh Script
 
 ```bash
-# run raspi-config tool and ste the time zone
+# xxx
 sudo ~/src/rpi-loader/part-4.sh
 
 # if if new firmware was installed, reboot the raspberry pi
@@ -192,8 +192,13 @@ sudo shutdown -r now
 
 ## Step 8: Run the part-5.sh Script
 
+```bash
+# xxx
+sudo ~/src/rpi-loader/part-5.sh
 
-
+# xxx
+source ~/.bashrc
+```
 
 ## Sources of Inspiration
 * [Scripts to update the Raspberry Pi and Debian-based Linux Distros](https://blog.robseder.com/2015/09/29/scripts-to-update-the-raspberry-pi-and-debian-based-linux-distros/)

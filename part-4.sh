@@ -28,12 +28,14 @@ source "$ROOT/functions.sh"
 
 TMP="/tmp"
 ANS="dummy-value"
+OPTS=" --yes"
+#OPTS=" --yes --quite"
 
 
 ############################ ############################
 
 # install firmware update tool
-apt-get install rpi-update
+apt-get $OPTS install rpi-update
 
 # check for and install any required Raspberry Pi firmware upgrades
 BRANCH=next rpi-update

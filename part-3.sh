@@ -28,15 +28,17 @@ source "$ROOT/functions.sh"
 
 TMP="/tmp"
 ANS="dummy-value"
+OPTS=" --yes"
+#OPTS=" --yes --quite"
 
 
 ############################ ############################
 
 # commandline utility for applications upgrade
-apt-get update && apt-get dist-upgrade
+apt-get $OPTS update && apt-get $OPTS dist-upgrade
 
 # clean up any packages no longer needed
-apt-get autoremove
+apt-get $OPTS autoremove
 
 # clean up before exiting
 echo -e -n ${NColor}

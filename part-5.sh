@@ -28,15 +28,17 @@ source "$ROOT/functions.sh"
 
 TMP="/tmp"
 ANS="dummy-value"
+OPTS=" --yes"
+#OPTS=" --yes --quite"
 
 
 ############################ ############################
 
 # package management tools
-apt-get install software-properties-common
+apt-get $OPTS install software-properties-common
 
 # first install Python packages
-apt-get install python python-dev libjpeg-dev libfreetype6-dev python-setuptools python-pip
+apt-get $OPTS install python python-dev libjpeg-dev libfreetype6-dev python-setuptools python-pip
 pip install virtualenv virtualenvwrapper
 
 # update the Python distribution
@@ -48,30 +50,30 @@ pip install RPi.GPIO pySerial nose cmd2
 ############################ ############################
 
 # some X Window utilities
-apt-get install x11-apps x11-xserver-utils xterm wmctrl
+apt-get $OPTS install x11-apps x11-xserver-utils xterm wmctrl
 
 # tools for viewing and minipulating image & video files
-apt-get install imagemagick feh mplayer2
+apt-get $OPTS install imagemagick feh mplayer2
 
 # general development tools
-apt-get install markdown git vim vim-gtk libcanberra-gtk-module
-apt-get install microcom screen
-apt-get install build-essential i2c-tools libssl-dev
+apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module
+apt-get $OPTS install microcom screen
+apt-get $OPTS install build-essential i2c-tools libssl-dev
 
 # so you can discover hosts via Multicast Domain Name System (mDNS)
-apt-get install avahi-daemon
+apt-get $OPTS install avahi-daemon
 
 # basic networking / firewall tools
-apt-get install dnsutils tcpdump wavemon nicstat nmap ufw rfkill
+apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill
 
 # other handy tools
-apt-get install sendmail gnome-terminal jq
+apt-get $OPTS install sendmail gnome-terminal jq
 
 
 ############################ ############################
 
 # install the midori and links2 browser
-apt-get install midori links2
+apt-get $OPTS install midori links2
 
 ############################ ############################
 
@@ -120,16 +122,11 @@ npm install npm@latest --global
 # node development tools
 npm install jshint --global
 
-
 ############################ ############################
 
 # set to multi-user mode
 systemctl set-default multi-user.target
 
-############################ ############################
-############################ ############################
-############################ ############################
-############################ ############################
 ############################ ############################
 
 # clean up before exiting
