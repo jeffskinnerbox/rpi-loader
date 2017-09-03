@@ -14,8 +14,8 @@
 # Print a line of text (i.e. a question) and then ask for yes or no responses
 function askme {
     while true; do
-        echo -n -e "${PROM}$@ [ yes/no ] ${NColor}" ; read ans
-        case "$ans" in
+        echo -n -e "${PROM}$@ [ yes/no ] ${NColor}" ; read ANS
+        case "$ANS" in
             yes|Yes|YES) return 0 ;;
             no|No|NO) return 1 ;;
         esac
@@ -24,7 +24,7 @@ function askme {
 
 # Print a line of text (i.e. a question) and then ask for a text responses
 function promptme {
-    echo -n -e "${PROM}$@: ${NColor}" ; read ans
+    echo -n -e "${PROM}$@: ${NColor}" ; read ANS
 }
 
 # Print a line of text as a message
