@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #
@@ -21,7 +21,8 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/rpi-loader"
+HOME="/home/jeff"
+ROOT="$HOME/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
@@ -78,36 +79,36 @@ apt-get $OPTS install midori links2
 ############################ ############################
 
 # install tools for vim text editor
-cd ~
+cd $HOME
 git clone https://github.com/jeffskinnerbox/.vim.git
-ln -s ~/.vim/vimrc ~/.vimrc
-mkdir ~/.vim/backup
-mkdir ~/.vim/tmp
+ln -s $HOME/vim/vimrc $HOME/.vimrc
+mkdir $HOME/.vim/backup
+mkdir $HOME/.vim/tmp
 
 # install tools for bash shell
-cd ~
+cd $HOME
 git clone https://github.com/jeffskinnerbox/.bash.git
 rm .bashrc .bash_logout
-ln -s ~/.bash/bashrc ~/.bashrc
-ln -s ~/.bash/bash_login ~/.bash_login
-ln -s ~/.bash/bash_logout ~/.bash_logout
-ln -s ~/.bash/bash_profile ~/.bash_profile
-ln -s ~/.bash/dircolors.old ~/.dircolors
-cp ~/.bash/virtualenvwrapper.sh ~/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
+ln -s $HOME/.bash/bashrc $HOME/.bashrc
+ln -s $HOME/.bash/bash_login $HOME/.bash_login
+ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
+ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
+ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
+cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
 pip install virtualenvwrapper
 
 # install X configuration files
-cd ~
+cd $HOME
 git clone https://github.com/jeffskinnerbox/.X.git
-ln -s ~/.X/xbindkeysrc ~/.xbindkeysrc
-ln -s ~/.X/Xresources ~/.Xresources
-ln -s ~/.X/xsessionrc ~/.xsessionrc
+ln -s $HOME/.X/xbindkeysrc $HOME/.xbindkeysrc
+ln -s $HOME/.X/Xresources $HOME/.Xresources
+ln -s $HOME/.X/xsessionrc $HOME/.xsessionrc
 
 ############################ ############################
 
 # first you need to modify your .bashrc file since you copied it from github
-sed --in-place 's/\/home\/jeff\/.nvm/\/home\/pi\/.nvm/' ~/.bashrc
-source ~/.bashrc
+sed --in-place 's/\/home\/jeff\/.nvm/\/home\/pi\/.nvm/' $HOME/.bashrc
+source $HOME/.bashrc
 
 # install or update the node version manager (nvm), do the following
 # https://github.com/creationix/nvm
