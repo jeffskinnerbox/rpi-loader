@@ -21,7 +21,7 @@
 #set -e
 
 # directory for where rpi-loader is installed
-HOME="/pi/jeff"
+HOME="/home/pi"
 ROOT="$HOME/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
