@@ -131,6 +131,8 @@ source $HOME/.bashrc
 #install or update the node version manager (nvm), do the following
 # https://github.com/creationix/nvm
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # install the latest stable version of node and make it the default version
 nvm install 6.11.1
