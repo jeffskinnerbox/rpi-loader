@@ -1,6 +1,6 @@
 <!--
 Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-Version:      0.1
+Version:      0.2
 -->
 
 ![Open Source Logo][logo]
@@ -26,7 +26,7 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTIO
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-----
+-----
 
 **Note:** The primary candidates for licensing appear to be the following:
 

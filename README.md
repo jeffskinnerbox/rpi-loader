@@ -1,10 +1,14 @@
 <!--
 Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-Version:      0.1
+Version:      0.2
 -->
 
-Raspberry Pi Loader
-===================
+# Raspberry Pi Loader
+
+**This is a work in progress**
+
+-----
+
 I have written a detailed [step-by-step guide][03]
 on how to set up your Raspberry Pi as a "headless" computer.
 This includes configuring the RPi for my local network, updating firmware,
@@ -19,7 +23,7 @@ burn it to a SD Card, and things like that.
 My objective is to ultimate create some utilities that will make this easier,
 but that will wait until another version of this script.
 
-## Step 1: Download Raspberry Pi Image
+### Step 1: Download Raspberry Pi Image
 Before you can load a copy of the latest Raspberry Pi image onto your micro SD Card,
 you must first download the official Raspberry Pi operating system, [Raspbian][12]
 (in my case, the version is [Jessie][11]).
@@ -47,7 +51,7 @@ Archive:  2016-02-09-raspbian-jessie.zip
   inflating: 2016-02-09-raspbian-jessie.img
 ```
 
-## Step 2: Write Raspberry Pi Image to SD Card
+### Step 2: Write Raspberry Pi Image to SD Card
 Next using Linux, you have copied the Raspbian image onto the SD card mounted to your system.
 I'll be using the [Rocketek 11-in-1 4 Slots USB 3.0 Memory Card Reader][14] to create my SD Card.
 Make sure to [choose a reputable SD Card][15] from [here][13], don't go cheap.
@@ -129,7 +133,7 @@ outline in the next step.
 [Adafruit has good description on how to use a console cable]17]
 and the how to [enable the UART for the console][18].
 
-## Step 3: Run the part-1.sh Script
+### Step 3: Run the part-1.sh Script
 ```bash
 sudo ~/src/rpi-loader/part-1.sh
 ```
@@ -138,7 +142,7 @@ This completes the operations that will be performed on the SD-Card
 while on `desktop`.
 Next will place the SD-Car in the Raspberry Pi and complete the loading from there.
 
-## Step 4: Clone the rpi-loader Tool
+### Step 4: Clone the rpi-loader Tool
 Place the SD-Card into the Raspberry Pi, power it up, and login via ssh.
 
 From Github, you now need to install the `rpi-loader` scripts.
@@ -149,7 +153,7 @@ mkdir src
 cd src
 git clone https://github.com/jeffskinnerbox/rpi-loader.git
 ```
-## Step 5: Run the part-2.sh Script
+### Step 5: Run the part-2.sh Script
 Now your going to run `raspi-config` as a non-interactive command line tool
 and set the time zone of the Raspberry Pi.
 
@@ -170,7 +174,7 @@ statments found within "[How could one automate the raspbian raspi-config setup?
 This capabilitiy is not documented, and as such,
 could change without notice.
 
-## Step 6: Run the part-3.sh Script
+### Step 6: Run the part-3.sh Script
 
 ```bash
 # run raspi-config tool and set the time zone
@@ -180,7 +184,7 @@ sudo ~/src/rpi-loader/part-3.sh
 sudo shutdown -r now
 ```
 
-## Step 7: Run the part-4.sh Script
+### Step 7: Run the part-4.sh Script
 
 ```bash
 # xxx
@@ -190,7 +194,7 @@ sudo ~/src/rpi-loader/part-4.sh
 sudo shutdown -r now
 ```
 
-## Step 8: Run the part-5.sh Script
+### Step 8: Run the part-5.sh Script
 
 ```bash
 # xxx
@@ -200,7 +204,7 @@ sudo ~/src/rpi-loader/part-5.sh
 source ~/.bashrc
 ```
 
-## Sources of Inspiration
+### Sources of Inspiration
 * [Scripts to update the Raspberry Pi and Debian-based Linux Distros](https://blog.robseder.com/2015/09/29/scripts-to-update-the-raspberry-pi-and-debian-based-linux-distros/)
 
 

@@ -27,13 +27,17 @@ ROOT="$HOME/src/rpi-loader"
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-TMP="/tmp"
-ANS="dummy-value"
-OPTS=" --yes"
-#OPTS=" --yes --quite"
+# Test if user is root and abort this script if not
+roottest
+
+TMP="/tmp"           # location for temporary files
+ANS="dummy-value"    # string will store answers to prompt responses
+OPTS=" --yes"        # option parameters used for apt-get command
 
 
 ############################ ############################
+
+messme "\nInstalling Python development tools.\n"
 
 # package management tools
 apt-get $OPTS install software-properties-common
@@ -50,16 +54,25 @@ pip install RPi.GPIO pySerial nose cmd2
 
 ############################ ############################
 
+messme "\nInstalling development tools and other utilities.\n"
+
 # some X Window utilities
 apt-get $OPTS install x11-apps x11-xserver-utils xterm wmctrl
 
-# tools for viewing and minipulating image & video files
+# tools for viewing and manipulating image & video files
 apt-get $OPTS install imagemagick feh mplayer2
+
+# other handy tools
+apt-get $OPTS install sendmail gnome-terminal jq
 
 # general development tools
 apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module
 apt-get $OPTS install microcom screen
 apt-get $OPTS install build-essential i2c-tools libssl-dev
+
+############################ ############################
+
+messme "\nInstalling networking tools and other utilities.\n"
 
 # so you can discover hosts via Multicast Domain Name System (mDNS)
 apt-get $OPTS install avahi-daemon
@@ -67,21 +80,21 @@ apt-get $OPTS install avahi-daemon
 # basic networking / firewall tools
 apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill
 
-# other handy tools
-apt-get $OPTS install sendmail gnome-terminal jq
-
-
 ############################ ############################
+
+messme "\nInstalling web browser utilities.\n"
 
 # install the midori and links2 browser
 apt-get $OPTS install midori links2
 
 ############################ ############################
 
+messme "\nInstalling tools and configuration parameter for your environment.\n"
+
 # install tools for vim text editor
 cd $HOME
 git clone https://github.com/jeffskinnerbox/.vim.git
-ln -s $HOME/vim/vimrc $HOME/.vimrc
+ln -s $HOME/.vim/vimrc $HOME/.vimrc
 mkdir $HOME/.vim/backup
 mkdir $HOME/.vim/tmp
 
@@ -104,13 +117,18 @@ ln -s $HOME/.X/xbindkeysrc $HOME/.xbindkeysrc
 ln -s $HOME/.X/Xresources $HOME/.Xresources
 ln -s $HOME/.X/xsessionrc $HOME/.xsessionrc
 
+# set to multi-user mode and don't use graphic user interface
+systemctl set-default multi-user.target
+
 ############################ ############################
+
+messme "\nEstablish your Node.js tools and environment.\n"
 
 # first you need to modify your .bashrc file since you copied it from github
 sed --in-place 's/\/home\/jeff\/.nvm/\/home\/pi\/.nvm/' $HOME/.bashrc
 source $HOME/.bashrc
 
-# install or update the node version manager (nvm), do the following
+#install or update the node version manager (nvm), do the following
 # https://github.com/creationix/nvm
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
 
@@ -125,10 +143,7 @@ npm install jshint --global
 
 ############################ ############################
 
-# set to multi-user mode
-systemctl set-default multi-user.target
-
-############################ ############################
+messme "\nYour Raspberry Pi is now fully configured.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}

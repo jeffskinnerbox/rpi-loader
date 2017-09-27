@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #

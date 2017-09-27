@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #
@@ -57,5 +57,14 @@ function user_abort() {
 function check_info() {
     echo -e ${CHECK}$@${NColor}
 }
-# clean up before exiting
-echo -e -n ${NColor}
+
+# Test if user is root and abort if not
+function roottest {
+    if [[ $(whoami) != "root" ]];
+    then
+        echo -e "${ALERT}ERROR: This utility must be run as root (or sudo)."
+        echo "Script Aborted."
+        echo -e -n ${NColor}
+        exit 1
+    fi
+}

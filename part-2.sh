@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #
@@ -21,19 +21,25 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/rpi-loader"
+HOME="/home/jeff"
+ROOT="$HOME/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-TMP="/tmp"
-ANS="dummy-value"
+# Test if user is root and abort this script if not
+roottest
 
+
+TMP="/tmp"                   # location for temporary files
+ANS="dummy-value"            # string will store answers to prompt responses
+TIMEZONE="America/New_York"  # time zone for the raspberry pi
 
 ############################ ############################
 
+messme "\nNow running raspi-config tool in non-interactive mode.\n"
+
 # perfrom the raspi-config operations on the command-line normally done via UI tool
-messme "Running raspi-config tool in non-interactive mode."
 # raspi-config nonint do_hostname <hostname>   # modify the host name
 # raspi-config nonint do_camera 0              # enable camera
 raspi-config nonint do_ssh 0                   # enable ssh
@@ -44,9 +50,12 @@ raspi-config nonint do_onewire 0               # enable 1-wire
 raspi-config nonint do_expand_rootfs           # expand partition to use 100% of remaining space
 raspi-config nonint do_boot_behaviour B1       # require password to get console access
 
-# set the time zone for your device
-timedatectl set-timezone America/New_York
-messme "The The Raspberry Pi should be rebooted now."
+# set the time zone for your raspberry pi device
+timedatectl set-timezone $TIMEZONE
+
+############################ ############################
+
+messme "\nThe The Raspberry Pi should be rebooted now.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}

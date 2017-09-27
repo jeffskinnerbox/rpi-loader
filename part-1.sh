@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #
@@ -21,21 +21,24 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/rpi-loader"
+HOME="/home/jeff"
+ROOT="$HOME/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-TMP="/tmp"
-BOOT="dummy-value"
-DATA="dummy-value"
-ANS="dummy-value"
+# Test if user is root and abort this script if not
+roottest
 
+TMP="/tmp"           # location for temporary files
+ANS="dummy-value"    # string will store answers to prompt responses
+BOOT="dummy-value"   # string will store path to device file and filesystem for boot partition
+DATA="dummy-value"   # string will store path to device file and filesystem for data partition
 
 ############################ ############################
 
 # Ask if the SD-Card is mount and abort if it is
-askme "Have you already mounted the SD-Card?"
+askme "Have you already installed the SD-Card reader into the USB port?"
 if [ $? -eq 0 ]; then
     user_abort "Unmount & remove the SD-Card and then start this script again."
 else
@@ -43,7 +46,7 @@ else
 fi
 
 # Ask to mount SD-Card and then parse information you need
-askme "Mounting the SD-Card. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
+askme "Plug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
 if [ $? -eq 0 ]; then
     df -h > $TMP/filesystem-after
     diff $TMP/filesystem-before $TMP/filesystem-after | grep -e ">" | grep media | awk '{ print $2, $7 }' > $TMP/filesystem-diff
@@ -86,14 +89,8 @@ messme "SSH enabled for first boot only."
 ############################ ############################
 
 umount $( awk '{ print $1 }' $TMP/filesystem-diff | awk 'NR%2{printf "%s ",$0;next;}1' )
-messme "The SD-Card is now unmounted, you can remove it."
+messme "The SD-Card is now unmounted and you can remove it."
 
 # clean up before exiting
 echo -e -n ${NColor}
-
-
-
-
-
-
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.1
+# Version:      0.2
 #
 # DESCRIPTION:
 #
@@ -21,24 +21,33 @@
 #set -e
 
 # directory for where rpi-loader is installed
-ROOT="/home/jeff/src/rpi-loader"
+HOME="/home/jeff"
+ROOT="$HOME/src/rpi-loader"
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-TMP="/tmp"
-ANS="dummy-value"
-OPTS=" --yes"
-#OPTS=" --yes --quite"
+# Test if user is root and abort this script if not
+roottest
+
+TMP="/tmp"           # location for temporary files
+ANS="dummy-value"    # string will store answers to prompt responses
+OPTS=" --yes"        # option parameters used for apt-get command
 
 
 ############################ ############################
+
+messme "\nNow updating Linux packages.\n"
 
 # commandline utility for applications upgrade
 apt-get $OPTS update && apt-get $OPTS dist-upgrade
 
 # clean up any packages no longer needed
 apt-get $OPTS autoremove
+
+############################ ############################
+
+messme "\nThe Raspberry Pi should be rebooted now. -- DOES IT REALLY?\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
