@@ -41,7 +41,7 @@ messme "\nNow running raspi-config tool in non-interactive mode.\n"
 
 # perfrom the raspi-config operations on the command-line normally done via UI tool
 # raspi-config nonint do_hostname <hostname>   # modify the host name
-# raspi-config nonint do_camera 0              # enable camera
+raspi-config nonint do_camera 0                # enable camera
 raspi-config nonint do_ssh 0                   # enable ssh
 raspi-config nonint do_spi 0                   # SPI controller (/dev/spidev0.0 and /dev/spidev0.1) can be enabled
 raspi-config nonint do_i2c 0                   # enabling I2C bus /dev/i2c-1
