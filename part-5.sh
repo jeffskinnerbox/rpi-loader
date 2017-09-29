@@ -66,7 +66,7 @@ apt-get $OPTS install imagemagick feh mplayer2
 apt-get $OPTS install sendmail gnome-terminal jq
 
 # general development tools
-apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module
+apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module libcanberra-gtk3-module
 apt-get $OPTS install microcom screen
 apt-get $OPTS install build-essential i2c-tools libssl-dev
 
