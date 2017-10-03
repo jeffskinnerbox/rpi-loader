@@ -72,7 +72,10 @@ apt-get $OPTS install build-essential i2c-tools libssl-dev
 
 ############################ ############################
 
-messme "\nInstalling networking tools and other utilities.\n"
+messme "\nInstalling system monitoring, networking tools, and other utilities.\n"
+
+# display statistics about your cpu, i/o, network file system, etc.
+apt-get $OPTS install sysstat
 
 # so you can discover hosts via Multicast Domain Name System (mDNS)
 apt-get $OPTS install avahi-daemon
