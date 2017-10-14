@@ -49,7 +49,7 @@ apt-get $OPTS autoremove
 
 ############################ ############################
 
-messme "\nThe Raspberry Pi should be rebooted now. -- DOES IT REALLY?\n"
+messme "\nThe Raspberry Pi should be rebooted now.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
