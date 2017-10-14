@@ -85,45 +85,15 @@ apt-get $OPTS install avahi-daemon
 # basic networking / firewall tools
 apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill
 
+# set to multi-user mode and don't use graphic user interface
+systemctl set-default multi-user.target
+
 ############################ ############################
 
 messme "\nInstalling web browser utilities.\n"
 
 # install the midori and links2 browser
 apt-get $OPTS install midori links2
-
-############################ ############################
-
-messme "\nInstalling tools and configuration parameter for your environment.\n"
-
-# install tools for vim text editor
-cd $HOME
-git clone https://github.com/jeffskinnerbox/.vim.git
-ln -s $HOME/.vim/vimrc $HOME/.vimrc
-mkdir $HOME/.vim/backup
-mkdir $HOME/.vim/tmp
-
-# install tools for bash shell
-cd $HOME
-git clone https://github.com/jeffskinnerbox/.bash.git
-rm .bashrc .bash_logout
-ln -s $HOME/.bash/bashrc $HOME/.bashrc
-ln -s $HOME/.bash/bash_login $HOME/.bash_login
-ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
-ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
-ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
-cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
-pip install virtualenvwrapper
-
-# install X configuration files
-cd $HOME
-git clone https://github.com/jeffskinnerbox/.X.git
-ln -s $HOME/.X/xbindkeysrc $HOME/.xbindkeysrc
-ln -s $HOME/.X/Xresources $HOME/.Xresources
-ln -s $HOME/.X/xsessionrc $HOME/.xsessionrc
-
-# set to multi-user mode and don't use graphic user interface
-systemctl set-default multi-user.target
 
 ############################ ############################
 
@@ -150,7 +120,7 @@ npm install jshint --global
 
 ############################ ############################
 
-messme "\nYour Raspberry Pi is now fully configured.\n"
+messme "\nYou can continue the install by using the next script.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
