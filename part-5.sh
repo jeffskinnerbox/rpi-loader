@@ -30,6 +30,8 @@ source "$ROOT/functions.sh"
 # Test if user is root and abort this script if not
 roottest
 
+TRUE=1
+FALSE=0
 TMP="/tmp"           # location for temporary files
 ANS="dummy-value"    # string will store answers to prompt responses
 OPTS=" --yes"        # option parameters used for apt-get command

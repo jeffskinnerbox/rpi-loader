@@ -14,7 +14,7 @@
 # Note:
 # The shell does not exit if the command that fails is part of the command list immediately following a while or until keyword, part of the test following the if or elif reserved words, part of any command executed in a && or || list except the command following the final && or ||, any command in a pipeline but the last, or if the command's return value is being inverted with !
 #
-# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors. 
+# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors.
 
 # Any subsequent commands which fail will cause the shell script to exit immediately
 #trap 'sys_abort' 0
@@ -30,6 +30,8 @@ source "$ROOT/functions.sh"
 # Test if user is root and abort this script if not
 roottest
 
+TRUE=1
+FALSE=0
 TMP="/tmp"           # location for temporary files
 ANS="dummy-value"    # string will store answers to prompt responses
 BOOT="dummy-value"   # string will store path to device file and filesystem for boot partition
@@ -37,9 +39,9 @@ DATA="dummy-value"   # string will store path to device file and filesystem for 
 
 ############################ ############################
 
-# Ask if the SD-Card is mount and abort if it is
+# Ask if the SD-Card is mounted and abort if it is
 askme "Have you already installed the SD-Card reader into the USB port?"
-if [ $? -eq 0 ]; then
+if [ $? -eq $FALSE ]; then
     user_abort "Unmount & remove the SD-Card and then start this script again."
 else
     df -h > $TMP/filesystem-before
@@ -47,7 +49,7 @@ fi
 
 # Ask to mount SD-Card and then parse information you need
 askme "Plug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
-if [ $? -eq 0 ]; then
+if [ $? -eq $FALSE ]; then
     df -h > $TMP/filesystem-after
     diff $TMP/filesystem-before $TMP/filesystem-after | grep -e ">" | grep media | awk '{ print $2, $7 }' > $TMP/filesystem-diff
     BOOT=$( awk '{ print $2 }' $TMP/filesystem-diff | grep boot )
@@ -59,7 +61,7 @@ fi
 # data check
 check_info "BOOT = $BOOT\nDATA = $DATA"
 askme "Does this look correct?"
-if [ $? -eq 1 ]; then
+if [ $? -eq $TRUE ]; then
     user_abort
 fi
 
@@ -82,7 +84,8 @@ promptme "What is your host name?"
 sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hosts
 sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hostname
 
-# SSH can be enabled by placing a file named "ssh", without any extension, onto the boot partition of the SD card.
+# SSH can be enabled by placing a file named "ssh", without any extension,
+# onto the boot partition of the SD card.
 touch $BOOT/ssh
 messme "SSH enabled for first boot only."
 

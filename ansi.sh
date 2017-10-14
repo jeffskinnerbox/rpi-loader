@@ -4,7 +4,7 @@
 # Version:      0.3
 #
 # DESCRIPTION:
-# Thees ANSI escape sequences set screen attributes, such as bold text,
+# These ANSI escape sequences set screen attributes, such as bold text,
 # and color of foreground and background.
 #
 # NOTE:

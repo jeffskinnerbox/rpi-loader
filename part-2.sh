@@ -31,6 +31,8 @@ source "$ROOT/functions.sh"
 roottest
 
 
+TRUE=1
+FALSE=0
 TMP="/tmp"                   # location for temporary files
 ANS="dummy-value"            # string will store answers to prompt responses
 TIMEZONE="America/New_York"  # time zone for the raspberry pi
