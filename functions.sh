@@ -68,3 +68,14 @@ function roottest {
         exit 1
     fi
 }
+
+# Test if user is pi and abort if not
+function pitest {
+    if [[ $(whoami) != "pi" ]];
+    then
+        echo -e "${ALERT}ERROR: This utility should not run as root (or sudo)."
+        echo "Script Aborted."
+        echo -e -n ${NColor}
+        exit 1
+    fi
+}

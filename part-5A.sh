@@ -28,7 +28,7 @@ source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 # Test if user is root and abort this script if not
-roottest
+pitest
 
 TRUE=1
 FALSE=0
@@ -57,7 +57,9 @@ ln -s $HOME/.bash/bash_login $HOME/.bash_login
 ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
 ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
 ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
-cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
+
+# install python virtual env scripts
+#sudo cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
 pip install virtualenvwrapper
 
 # install X configuration files

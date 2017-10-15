@@ -79,27 +79,17 @@ apt-get $OPTS install python3-venv
 # to ensure a robust python programming environment
 apt-get $OPTS install build-essential libssl-dev libffi-dev python-dev
 
-############################ ############################
-
-messme "\nInstall OpenCV from Source Code.\n"
-
-# move to the direct where opencv will be installed
-cd ~/src
-
-# download and install opencv
-wget -O opencv.zip https://github.com/opencv/opencv/archive/3.3.0.zip
-unzip opencv.zip
-
-# download and install opencv_contrib
-wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.3.0.zip
-unzip opencv_contrib.zip
-
-# remove zip files
-rm opencv.zip opencv_contrib.zip
+# use the ARM specific GTK to prevent GTK warnings
+apt-get $OPT install libcanberra-gtk*
 
 ############################ ############################
 
-messme "\nThe Raspberry Pi should be rebooted now. -- DOES IT REALLY?\n"
+messme "\nInstall Python package frequently used by OpenCV.\n"
+
+pip3 install imutils
+
+############################ ############################
+messme "\nThe In the next script, you will install and compile the OpenCV source code.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
