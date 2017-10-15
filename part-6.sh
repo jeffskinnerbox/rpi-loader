@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.3
+# Version:      0.4
 #
 # DESCRIPTION:
 #
@@ -28,7 +28,7 @@ source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 # Test if user is root and abort this script if not
-roottest
+pitest
 
 TRUE=1
 FALSE=0
@@ -39,57 +39,39 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
-messme "\nCreating extra disk space by removing unneeded packages.\n"
+messme "\nInstalling tools and configuration parameter for your environment.\n"
 
-# free up some disk space by remove some packages
-apt-get $OPTS purge wolfram-engine
-apt-get $OPTS purge libreoffice*
+# install tools for vim text editor
+cd $HOME
+git clone https://github.com/jeffskinnerbox/.vim.git
+ln -s $HOME/.vim/vimrc $HOME/.vimrc
+mkdir $HOME/.vim/backup
+mkdir $HOME/.vim/tmp
 
-# clean up package environment
-apt-get $OPTS clean
-apt-get $OPTS autoremove
+# install tools for bash shell
+cd $HOME
+git clone https://github.com/jeffskinnerbox/.bash.git
+rm .bashrc .bash_logout
+ln -s $HOME/.bash/bashrc $HOME/.bashrc
+ln -s $HOME/.bash/bash_login $HOME/.bash_login
+ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
+ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
+ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
 
-############################ ############################
+# install python virtual env scripts
+#sudo cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
+pip install virtualenvwrapper
 
-messme "\nInstall OpenCV Dependencies.\n"
-
-# install dev tool packages you'll need for opencv
-apt-get $OPTS install build-essential git cmake pkg-config
-
-# install image processing packages
-apt-get $OPTS install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
-
-# install video processing packages
-apt-get $OPTS install libavutil-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
-apt-get $OPTS install libxvidcore-dev libx264-dev
-
-# highgui used to display images to screen and build basic GUIs
-apt-get $OPTS install libgtk2.0-dev libgtk-3-dev
-
-# packages for opencv matrix operations
-apt-get $OPTS install libatlas-base-dev gfortran
-
-# get python 2.7 and python 3 header files so we can compile opencv with python bindings
-apt-get $OPTS install python2.7-dev python3-dev
-
-# to manage software packages for python 3, let’s install pip and virtual env tool
-apt-get $OPTS install python3-pip
-apt-get $OPTS install python3-venv
-
-# to ensure a robust python programming environment
-apt-get $OPTS install build-essential libssl-dev libffi-dev python-dev
-
-# use the ARM specific GTK to prevent GTK warnings
-apt-get $OPT install libcanberra-gtk*
+# install X configuration files
+cd $HOME
+git clone https://github.com/jeffskinnerbox/.X.git
+ln -s $HOME/.X/xbindkeysrc $HOME/.xbindkeysrc
+ln -s $HOME/.X/Xresources $HOME/.Xresources
+ln -s $HOME/.X/xsessionrc $HOME/.xsessionrc
 
 ############################ ############################
 
-messme "\nInstall Python package frequently used by OpenCV.\n"
-
-pip3 install imutils
-
-############################ ############################
-messme "\nThe In the next script, you will install and compile the OpenCV source code.\n"
+messme "\nYour Raspberry Pi is now fully configured. More advanced tools can now be added.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}

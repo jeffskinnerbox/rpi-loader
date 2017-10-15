@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.3
+# Version:      0.4
 #
 # DESCRIPTION:
 # These ANSI escape sequences set screen attributes, such as bold text,

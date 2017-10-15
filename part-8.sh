@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.3
+# Version:      0.4
 #
 # DESCRIPTION:
 #
@@ -39,36 +39,61 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
-messme "\nInstall Dweepy Python Library.\n"
+messme "\nInstall OpenCV Source Code.\n"
 
-
-# go to the directory you wish to install ts_dweepy code
+# move to the direct where opencv will be installed
 cd ~/src
 
-# clone the ts_dweepy github repository
-git clone https://github.com/jeffskinnerbox/ts_dweepy.git
+# download and install opencv
+wget -O opencv.zip https://github.com/opencv/opencv/archive/3.3.0.zip
+unzip opencv.zip
 
-# enter the ts_dweepy directory
-cd ~/src/ts_dweepy
+# download and install opencv_contrib
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.3.0.zip
+unzip opencv_contrib.zip
 
-# build the ts_dweepy python package
-sudo python3 setup.py build
-
-# install the package in your local python library
-sudo python3 setup.py install
-
-# run the test script to assure the install is correct
-# a successful test run give you **no output**
-cd tests
-python3 test_ts_dweepy.py
-
-# clean up unneeded file and directories
-cd ~/src/ts_dweepy
-sudo rm -f -r ts_dweepy.egg-info build dist
+# remove zip files
+rm opencv.zip opencv_contrib.zip
 
 ############################ ############################
 
-messme "\nDweepy is now installed.\n"
+messme "\nCreate the Makefile for building OpenCV.\n"
+
+# enter the directoy where opencv will be built
+cd ~/src/opencv-3.3.0
+mkdir build
+cd build
+
+# create the makefile for the build
+#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D ENABLE_NEON=ON \
+    -D ENABLE_VFPV3=ON \
+    -D BUILD_TESTS=ON \
+    -D BUILD_EXAMPLES=ON ..
+
+############################ ############################
+
+messme "\nExecute the Makefile.  Warning ... this will take a long time.\n"
+
+# execute the make file
+# note: if you have a compiler error, do "make clean" and then just "make"
+make
+
+############################ ############################
+
+# install opencv executables and libraries
+#sudo make install
+
+# creates the necessary links and cache to the most recent shared libraries
+#sudo ldconfig
+
+############################ ############################
+
+messme "\nThe In the next step, you will install OpenCV in its target locations.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}

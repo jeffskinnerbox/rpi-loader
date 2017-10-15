@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.3
+# Version:      0.4
 #
 # DESCRIPTION:
 #
@@ -14,7 +14,7 @@
 # Note:
 # The shell does not exit if the command that fails is part of the command list immediately following a while or until keyword, part of the test following the if or elif reserved words, part of any command executed in a && or || list except the command following the final && or ||, any command in a pipeline but the last, or if the command's return value is being inverted with !
 #
-# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors.
+# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors. 
 
 # Any subsequent commands which fail will cause the shell script to exit immediately
 #trap 'sys_abort' 0
@@ -27,8 +27,8 @@ ROOT="$HOME/src/rpi-loader"
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is pi and abort this script if not
-pitest
+# Test if user is root and abort this script if not
+roottest
 
 TRUE=1
 FALSE=0
@@ -39,61 +39,57 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
-messme "\nInstall OpenCV Source Code.\n"
+messme "\nCreating extra disk space by removing unneeded packages.\n"
 
-# move to the direct where opencv will be installed
-cd ~/src
+# free up some disk space by remove some packages
+apt-get $OPTS purge wolfram-engine
+apt-get $OPTS purge libreoffice*
 
-# download and install opencv
-wget -O opencv.zip https://github.com/opencv/opencv/archive/3.3.0.zip
-unzip opencv.zip
-
-# download and install opencv_contrib
-wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.3.0.zip
-unzip opencv_contrib.zip
-
-# remove zip files
-rm opencv.zip opencv_contrib.zip
+# clean up package environment
+apt-get $OPTS clean
+apt-get $OPTS autoremove
 
 ############################ ############################
 
-messme "\nCreate the Makefile for building OpenCV.\n"
+messme "\nInstall OpenCV Dependencies.\n"
 
-# enter the directoy where opencv will be built
-cd ~/src/opencv-3.3.0
-mkdir build
-cd build
+# install dev tool packages you'll need for opencv
+apt-get $OPTS install build-essential git cmake pkg-config
 
-# create the makefile for the build
-#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
-cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules \
-    -D INSTALL_PYTHON_EXAMPLES=ON \
-    -D ENABLE_NEON=ON \
-    -D ENABLE_VFPV3=ON \
-    -D BUILD_TESTS=ON \
-    -D BUILD_EXAMPLES=ON ..
+# install image processing packages
+apt-get $OPTS install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
 
-############################ ############################
+# install video processing packages
+apt-get $OPTS install libavutil-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
+apt-get $OPTS install libxvidcore-dev libx264-dev
 
-messme "\nExecute the Makefile.  Warning ... this will take a long time.\n"
+# highgui used to display images to screen and build basic GUIs
+apt-get $OPTS install libgtk2.0-dev libgtk-3-dev
 
-# execute the make file
-# note: if you have a compiler error, do "make clean" and then just "make"
-make
+# packages for opencv matrix operations
+apt-get $OPTS install libatlas-base-dev gfortran
 
-############################ ############################
+# get python 2.7 and python 3 header files so we can compile opencv with python bindings
+apt-get $OPTS install python2.7-dev python3-dev
 
-# install opencv executables and libraries
-#sudo make install
+# to manage software packages for python 3, let’s install pip and virtual env tool
+apt-get $OPTS install python3-pip
+apt-get $OPTS install python3-venv
 
-# creates the necessary links and cache to the most recent shared libraries
-#sudo ldconfig
+# to ensure a robust python programming environment
+apt-get $OPTS install build-essential libssl-dev libffi-dev python-dev
+
+# use the ARM specific GTK to prevent GTK warnings
+apt-get $OPT install libcanberra-gtk*
 
 ############################ ############################
 
-messme "\nThe In the next step, you will install OpenCV in its target locations.\n"
+messme "\nInstall Python package frequently used by OpenCV.\n"
+
+pip3 install imutils
+
+############################ ############################
+messme "\nThe In the next script, you will install and compile the OpenCV source code.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
