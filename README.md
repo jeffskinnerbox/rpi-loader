@@ -319,6 +319,30 @@ source ~/.bashrc
 This completes the building of the Raspberry Pi's foundational operating environment.
 We can now layer on additional tools for our applications.
 
+### Options
+You might want to always use an Ethernet connection,
+so you need to disable the WiFi such that it does not even turn on after a reboot.
+One sure fire way to do this is to disable the WiFi drivers.
+This can be done by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
+
+```bash
+# disable wifi
+blacklist brcmfmac
+blacklist brcmutil
+```
+
+In a similar fashion, your could disable Bluetooth
+by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
+
+```bash
+# disable bluetooth
+blacklist btbcm
+blacklist hci_uart
+```
+
+Of course, WiFi can be temporally turned off via `sudo iwconfig wlan0 txpower off`,
+and for Bluetooth, you can use `sudo systemctl disable hciuart`.
+
 ################################################################################
 
 -----
