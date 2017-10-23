@@ -65,6 +65,9 @@ else
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-4.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-5.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-6.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-7.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-8.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-9.sh
     messme "\nrpi-loader now fully installed on the Raspberry Pi."
 fi
 
