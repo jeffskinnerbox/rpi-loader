@@ -71,11 +71,17 @@ fi
 cat $ROOT/rpi3/interfaces > $DATA/etc/network/interfaces
 cat $ROOT/rpi3/wpa_supplicant.conf > $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
-# Update the WPA Supplicant file with information about yoru WiFi
-promptme "What is your WiFi SSID?"
-sed -i 's/<your-network-ssid-name>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
-promptme "What is your WiFi Password?"
-sed -i 's/<your-network-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+# Update the WPA Supplicant file with information about your home WiFi
+promptme "What is your home WiFi SSID?"
+sed -i 's/<home-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+promptme "What is your home WiFi Password?"
+sed -i 's/<home-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+
+# Update the WPA Supplicant file with information about your jetpack WiFi
+promptme "What is your home WiFi SSID?"
+sed -i 's/<jetpack-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+promptme "What is your home WiFi Password?"
+sed -i 's/<jetpack-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
 ############################ ############################
 
