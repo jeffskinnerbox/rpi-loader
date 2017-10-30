@@ -90,7 +90,10 @@ apt-get $OPTS install sysstat
 apt-get $OPTS install avahi-daemon
 
 # basic networking / firewall tools
-apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill
+apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill netcat
+
+# network performance testing & monitoring
+apt-get $OPTS install iperf
 
 # set to multi-user mode and don't use graphic user interface
 systemctl set-default multi-user.target
