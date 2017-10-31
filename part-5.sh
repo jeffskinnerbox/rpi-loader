@@ -94,6 +94,7 @@ apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill netcat
 
 # network performance testing & monitoring
 apt-get $OPTS install iperf
+pip3 install speedtest-cli
 
 # set to multi-user mode and don't use graphic user interface
 systemctl set-default multi-user.target
