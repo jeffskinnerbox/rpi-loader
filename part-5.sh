@@ -68,10 +68,6 @@ messme "\nInstalling development tools and other utilities.\n"
 # some X Window utilities
 apt-get $OPTS install x11-apps x11-xserver-utils xterm wmctrl
 
-# tools for viewing and manipulating image & video files
-apt-get $OPTS install imagemagick feh mplayer2
-apt-get $OPTS install gstreamer1.0-tools
-
 # other handy tools
 apt-get $OPTS install sendmail gnome-terminal jq
 
@@ -79,6 +75,16 @@ apt-get $OPTS install sendmail gnome-terminal jq
 apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module libcanberra-gtk3-module
 apt-get $OPTS install microcom screen
 apt-get $OPTS install build-essential i2c-tools libssl-dev
+
+############################ ############################
+
+messme "\nInstalling tools to view and manipulate images and video.\n"
+
+# tools for viewing and manipulating image & video files
+apt-get $OPTS install imagemagick feh mplayer2
+
+# install gstreamer
+apt-get $OPTS install libgstreamer1.0-0-dbg gstreamer1.0-tools libgstreamer-plugins-base1.0-0 gstreamer1.0-plugins-good gstreamer1.0-plugins-bad-dbg gstreamer1.0-omx gstreamer1.0-alsa
 
 ############################ ############################
 
