@@ -70,6 +70,7 @@ apt-get $OPTS install x11-apps x11-xserver-utils xterm wmctrl
 
 # tools for viewing and manipulating image & video files
 apt-get $OPTS install imagemagick feh mplayer2
+apt-get $OPTS install gstreamer1.0-tools
 
 # other handy tools
 apt-get $OPTS install sendmail gnome-terminal jq
