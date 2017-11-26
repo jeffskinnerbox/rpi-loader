@@ -86,6 +86,9 @@ apt-get $OPTS install imagemagick feh mplayer2
 # install gstreamer
 apt-get $OPTS install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools
 
+# tools to displays technical information about media files
+apt-get $OPTS install mediainfo
+
 ############################ ############################
 
 messme "\nInstalling system monitoring, networking tools, and other utilities.\n"
