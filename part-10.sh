@@ -39,17 +39,19 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
-messme "\nInstalling ffmpeg from source.\n"
+messme "\nInstalling the latest version of FFmpeg from source.\n"
 
 messme "\nNeed to first remove any old version of FFmpeg. You need to provide password for sudo.\n"
-sudo apt-get $(OPTS) remove ffmpeg
+sudo apt-get $OPTS remove ffmpeg
 
 # install dependancies
-sudo apt-get $(OPTS) install yasm nasm
+sudo apt-get $OPTS install yasm nasm
 
 # install ffmpeg source
 cd $HOME/src
 git clone https://github.com/FFmpeg/FFmpeg.git
+
+messme "\nCreating configuration for FFmpeg Makefile. This takes several minutes.\n"
 
 # create the configuration
 cd FFmpeg
@@ -59,7 +61,7 @@ cd FFmpeg
 make
 
 # install ffmpeg and all its libraries and tools
-messme "\nTo install FFmpeg and all its libraries and tools, you need to provide password for sudo.\n"
+messme "\nTo install FFmpeg and all its libraries and tools, you may need to provide password for sudo.\n"
 sudo make install
 
 ############################ ############################
