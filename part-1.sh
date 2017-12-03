@@ -78,9 +78,9 @@ promptme "What is your home WiFi Password?"
 sed -i 's/<home-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
 # Update the WPA Supplicant file with information about your jetpack WiFi
-promptme "What is your home WiFi SSID?"
+promptme "What is your jectpack WiFi SSID?"
 sed -i 's/<jetpack-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
-promptme "What is your home WiFi Password?"
+promptme "What is your jectpack WiFi Password?"
 sed -i 's/<jetpack-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
 ############################ ############################
