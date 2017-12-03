@@ -32,6 +32,11 @@ function messme {
     echo -e "${MESS}$@${NColor}"
 }
 
+# Print message for fatal event
+function mess_abort() {
+    echo -e "${ALERT}$@${NColor}"
+}
+
 # Print a message if an error is tripped during processing
 function sys_abort() {
     echo -e -n ${ALERT}
@@ -71,7 +76,7 @@ function roottest {
 
 # Test if user is pi and abort if not
 function pitest {
-    if [[ $(whoami) != "pi" ]];
+    if [[ $(whoami) == "root" ]];
     then
         echo -e "${ALERT}ERROR: This utility should not run as root (or sudo)."
         echo "Script Aborted."
