@@ -71,6 +71,9 @@ apt-get $OPTS install x11-apps x11-xserver-utils xterm wmctrl
 # other handy tools
 apt-get $OPTS install sendmail gnome-terminal jq
 
+# secure hash algorithms (SHA) tools, specifically SHA256
+apt-get $OPTS install hashalot
+
 # general development tools
 apt-get $OPTS install markdown git vim vim-gtk libcanberra-gtk-module libcanberra-gtk3-module
 apt-get $OPTS install microcom screen
