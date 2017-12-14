@@ -80,7 +80,7 @@ apt-get $OPTS install python3-venv
 apt-get $OPTS install build-essential libssl-dev libffi-dev python-dev
 
 # use the ARM specific GTK to prevent GTK warnings
-apt-get $OPT install libcanberra-gtk*
+apt-get $OPTS install libcanberra-gtk*
 
 ############################ ############################
 

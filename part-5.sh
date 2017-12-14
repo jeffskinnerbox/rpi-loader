@@ -59,7 +59,7 @@ pip install RPi.GPIO pySerial nose cmd2
 messme "\nInstalling Java development tools.\n"
 
 # Java
-apt-get $OPT install ant default-jdk
+apt-get $OPTS install ant default-jdk
 
 ############################ ############################
 
