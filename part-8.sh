@@ -35,6 +35,7 @@ FALSE=0
 TMP="/tmp"           # location for temporary files
 ANS="dummy-value"    # string will store answers to prompt responses
 OPTS=" --yes"        # option parameters used for apt-get command
+OPENCV="3.3.1"       # opencv version to be installed
 
 
 ############################ ############################
@@ -45,11 +46,11 @@ messme "\nInstall OpenCV Source Code.\n"
 cd ~/src
 
 # download and install opencv
-wget -O opencv.zip https://github.com/opencv/opencv/archive/3.3.0.zip
+wget -O opencv.zip https://github.com/opencv/opencv/archive/$OPENCV.zip
 unzip opencv.zip
 
 # download and install opencv_contrib
-wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.3.0.zip
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/$OPENCV.zip
 unzip opencv_contrib.zip
 
 # remove zip files
@@ -60,15 +61,15 @@ rm opencv.zip opencv_contrib.zip
 messme "\nCreate the Makefile for building OpenCV.\n"
 
 # enter the directoy where opencv will be built
-cd ~/src/opencv-3.3.0
+cd ~/src/opencv-$OPENCV
 mkdir build
 cd build
 
 # create the makefile for the build
-#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
+#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-$OPENCV/modules -D BUILD_EXAMPLES=ON ..
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-3.3.0/modules \
+    -D OPENCV_EXTRA_MODULES_PATH=~/src/opencv_contrib-$OPENCV/modules \
     -D INSTALL_PYTHON_EXAMPLES=ON \
     -D ENABLE_NEON=ON \
     -D ENABLE_VFPV3=ON \
