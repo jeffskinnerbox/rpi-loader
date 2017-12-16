@@ -87,10 +87,10 @@ make
 ############################ ############################
 
 # install opencv executables and libraries
-#sudo make install
+sudo make install
 
 # creates the necessary links and cache to the most recent shared libraries
-#sudo ldconfig
+sudo ldconfig
 
 ############################ ############################
 

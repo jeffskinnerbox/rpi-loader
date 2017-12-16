@@ -400,45 +400,6 @@ as long as four hours.
 and use `make -j` but this does have draw backs.
 Read more about this [here][06].)
 
-Next we'll move the OpenCV libraries and executables to their proper location.
-
-```bash
-# enter directory where opencv was built
-cd ~/src/opencv-3.3.0/build/
-
-# install opencv executables and libraries
-sudo make install
-
-# creates the necessary links and cache to the most recent shared libraries
-sudo ldconfig
-```
-
-Provided the above steps finished without error,
-OpenCV should now be installed in `/usr/local/lib/python3.5/site-pacakges`
-or `/usr/local/lib/python3.5/dist-packages/`.
-You should verify this:
-
-```bash
-# verify the opencv install
-$ ls -l /usr/local/lib/python3.5/dist-packages/
-total 3876
--rw-r--r-- 1 root staff 3968464 Sep  5 17:11 cv2.cpython-35m-arm-linux-gnueabihf.so
-```
-
-For some reason (bug in the CMake script?),
-the OpenCV 3 file for Python 3+ binding has the extention `.so`
-and named `cv2.cpython-35m-arm-linux-gnueabihf.so` (or some variant of)
-rather than simply `cv2.so` like  it should.
-This needs to be fixed:
-
-```bash
-# enter the target directory
-cd /usr/local/lib/python3.5/dist-packages/
-
-# rename the file
-sudo mv cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
-```
-
 ### Step 5: Test OpenCV 3 Install
 To validate the install of OpenCV and its binding with Python3,
 open up a new terminal, execute the `source` and `workon` commands,
