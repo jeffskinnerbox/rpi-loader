@@ -423,6 +423,32 @@ Once your absolutely sure OpenCV has been successfully installed,
 you can remove both the `~/src/opencv-3.3.0` and `~/src/opencv_contrib-3.3.0`
 directories to free up a bunch of space on your disk.
 
+### Step X: Install dlib
+[!dlib-logo](http://dlib.net/dlib-logo.png)
+[Dlib][10] is a C++ toolkit containing machine learning,
+linear algebra, image processing, optimization, and other well established algorithms.
+For the installation of dlib,
+I followed ["Install dlib on the Raspberry Pi"][26] and ["Install Dlib on Ubuntu"][27].
+
+```bash
+# install and compile dlib
+sudo -H ~/src/rpi-loader/part-11.sh
+```
+
+To validate the installation of dlib:
+
+```bash
+$ python3
+Python 3.6.3 (default, Oct  3 2017, 21:45:48)
+[GCC 7.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import dlib
+>>> import cv2
+>>> cv2.__version__
+'3.3.0'
+>>>
+```
+
 ## Step 6: Test the Camera and Install Required Python Module
 Before we go any further,
 we need to make sure the camera on the Raspberry Pi works.
@@ -717,7 +743,6 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 * [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
 * [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
 * [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
-* [Install dlib on the Raspberry Pi](https://www.pyimagesearch.com/2017/05/01/install-dlib-raspberry-pi/)
 
 
 
@@ -731,7 +756,7 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 [07]:https://developer.arm.com/technologies/neon
 [08]:https://developer.arm.com/technologies/floating-point
 [09]:https://github.com/jeffskinnerbox/ts_dweepy
-[10]:
+[10]:http://dlib.net/
 [11]:https://www.raspberrypi.org/blog/raspbian-stretch/
 [12]:https://www.raspberrypi.org/downloads/raspbian/
 [13]:https://www.raspbian.org/
@@ -748,8 +773,8 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 [23]:https://www.networkworld.com/article/3133738/internet-of-things/dweetio-a-simple-effective-messaging-service-for-the-internet-of-things.html
 [24]:https://stackoverflow.com/questions/1471994/what-is-setup-py
 [25]:https://docs.python.org/3/install/index.html
-[26]:
-[27]:
+[26]:https://www.pyimagesearch.com/2017/05/01/install-dlib-raspberry-pi/
+[27]:https://www.learnopencv.com/install-dlib-on-ubuntu/
 [28]:
 [29]:
 [30]:
