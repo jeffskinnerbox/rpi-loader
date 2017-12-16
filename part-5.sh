@@ -91,6 +91,9 @@ apt-get $OPTS install imagemagick feh mplayer2
 apt-get $OPTS install gstreamer1.0-plugins-*
 apt-get $OPTS install gstreamer0.10-plugins-*
 
+# scikit-image is a collection of algorithms for image processing
+pip install scikit-image
+
 # tools to displays technical information about media files
 apt-get $OPTS install mediainfo
 
