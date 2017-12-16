@@ -429,6 +429,26 @@ directories to free up a bunch of space on your disk.
 linear algebra, image processing, optimization, and other well established algorithms.
 For the installation of dlib,
 I followed ["Install dlib on the Raspberry Pi"][26] and ["Install Dlib on Ubuntu"][27].
+Within the first article,
+you'll find a warning about common memory error your likely to encounter
+when trying to compile dlib with Python bindings on your Raspberry Pi.
+To over come this,
+we'll need to reclaim as much available memory as possible.
+You can do this by these three (temporary) steps:
+
+1. **Increase your swap file size** by changing the line `CONF_SWAPSIZE=100`
+to `CONF_SWAPSIZE=1024` in the `/etc/dphys-swapfile` file.
+Now execute `sudo /etc/init.d/dphys-swapfile stop` followed by
+`sudo /etc/init.d/dphys-swapfile start` (this could take a few minutes).
+Confirm that your swap size has been increased with `free -m`.
+1. **Switch your boot options** to boot into directly to the terminal instead of GUI.
+This should be the case but `sudo raspi-config nonint do_boot_behaviour B2`
+assure this on next boot up.
+1. **Update your GPU/RAM split** to 16MB instead of the default allocate of 128MB the onboard GPU.
+Use this command `sudo raspi-config nonint do_memory_split 16`.
+
+Now reboot the Rsaspberry Pi via `sudo shutdown -r now` and
+run the script to load dlib:
 
 ```bash
 # install and compile dlib
@@ -447,6 +467,26 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> cv2.__version__
 '3.3.0'
 >>>
+```
+
+With this complete,
+return the you system settings to their orginal state
+([see warning about leaving you swap too large][17]):
+
+```bash
+# return the swap space
+sudo sed -i 's/CONF_SWAPSIZE=1024/CONF_SWAPSIZE=100/' /etc/dphys-swapfile
+sudo /etc/init.d/dphys-swapfile stop
+sudo /etc/init.d/dphys-swapfile start
+
+# check the swap space
+free -m
+
+# return the GPU/RAM split
+sudo raspi-config nonint do_memory_split 128
+
+# re-boot tye rpi
+sudo shutdown -r now
 ```
 
 ## Step 6: Test the Camera and Install Required Python Module
@@ -764,7 +804,7 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 [13]:http://www.jeffgeerling.com/blogs/jeff-geerling/raspberry-pi-microsd-card
 [15]:http://www.wirelesshack.org/best-micro-sd-card-for-the-raspberry-pi-model-2.html
 [16]:https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
-[17]:
+[17]:https://www.bitpi.co/2015/02/11/how-to-change-raspberry-pis-swapfile-size-on-rasbian/
 [18]:https://cdn-learn.adafruit.com/downloads/pdf/adafruits-raspberry-pi-lesson-5-using-a-console-cable.pdf
 [19]:
 [20]:https://dweet.io

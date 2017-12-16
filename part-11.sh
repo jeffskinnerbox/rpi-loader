@@ -43,7 +43,7 @@ OPTS=" --yes"        # option parameters used for apt-get command
 # http://dlib.net/
 # Install Dlib on Ubuntu - https://www.learnopencv.com/install-dlib-on-ubuntu/
 
-messme "\nInstalling dlib with Python bindings.\n"
+messme "\nInstalling dlib with Python bindings.  This could take several hours.\n"
 
 messme "\nFirst we will install the prerequisite Linux and Python packages.\n"
 
@@ -55,7 +55,7 @@ apt-get $OPTS install libboost-all-dev
 # prerequisite python packages
 pip3 install numpy scipy scikit-image
 
-messme "\nNext installing dlib. This could take several hours.\n"
+messme "\nNext installing dlib.\n"
 
 # download the dlib package from PyPI, automatically configure it via CMake,
 # and then compile and install it
