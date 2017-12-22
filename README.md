@@ -3,6 +3,11 @@ Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 Version:      0.4
 -->
 
+
+![work-in-progress](http://worktrade.eu/img/uc.gif "These materials require additional work and are not ready for general use.")
+
+---
+
 # Raspberry Pi Loader
 
 **This is a work in progress**
@@ -614,7 +619,6 @@ scp ~/Pictures/* pi@BlueRPi:~/Pictures
 scp ~/Videos/* pi@BlueRPi:~/Videos
 scp ~/Data/* pi@BlueRPi:~/Data
 ```
-################################################################################
 
 -----
 ## Building Dweet for ThingSpace
@@ -640,41 +644,8 @@ The tools your installing here should be owned by `pi` and not `root`.
 
 ```bash
 # install ts_dweepy
-~/src/rpi-loader/part-9.py
+~/src/rpi-loader/part-9.sh
 ```
-
-### Step 2: Install People-Counter
-
-```bash
-# enter directory where people-counter will be stored
-cd ~/src
-
-# install people-counter
-git clone https://github.com/jeffskinnerbox/people-counter.git
-```
-
-################################################################################
-
-
-# Node Binding Using node-opencv
-[node-opencv][42] is OpenCV's bindings for Node.js.
-
-
-* https://github.com/drejkim/pyenv-opencv/blob/master/detection.py
-* [node-opencv GitHub](https://github.com/peterbraden/node-opencv)
-* [node-opencv documentation](http://peterbraden.github.io/node-opencv/)
-* [Real-time face detection using OpenCV, Node.js, and WebSockets](http://drejkim.com/blog/2014/12/02/real-time-face-detection-using-opencv-nodejs-and-websockets/)
-* [face-detection-node-opencv GitHub](https://github.com/drejkim/face-detection-node-opencv)
-
-################################################################################
-
-# Installing OpenCV and Jupyter on Ubuntu
-I also want OpenCV on my Linux desktop which is running Ubuntu 17.04.
-I used the installation procedure below, which was derived from
-[this website](http://milq.github.io/install-opencv-ubuntu-debian/).
-
-
-################################################################################
 
 -----
 ## Building the Jupyter Notebook Environment
@@ -701,18 +672,11 @@ giving you a public way to share or .
 ### Step 1: Install Jupyter and Supporting Packages
 Installing Jupyter Notebook on your computer is documented [here][50].
 For new users, they highly recommend installing it via [Anaconda][51],
-but I used the following procedure:
+but I install the the individual compoents using this script:
 
 ```bash
-# update your pip utility
-pip3 install --upgrade pip
-
-# install jupyter
-sudo pip3 install jupyter
-
-# install some of the commonly used python packages
-sudo pip3 install numpy matplotlib seaborn pandas imutils
-sudo pip3 install scipy scikit-learn              # scikit-learn didn't build for some reason
+# install Jupyter Notebook
+sudo ~/src/rpi-loader/part-12.sh
 ```
 
 ### Step 2: Test Jupyter
@@ -783,6 +747,42 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 * [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
 * [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
 * [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
+
+
+################################################################################
+
+### Step 2: Install People-Counter
+
+```bash
+# enter directory where people-counter will be stored
+cd ~/src
+
+# install people-counter
+git clone https://github.com/jeffskinnerbox/people-counter.git
+```
+
+################################################################################
+
+
+# Node Binding Using node-opencv
+[node-opencv][42] is OpenCV's bindings for Node.js.
+
+
+* https://github.com/drejkim/pyenv-opencv/blob/master/detection.py
+* [node-opencv GitHub](https://github.com/peterbraden/node-opencv)
+* [node-opencv documentation](http://peterbraden.github.io/node-opencv/)
+* [Real-time face detection using OpenCV, Node.js, and WebSockets](http://drejkim.com/blog/2014/12/02/real-time-face-detection-using-opencv-nodejs-and-websockets/)
+* [face-detection-node-opencv GitHub](https://github.com/drejkim/face-detection-node-opencv)
+
+################################################################################
+
+# Installing OpenCV and Jupyter on Ubuntu
+I also want OpenCV on my Linux desktop which is running Ubuntu 17.04.
+I used the installation procedure below, which was derived from
+[this website](http://milq.github.io/install-opencv-ubuntu-debian/).
+
+
+################################################################################
 
 
 
