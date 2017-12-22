@@ -27,7 +27,7 @@ ROOT="$HOME/src/rpi-loader"
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is root and abort this script if not
+# Test if user is pi and abort this script if not
 pitest
 
 TRUE=1
