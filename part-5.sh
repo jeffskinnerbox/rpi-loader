@@ -111,7 +111,7 @@ apt-get $OPTS install avahi-daemon
 apt-get $OPTS install dnsutils tcpdump wavemon nicstat nmap ufw rfkill netcat
 
 # network performance testing & monitoring
-apt-get $OPTS install iperf
+apt-get $OPTS install iperf nethogs
 pip3 install speedtest-cli
 
 # set to multi-user mode and don't use graphic user interface
