@@ -48,6 +48,16 @@ fi
 
 ############################ ############################
 
+messme "\nNow updating Linux packages.\n"
+
+# commandline utility for applications upgrade
+apt-get $OPTS update && apt-get $OPTS dist-upgrade
+
+# clean up any packages no longer needed
+apt-get $OPTS autoremove
+
+############################ ############################
+
 messme "\nNow running raspi-config tool in non-interactive mode.\n"
 
 # perfrom the raspi-config operations on the command-line normally done via UI tool
