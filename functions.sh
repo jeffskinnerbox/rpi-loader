@@ -74,11 +74,21 @@ function roottest {
     fi
 }
 
+# Test if user is NOT root and abort if not
+function notroottest {
+    if [[ $(whoami) == "root" ]];
+    then
+        echo -e "${ALERT}ERROR: This utility should NOT run as root (or sudo)."
+        echo "Script Aborted."
+        echo -e -n ${NColor}
+        exit 1
+    fi
+}
 # Test if user is pi and abort if not
 function pitest {
     if [[ $(whoami) == "root" ]];
     then
-        echo -e "${ALERT}ERROR: This utility should not run as root (or sudo)."
+        echo -e "${ALERT}ERROR: This utility should NOT run as root (or sudo)."
         echo "Script Aborted."
         echo -e -n ${NColor}
         exit 1

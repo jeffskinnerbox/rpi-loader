@@ -20,22 +20,29 @@
 #trap 'sys_abort' 0
 #set -e
 
-# directory for where rpi-loader is installed
+# Ubunutu / Intel Install
+#TARGET="Ubunutu"
+#HOME="/home/jeff"
+#ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
+
+# Raspbian / Raspberry Pi Install
+TARGET="Raspbian"
 HOME="/home/pi"
-ROOT="$HOME/src/rpi-loader"
+ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
+
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is pi and abort this script if not
-pitest
+# Test if user is not root and abort this script if it is
+notroottest
 
 TRUE=1
 FALSE=0
 TMP="/tmp"           # location for temporary files
 ANS="dummy-value"    # string will store answers to prompt responses
 OPTS=" --yes"        # option parameters used for apt-get command
-OPENCV="3.3.1"       # opencv version to be installed
+OPENCV="3.4.0"       # opencv version to be installed
 
 
 ############################ ############################

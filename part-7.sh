@@ -21,14 +21,14 @@
 #set -e
 
 # Ubunutu / Intel Install
-TARGET="Ubunutu"
-HOME="/home/jeff"
-ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
+#TARGET="Ubunutu"
+#HOME="/home/jeff"
+#ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 # Raspbian / Raspberry Pi Install
-#TARGET="Raspbian"
-#HOME="/home/pi"
-#ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
+TARGET="Raspbian"
+HOME="/home/pi"
+ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
