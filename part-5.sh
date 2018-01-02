@@ -86,11 +86,6 @@ messme "\nInstalling tools to view and manipulate images and video.\n"
 # tools for viewing and manipulating image & video files
 apt-get $OPTS install imagemagick feh mplayer2
 
-# install gstreamer
-#apt-get $OPTS install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools
-apt-get $OPTS install gstreamer1.0-plugins-*
-apt-get $OPTS install gstreamer0.10-plugins-*
-
 # scikit-image is a collection of algorithms for image processing
 pip install scikit-image
 

@@ -39,6 +39,15 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
+messme "\nInstalling GStreamer 1.0 and all of its plugins.\n"
+
+# install gstreamer
+sudo apt-get $OPTS install libgstreamer1.0-0 gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools
+sudo apt-get $OPTS install gstreamer1.0-plugins-*
+sudo apt-get $OPTS install gstreamer0.10-plugins-*
+
+############################ ############################
+
 messme "\nInstalling the latest version of FFmpeg from source.\n"
 
 messme "\nNeed to first remove any old version of FFmpeg. You need to provide password for sudo.\n"
