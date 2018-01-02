@@ -29,7 +29,7 @@ source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 # Test if user is root and abort this script if not
-roottest
+pitest
 
 TRUE=1
 FALSE=0
@@ -37,6 +37,7 @@ TMP="/tmp"           # location for temporary files
 ANS="dummy-value"    # string will store answers to prompt responses
 BOOT="dummy-value"   # string will store path to device file and filesystem for boot partition
 DATA="dummy-value"   # string will store path to device file and filesystem for data partition
+IMAGE="dummy-value"  # string will store path to raspbian image
 
 
 ############################ ############################
@@ -76,33 +77,39 @@ fi
 
 ############################ ############################
 
-# Create the network interfaces and WPA Supplicant file
-cat $ROOT/rpi3/interfaces > $DATA/etc/network/interfaces
-cat $ROOT/rpi3/wpa_supplicant.conf > $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+# Get the name path to the image and validate it
+promptme "What is the full path to the Raspbian image you wish to install?"
+IMAGE=$ANS
+if [ -e $IMAGE ]; then
+    messme "$IMAGE does exit."
+else
+    mess_abort "The file \"$IMAGE\" ... DOES NOT EXIT."
+    sys_abort
+fi
 
-# Update the WPA Supplicant file with information about your home WiFi
-promptme "What is your home WiFi SSID?"
-sed -i 's/<home-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
-promptme "What is your home WiFi Password?"
-sed -i 's/<home-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+# go to directory with the RPi image
+#cd /home/jeff/Downloads/Raspbian
 
-# Update the WPA Supplicant file with information about your jetpack WiFi
-promptme "What is your jectpack WiFi SSID?"
-sed -i 's/<jetpack-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
-promptme "What is your jectpack WiFi Password?"
-sed -i 's/<jetpack-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+# unmount the sd card reader
+messme "Unmounting the SD Card."
+#sudo umount $BOOT
+sudo umount $DATA
 
-############################ ############################
+# write the image to the sd card reader
+messme "Now writing Raspbian image to SD Card."
+sudo dd bs=4M if=$IMAGE of=/dev/sdj
 
-# Setting the hostname for the Raspberry Pi
-promptme "What is your host name?"
-sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hosts
-sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hostname
+# ensure the write cache is flushed
+sudo sync
 
-# SSH can be enabled by placing a file named "ssh", without any extension,
-# onto the boot partition of the SD card.
-touch $BOOT/ssh
-messme "SSH enabled for first boot only."
+# check the integrity of the sd card image
+messme "Now check to make sure Raspbian and SD Card images are the same."
+sudo dd bs=4M if=/dev/sdj of=$TMP/copy-from-sd-card.img
+sudo truncate --reference $IMAGE $TMP/copy-from-sd-card.img
+diff -s $IMAGE $TMP/copy-from-sd-card.img
+
+# unmount the sd card reader
+sudo umount /dev/sdj
 
 ############################ ############################
 
@@ -110,5 +117,6 @@ umount $( awk '{ print $1 }' $TMP/filesystem-diff | awk 'NR%2{printf "%s ",$0;ne
 messme "The SD-Card is now unmounted and you can remove it."
 
 # clean up before exiting
+rm $TMP/filesystem-before $TMP/filesystem-after $TMP/filesystem-diff $TMP/copy-from-sd-card.img
 echo -e -n ${NColor}
 

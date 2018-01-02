@@ -14,15 +14,15 @@
 # Note:
 # The shell does not exit if the command that fails is part of the command list immediately following a while or until keyword, part of the test following the if or elif reserved words, part of any command executed in a && or || list except the command following the final && or ||, any command in a pipeline but the last, or if the command's return value is being inverted with !
 #
-# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors. 
+# Set +e' will revert the setting again, so you can have only certain blocks that exit automatically on errors.
 
 # Any subsequent commands which fail will cause the shell script to exit immediately
 #trap 'sys_abort' 0
 #set -e
 
-# Raspbian / Raspberry Pi Install
-TARGET="Raspbian"
-HOME="/home/pi"
+# Ubuntu / Intel Install
+TARGET="Ubuntu"
+HOME="/home/jeff"
 ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 source "$ROOT/ansi.sh"
@@ -31,52 +31,83 @@ source "$ROOT/functions.sh"
 # Test if user is root and abort this script if not
 roottest
 
-
 TRUE=1
 FALSE=0
-TMP="/tmp"                   # location for temporary files
-ANS="dummy-value"            # string will store answers to prompt responses
-TIMEZONE="America/New_York"  # time zone for the raspberry pi
+TMP="/tmp"           # location for temporary files
+ANS="dummy-value"    # string will store answers to prompt responses
+BOOT="dummy-value"   # string will store path to device file and filesystem for boot partition
+DATA="dummy-value"   # string will store path to device file and filesystem for data partition
 
 
 ############################ ############################
 
 # make sure you only proceed if your on a Raspberry Pi / Raspbian system
-if [ $TARGET != "Raspbian" ]; then
-    mess_abort "This script is to be run on Raspberry Pi / Raspbian ONLY!"
+if [ $TARGET == "Raspbian" ]; then
+    mess_abort "This script is not to be run on the Raspberry Pi / Raspbian!"
 fi
 
 ############################ ############################
 
-messme "\nNow updating Linux packages.\n"
+# Ask if the SD-Card is mounted and abort if it is
+askme "Have you already installed the SD-Card reader into the USB port?"
+if [ $? -eq $FALSE ]; then
+    user_abort "Unmount & remove the SD-Card and then start this script again."
+else
+    df -h > $TMP/filesystem-before
+fi
 
-# commandline utility for applications upgrade
-apt-get $OPTS update && apt-get $OPTS dist-upgrade
+# Ask to mount SD-Card and then parse information you need
+askme "Plug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
+if [ $? -eq $FALSE ]; then
+    df -h > $TMP/filesystem-after
+    diff $TMP/filesystem-before $TMP/filesystem-after | grep -e ">" | grep media | awk '{ print $2, $7 }' > $TMP/filesystem-diff
+    BOOT=$( awk '{ print $2 }' $TMP/filesystem-diff | grep boot )
+    DATA=$( awk '{ print $2 }' $TMP/filesystem-diff | grep -v boot )
+else
+    user_abort
+fi
 
-# clean up any packages no longer needed
-apt-get $OPTS autoremove
+# data check
+check_info "BOOT = $BOOT\nDATA = $DATA"
+askme "Does this look correct?"
+if [ $? -eq $TRUE ]; then
+    user_abort
+fi
 
 ############################ ############################
 
-messme "\nNow running raspi-config tool in non-interactive mode.\n"
+# Create the network interfaces and WPA Supplicant file
+cat $ROOT/rpi3/interfaces > $DATA/etc/network/interfaces
+cat $ROOT/rpi3/wpa_supplicant.conf > $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
-# perfrom the raspi-config operations on the command-line normally done via UI tool
-# raspi-config nonint do_hostname <hostname>   # modify the host name
-raspi-config nonint do_camera 0                # enable camera
-raspi-config nonint do_ssh 0                   # enable ssh
-raspi-config nonint do_spi 0                   # SPI controller (/dev/spidev0.0 and /dev/spidev0.1) can be enabled
-raspi-config nonint do_i2c 0                   # enabling I2C bus /dev/i2c-1
-raspi-config nonint do_serial 0                # enable serial console and allows console cables to work
-raspi-config nonint do_onewire 0               # enable 1-wire
-raspi-config nonint do_expand_rootfs           # expand partition to use 100% of remaining space
-raspi-config nonint do_boot_behaviour B1       # require password to get console access
+# Update the WPA Supplicant file with information about your home WiFi
+promptme "What is your home WiFi SSID?"
+sed -i 's/<home-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+promptme "What is your home WiFi Password?"
+sed -i 's/<home-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
-# set the time zone for your raspberry pi device
-timedatectl set-timezone $TIMEZONE
+# Update the WPA Supplicant file with information about your jetpack WiFi
+promptme "What is your jectpack WiFi SSID?"
+sed -i 's/<jetpack-ssid>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
+promptme "What is your jectpack WiFi Password?"
+sed -i 's/<jetpack-password>/'$ANS'/' $DATA/etc/wpa_supplicant/wpa_supplicant.conf
 
 ############################ ############################
 
-messme "\nThe The Raspberry Pi should be rebooted now.\n"
+# Setting the hostname for the Raspberry Pi
+promptme "What is your host name?"
+sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hosts
+sed -i 's/raspberrypi/'$ANS'/' $DATA/etc/hostname
+
+# SSH can be enabled by placing a file named "ssh", without any extension,
+# onto the boot partition of the SD card.
+touch $BOOT/ssh
+messme "SSH enabled for first boot only."
+
+############################ ############################
+
+umount $( awk '{ print $1 }' $TMP/filesystem-diff | awk 'NR%2{printf "%s ",$0;next;}1' )
+messme "The SD-Card is now unmounted and you can remove it."
 
 # clean up before exiting
 echo -e -n ${NColor}
