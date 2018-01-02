@@ -20,9 +20,15 @@
 #trap 'sys_abort' 0
 #set -e
 
-# directory for where rpi-loader is installed
-HOME="/home/pi"
-ROOT="$HOME/src/rpi-loader"
+# Ubunutu / Intel Install
+TARGET="Ubunutu"
+HOME="/home/jeff"
+ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
+
+# Raspbian / Raspberry Pi Install
+#TARGET="Raspbian"
+#HOME="/home/pi"
+#ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
@@ -39,15 +45,17 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
-messme "\nCreating extra disk space by removing unneeded packages.\n"
-
 # free up some disk space by remove some packages
-apt-get $OPTS purge wolfram-engine
-apt-get $OPTS purge libreoffice*
+if [ $TARGET -eq "Raspbian" ]; then
+    messme "\nCreating extra disk space by removing unneeded packages.\n"
 
-# clean up package environment
-apt-get $OPTS clean
-apt-get $OPTS autoremove
+    apt-get $OPTS purge wolfram-engine
+    apt-get $OPTS purge libreoffice*
+
+    # clean up package environment
+    apt-get $OPTS clean
+    apt-get $OPTS autoremove
+fi
 
 ############################ ############################
 
