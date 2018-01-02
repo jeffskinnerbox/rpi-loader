@@ -20,8 +20,8 @@
 #trap 'sys_abort' 0
 #set -e
 
-# Ubunutu / Intel Install
-#TARGET="Ubunutu"
+# Ubuntu / Intel Install
+#TARGET="Ubuntu"
 #HOME="/home/jeff"
 #ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 

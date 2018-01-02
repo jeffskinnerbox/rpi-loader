@@ -20,8 +20,8 @@
 #trap 'sys_abort' 0
 #set -e
 
-# Ubunutu / Intel Install
-#TARGET="Ubunutu"
+# Ubuntu / Intel Install
+#TARGET="Ubuntu"
 #HOME="/home/jeff"
 #ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
@@ -89,9 +89,15 @@ messme "\nExecute the Makefile.  Warning ... this will take a long time.\n"
 
 # execute the make file
 # note: if you have a compiler error, do "make clean" and then just "make"
-make
+if [ $TARGET -eq "Ubuntu" ]; then
+    make -j4        # if you hang, your out of memory; run again without the "-j4"
+else
+    make
+fi
 
 ############################ ############################
+
+messme "\nBuild had has compled.  Now doing the install.\n"
 
 # install opencv executables and libraries
 sudo make install
