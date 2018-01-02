@@ -30,7 +30,6 @@ TARGET="Raspbian"
 HOME="/home/pi"
 ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
-
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 

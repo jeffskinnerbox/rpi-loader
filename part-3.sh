@@ -20,9 +20,10 @@
 #trap 'sys_abort' 0
 #set -e
 
-# directory for where rpi-loader is installed
+# Raspbian / Raspberry Pi Install
+TARGET="Raspbian"
 HOME="/home/pi"
-ROOT="$HOME/src/rpi-loader"
+ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
