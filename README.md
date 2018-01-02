@@ -411,7 +411,7 @@ open up a new terminal, execute the `source` and `workon` commands,
 and then attempt to import the Python + OpenCV bindings:
 
 ```bash
-[cv_env] $ ~/src/cv_env $ python3
+$ python3
 Python 3.5.3 (default, Jan 19 2017, 14:11:04)
 [GCC 6.3.0 20170124] on linux
 Type "help", "copyright", "credits" or "license" for more information.
@@ -691,7 +691,7 @@ You can do this via running Jupyter as a server.
 With this, you Jupyter environment isn't on your local computer,
 but instead on a remote compute (Raspberry Pi) accessible over TCP/IP.
 You want to open and manipulate an Jupyter Notebook running on the remote computer.
-This can be done by opening an SSH tunnel.
+This can be done by [opening an SSH tunnel to the server][28].
 This tunnel will forward the port used by the remotely running Jupyter Notebook server instance
 to a port on your local machine,
 where it can be accessed in a browser just like a locally running Jupyter Notebook instance.
@@ -715,18 +715,59 @@ ssh -N pi@BlueRPi -L localhost:8888:localhost:8889
 Now enter `localhost:8888` in your favorite browser on your desktop linux (local machine)
 to use the Raspberry Pi (remote machine) Jupyter Notebook.
 You should see Jupyter popup in your browser.
+You need to enter the token provided via the server
+or a [password if you choose to set it up][19].
 
-To test Jupyter, enter the code from the script created earlier, `~/tmp/test_video.py`.
+To test Jupyter, enter the code from the script
+created earlier during the OpenCV install, `~/tmp/test_video.py`.
 You should get a popup window with the Raspberry Pi camera streaming live video.
 
+-----
+## Building a TensorFlow Environment
+TensorFlow is changing rapidlly, and you might want to consider installing it from source code.
+If you choose to install TensorFlow via it source code,
+the source code build and test tool being used by the TensorFlow project is [Bazel][29].
+Bazel, developed and supported by Google,
+is an open-source build and test tool similar to [Make][32], [Maven][31], and [Gradle][30].
+It uses a human-readable, high-level build language, supports projects in multiple languages,
+and builds outputs for multiple platforms.
+
+Building from source also gives you greater control of the features installed.
+During the build process, you'll be provided a series of questions, as shown [here][35],
+to customize your features.
+
+I choose to do the install from the Python repository,
+which is a much easier process.
+While not the latest and full featured version of TensorFlow,
+it does appear to be fairly complete and current.
+I installed it via:
+
+```bash
+# install TensorFlow
+sudo ~/src/rpi-loader/part-13.sh
+```
+
+To test the install:
+
+```bash
+# print version number of tensorflow
+$ python3 -c 'import tensorflow as tf; print(tf.__version__)'
+1.4.1
+
+# print tensorflow relate packages
+$ pip3 list | grep tensorflow
+tensorflow (1.4.1)
+tensorflow-tensorboard (0.4.0rc3)
+```
+**For GPU support, use pip install tensorflow-gpu -** https://www.tensorflow.org/versions/r0.12/get_started/os_setup
 
 
-* [Remote Access to IPython Notebooks via SSH](https://coderwall.com/p/ohk6cg/remote-access-to-ipython-notebooks-via-ssh)
-* [Use Jupyter notebook remotely](http://amber-md.github.io/pytraj/latest/tutorials/remote_jupyter_notebook)
-* [Running a notebook server](https://jupyter-notebook.readthedocs.io/en/stable/public_server.html)
-* [Jupyter Notebook on remote server](https://coderwall.com/p/y1rwfw/jupyter-notebook-on-remote-server)
+* [Video - Build Tensorflow From Source in Ubuntu 16.04](https://www.youtube.com/watch?v=VebcaH_gb0c)
+* [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
+* [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
+* [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
 
-################################################################################
+
 ################################################################################
 
 * [Install guide: Raspberry Pi 3 + Raspbian Jessie + OpenCV 3](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
@@ -738,15 +779,6 @@ You should get a popup window with the Raspberry Pi camera streaming live video.
 * [How to Process Live Video Stream Using FFMPEG and OpenCV](http://blog.lemberg.co.uk/how-process-live-video-stream-using-ffmpeg-and-opencv)
 * [OpenCV remote (web-based) stream processing](https://github.com/ECI-Robotics/opencv_remote_streaming_processing)
 * [Raspberry Pi Camera openCV rendering with low latency streaming with gstreamer via RTP](http://hopkinsdev.blogspot.com/2016/06/raspberry-pi-camera-opencv-rendering.html)
-
-################################################################################
-
-
-
-# Other Things to Install
-* [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
-* [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
-* [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
 
 
 ################################################################################
@@ -776,14 +808,6 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 
 ################################################################################
 
-# Installing OpenCV and Jupyter on Ubuntu
-I also want OpenCV on my Linux desktop which is running Ubuntu 17.04.
-I used the installation procedure below, which was derived from
-[this website](http://milq.github.io/install-opencv-ubuntu-debian/).
-
-
-################################################################################
-
 
 
 
@@ -806,7 +830,7 @@ I used the installation procedure below, which was derived from
 [16]:https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
 [17]:https://www.bitpi.co/2015/02/11/how-to-change-raspberry-pis-swapfile-size-on-rasbian/
 [18]:https://cdn-learn.adafruit.com/downloads/pdf/adafruits-raspberry-pi-lesson-5-using-a-console-cable.pdf
-[19]:
+[19]:https://jupyter-notebook.readthedocs.io/en/stable/public_server.html
 [20]:https://dweet.io
 [21]:https://github.com/buglabs/dweetio-client
 [22]:https://thingspace.verizon.com/develop/apis/dweet/v1/index.html
@@ -815,14 +839,14 @@ I used the installation procedure below, which was derived from
 [25]:https://docs.python.org/3/install/index.html
 [26]:https://www.pyimagesearch.com/2017/05/01/install-dlib-raspberry-pi/
 [27]:https://www.learnopencv.com/install-dlib-on-ubuntu/
-[28]:
-[29]:
-[30]:
-[31]:
-[32]:
+[28]:https://coderwall.com/p/ohk6cg/remote-access-to-ipython-notebooks-via-ssh
+[29]:https://www.bazel.build/
+[30]:https://gradle.org/
+[31]:https://maven.apache.org/what-is-maven.html
+[32]:https://www.gnu.org/software/make/
 [33]:http://opencv.org
-[34]:http://www.boost.org/
-[35]:
+[34]:
+[35]:https://www.tensorflow.org/install/install_sources
 [36]:
 [37]:
 [38]:https://www.raspberrypi.org/documentation/usage/webcams/
