@@ -405,6 +405,38 @@ as long as four hours.
 and use `make -j` but this does have draw backs.
 Read more about this [here][06].)
 
+Provided the above steps finished without error,
+OpenCV should now be installed in `/usr/local/lib/python3.5/site-packages`
+or `/usr/local/lib/python3.5/dist-packages`.
+You should verify this:
+
+```bash
+# verify the opencv install
+$ ls -l /usr/local/lib/python3.5/site-packages/
+total 3876
+-rw-r--r-- 1 root staff 3968464 Sep  5 17:11 cv2.cpython-35m-arm-linux-gnueabihf.so
+```
+
+For some reason (I suspect so it doesn't clobber an existing version),
+the OpenCV 3 file for Python 3+ binding may have the
+name `cv2.cpython-35m-arm-linux-gnueabihf.so` (or some variant of)
+rather than simply `cv2.so` like  it should.
+This needs to be fixed:
+
+```bash
+# enter the target directory
+cd /usr/local/lib/python3.5/site-packages/
+
+# rename the file
+sudo mv cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
+
+# sym-link our opencv bindings into the cv virtual environment for python 3.5
+#cd ~/src/cv_env/lib/python3.5/site-packages/
+#ln -s /usr/local/lib/python3.5/site-packages/cv2.so cv2.so
+cd ~/.pyenv/versions/3.6.4/lib/python3.6/site-packages/
+ln -s /usr/local/lib/python3.6/site-packages/cv2.so cv2.so
+```
+
 ### Step 5: Test OpenCV 3 Install
 To validate the install of OpenCV and its binding with Python3,
 open up a new terminal, execute the `source` and `workon` commands,
