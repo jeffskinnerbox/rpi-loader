@@ -38,6 +38,14 @@ TMP="/tmp"                   # location for temporary files
 ANS="dummy-value"            # string will store answers to prompt responses
 TIMEZONE="America/New_York"  # time zone for the raspberry pi
 
+
+############################ ############################
+
+# make sure you only proceed if your on a Raspberry Pi / Raspbian system
+if [ $TARGET != "Raspbian" ]; then
+    mess_abort "This script is to be run on Raspberry Pi / Raspbian ONLY!"
+fi
+
 ############################ ############################
 
 messme "\nNow running raspi-config tool in non-interactive mode.\n"

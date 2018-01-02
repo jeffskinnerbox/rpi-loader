@@ -20,9 +20,9 @@
 #trap 'sys_abort' 0
 #set -e
 
-# Raspbian / Raspberry Pi Install
-TARGET="Raspbian"
-HOME="/home/pi"
+# Ubuntu / Intel Install
+TARGET="Ubuntu"
+HOME="/home/jeff"
 ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 source "$ROOT/ansi.sh"
@@ -38,6 +38,14 @@ ANS="dummy-value"    # string will store answers to prompt responses
 BOOT="dummy-value"   # string will store path to device file and filesystem for boot partition
 DATA="dummy-value"   # string will store path to device file and filesystem for data partition
 IMAGE="dummy-value"  # string will store path to raspbian image
+
+
+############################ ############################
+
+# make sure you only proceed if your on a Raspberry Pi / Raspbian system
+if [ $TARGET == "Raspbian" ]; then
+    mess_abort "This script is not to be run on the Raspberry Pi / Raspbian!"
+fi
 
 ############################ ############################
 

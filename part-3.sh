@@ -40,6 +40,13 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
+# make sure you only proceed if your on a Raspberry Pi / Raspbian system
+if [ $TARGET != "Raspbian" ]; then
+    mess_abort "This script is to be run on Raspberry Pi / Raspbian ONLY!"
+fi
+
+############################ ############################
+
 messme "\nNow updating Linux packages.\n"
 
 # commandline utility for applications upgrade

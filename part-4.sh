@@ -40,6 +40,13 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 ############################ ############################
 
+# make sure you only proceed if your on a Raspberry Pi / Raspbian system
+if [ $TARGET != "Raspbian" ]; then
+    mess_abort "This script is to be run on Raspberry Pi / Raspbian ONLY!"
+fi
+
+############################ ############################
+
 # install firmware update tool
 apt-get $OPTS install rpi-update
 
