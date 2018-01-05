@@ -57,10 +57,10 @@ pip3 install jupyter
 
 messme "\nInstalling some packages often used with Jupyter Notebook.  This could take over one hour.\n"
 
-# install some of the commonly used python packages
-pip3 install numpy matplotlib scipy
+# install some of the python packages commonly used in jupyter
+pip3 install numpy matplotlib
+pip3 install scipy scikit-learn
 pip3 install seaborn pandas imutils
-#pip3 install scikit-learn          # scikit-learn doesn't build for some reason
 
 ############################ ############################
 
