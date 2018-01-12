@@ -3,14 +3,16 @@
 # Version:      0.1
 #
 # DESCRIPTION:
+#    This file specifies intentionally untracked files that Git should ignore. 
 #
-# NOTE:
+#    Each line in this .gitignore file specifies a regular expression pattern
+#    that, when matched, the coresponding file will NOT be include in Git processing.
 
 
-### ---------- Project Specific ---------- ###
+### --------------------------- Project Specific --------------------------- ###
 
 
-### ---------- General ---------- ###
+### ------------------------------- General -------------------------------- ###
 
 ### Compiled Source ###
 *.pyc
@@ -31,10 +33,21 @@
 *.tar
 *.zip
 
+### Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
 ### Logs & Databases ###
 *.log
 *.sql
 *.sqlite
+.ipynb_checkpoints
+.ropeproject
+__pycache__
 
 ### OS Generated Files ###
 *.out
