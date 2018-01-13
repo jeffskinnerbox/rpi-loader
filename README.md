@@ -54,10 +54,10 @@ but that will wait until another version of this script.
 Some of the ideas for this script were taken from the following:
 "[Scripts to update the Raspberry Pi and Debian-based Linux Distros][05]".
 
-### Step 0: Use 32G SD-Card or Larger
+### Step 0: Select SD-Card and Install Scripts - DONE
 The tools you are about to install take up a great deal of space,
 and since this is for video applications,
-anything you record will consume siginificant disk space.
+anything you record will consume significant disk space.
 The OpenCV and the OpenCV Contribution packages alone are very large (430M + 120M).
 
 A standard Raspberry Pi install will likely use over 4GB of the available space,
@@ -68,7 +68,36 @@ If your considering using Jupyter and some of the popular Python libraries,
 your looking at 11 to 12GB of SD-Card storage being consumed.
 My advice is to consider using a 32G SD-Card.
 
-### Step 1: Download Raspberry Pi Image
+#### Install rpi-loader Script
+To minimize the amount of keyboard entry and eliminate "fat finger" errors,
+we use several Bash Shell scripts for building the Raspberry Pi
+operating environment, required software packages,
+and the people counting application.
+Those scripts need to be downloaded and install on both a local
+Linux machine, which I'll call `desktop`, and the Raspberry Pi.
+
+The first install is on `desktop` as follows:
+
+```bash
+# change direct to where the rpi-loader will be installed
+cd ~/src
+
+# clone the rpi-loader software
+git clone https://github.com/jeffskinnerbox/rpi-loader.git
+```
+
+Now you must do the final set of the install by running the `install.sh` script.
+Run it and just answer the questions when prompted.
+
+```bash
+# enter the rpi-loader directory
+cd rpi-loader
+
+# complete the install
+./install.sh
+```
+
+### Step 1: Download Raspberry Pi Image - DONE
 Before you can load a copy of the latest Raspberry Pi image onto your micro SD Card,
 you must first download the official Raspberry Pi operating system, [Raspbian][12]
 (in my case, the version is [Stretch][11]).
@@ -96,11 +125,27 @@ Archive:  2017-08-16-raspbian-stretch.zip
   inflating: 2017-08-16-raspbian-stretch.img
 ```
 
-### Step 2: Write Raspberry Pi Image to SD Card
+### Step 2: Write Raspberry Pi Image to SD Card - DONE
 Next using Linux, you have copied the Raspbian image onto the SD card mounted to your system.
 I'll be using the [Rocketek 11-in-1 4 Slots USB 3.0 Memory Card Reader][14] to create my SD Card.
-Make sure to [choose a reputable SD Card][15] from [here][13], don't go cheap.
+Make sure to [choose a reputable SD Card][15] from [here][36], don't go cheap.
 
+You can use the `part-1.sh` script for this step,
+but for the sufficiently paranoid,
+you may want to do this step manually.
+To run the script,
+make sure the SD Card reader isn't plugged in the system (aka `desktop`)
+and execute the command below:
+
+```bash
+# create your raspbian image on the sd card
+sudo ~/src/rpi-loader/part-1.sh
+```
+
+If you use the `part-1.sh` script, you can skip the manual procedure below,
+otherwise, do the install via this procedure.
+
+#### Manual Procedure - DONE
 When using your card reader,
 you'll need to know the device name of the reader.
 The easiest way to find this is just unplug your card reader from the USB port,
@@ -158,16 +203,16 @@ sudo dd bs=4M if=2017-08-16-raspbian-stretch.img of=/dev/sdj
 # ensure the write cache is flushed
 sudo sync
 
-# check the integrity of the sd card image
+# (optional) check the integrity of the sd card image
 sudo dd bs=4M if=/dev/sdj of=copy-from-sd-card.img
 sudo truncate --reference 2017-08-16-raspbian-stretch.img copy-from-sd-card.img
 diff -s 2017-08-16-raspbian-stretch.img copy-from-sd-card.img
 
 # unmount the sd card reader
-sudo umount /dev/sdj
+sudo umount /dev/sdj1 /dev/sdj2
 ```
 
-Don’t remove SD card from the reader on your computer.
+Remove SD card from the reader on your computer.
 We’re going to set up the WiFi interface next.
 
 >**NOTE:** You could immediately put the SD Card in the RPi and boot it up,
@@ -175,46 +220,19 @@ but you will have no WiFi access and you'll need to use the Ethernet interface,
 or if there is no Ethernet interface,
 you'll need to use a console cable to make the file modification
 outline in the next step.
-[Adafruit has good description on how to use a console cable]17]
+[Adafruit has good description on how to use a console cable][17]
 and the how to [enable the UART for the console][18].
 
-### Step 3: Install rpi-loader Script
-To minimize the amount of keyboard entry and eliminate "fat finger" errors,
-we use several Bash Shell scripts for building the Raspberry Pi
-operating environment, required software packages,
-and the people counting application.
-Those scripts need to be downloaded and install on both a local
-Linux machine, which I'll call `desktop`, and the Raspberry Pi.
-
-The first install is on `desktop` as follows:
-
-```bash
-# change direct to where the rpi-loader will be installed
-cd ~/src
-
-# clone the rpi-loader software
-git clone https://github.com/jeffskinnerbox/rpi-loader.git
-```
-
-Now you must do the final set of the install by running the `install.sh` script.
-Run it and just answer the questions when prompted.
-
-```bash
-# enter the rpi-loader directory
-cd rpi-loader
-
-# complete the install
-./install.sh
-```
-
-### Step 4: Run the part-1.sh Script
-We now execute the first and only script to run on the local system
+### Step 3: Setup Hostname and Networking - DONE
+We now execute another script to run on the local system
 (aka `desktop`) while the against the SD Card.
 This sets up the hostname and networking features for the Raspberry Pi.
 
 ```bash
+# DO NOT plug-in the USB SD Card reader yet
+
 # update the sd-card with networking information
-sudo ~/src/rpi-loader/part-1.sh
+sudo ~/src/rpi-loader/part-2.sh
 ```
 
 This completes the operations that will be performed on the SD-Card
@@ -222,13 +240,19 @@ while on `desktop`.
 Next will place the SD-Card in the Raspberry Pi
 and complete all the remaining loading from there.
 
-### Step 5: Start Up the Raspberry Pi
+### Step 4: Start Up the Raspberry Pi
 Place the SD-Card into the Raspberry Pi, power it up,
 and login via ssh via WiFi or via Ethernet.
-The hostname will be what you provided during the running of the `part-1.sh` script.
+The hostname will be what you provided during the running
+of the `part-2.sh` script in Step 3.
 You will login as the `pi` user and password will be `raspberry`.
 
-### Step 6: Clone the rpi-loader Tool
+```bash
+# login to the raspberry pi
+ssh -X pi@<hostname>
+```
+
+### Step X: Clone the rpi-loader Tool
 The `rpi-loader` will be heavely used on the Raspberry Pi for installing software,
 but you now need to install it first.
 
@@ -253,7 +277,7 @@ cd rpi-loader
 ./install.sh
 ```
 
-### Step 7: Run the part-2.sh Script
+### Step X: Run the part-2.sh Script
 Now your going to run `raspi-config` as a non-interactive command line tool
 setting multiple low level options on the Raspberry Pi.
 
@@ -274,7 +298,7 @@ statments found within "[How could one automate the raspbian raspi-config setup?
 **This capabilitiy is not documented, and as such,
 could change without notice.**
 
-### Step 8: Run the part-3.sh Script
+### Step X: Run the part-3.sh Script
 Now we will update the Linux package list and the currently installed packages.
 
 ```bash
@@ -285,7 +309,7 @@ sudo ~/src/rpi-loader/part-3.sh
 sudo shutdown -r now
 ```
 
-### Step 9: Run the part-4.sh Script
+### Step X: Run the part-4.sh Script
 Now we'll update the Raspberry Pi firmware.
 
 ```bash
@@ -296,7 +320,7 @@ sudo ~/src/rpi-loader/part-4.sh
 sudo shutdown -r now
 ```
 
-### Step 10: Run the part-5.sh Script
+### Step X: Run the part-5.sh Script
 Now we'll install multiple Linux packages that will likely see the greatest use.
 
 ```bash
@@ -304,7 +328,7 @@ Now we'll install multiple Linux packages that will likely see the greatest use.
 sudo ~/src/rpi-loader/part-5.sh
 ```
 
-### Step 11: Run the part-6.sh Script
+### Step X: Run the part-6.sh Script
 Install your personal tools for your Linux environment.
 
 >**NOTE:** We are not using `sudo` to run this script.
@@ -860,7 +884,6 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 [12]:https://www.raspberrypi.org/downloads/raspbian/
 [13]:https://www.raspbian.org/
 [14]:http://www.amazon.com/gp/product/B00GVRHON2?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s01
-[13]:http://www.jeffgeerling.com/blogs/jeff-geerling/raspberry-pi-microsd-card
 [15]:http://www.wirelesshack.org/best-micro-sd-card-for-the-raspberry-pi-model-2.html
 [16]:https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
 [17]:https://www.bitpi.co/2015/02/11/how-to-change-raspberry-pis-swapfile-size-on-rasbian/
@@ -882,7 +905,7 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 [33]:http://opencv.org
 [34]:https://github.com/samjabrahams/tensorflow-on-raspberry-pi/blob/master/GUIDE.md#2-install-a-memory-drive-as-swap-for-compiling
 [35]:https://www.tensorflow.org/install/install_sources
-[36]:
+[36]:http://www.jeffgeerling.com/blogs/jeff-geerling/raspberry-pi-microsd-card
 [37]:
 [38]:https://www.raspberrypi.org/documentation/usage/webcams/
 [39]:
