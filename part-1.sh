@@ -29,7 +29,7 @@ source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 # Test if user is root and abort this script if not
-pitest
+notroottest
 
 TRUE=1
 FALSE=0
@@ -58,7 +58,7 @@ else
 fi
 
 # Ask to mount SD-Card and then parse information you need
-askme "Plug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
+askme "\nPlug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
 if [ $? -eq $FALSE ]; then
     df -h > $TMP/filesystem-after
     diff $TMP/filesystem-before $TMP/filesystem-after | grep -e ">" | grep media | awk '{ print $2, $7 }' > $TMP/filesystem-diff
@@ -81,7 +81,7 @@ fi
 promptme "What is the full path to the Raspbian image you wish to install?"
 IMAGE=$ANS
 if [ -e $IMAGE ]; then
-    messme "$IMAGE does exit."
+    messme "OK ... The file \"$IMAGE\" does exit."
 else
     mess_abort "The file \"$IMAGE\" ... DOES NOT EXIT."
     sys_abort
@@ -103,7 +103,7 @@ sudo dd bs=4M if=$IMAGE of=/dev/sdj
 sudo sync
 
 # check the integrity of the sd card image
-messme "Now check to make sure Raspbian and SD Card images are the same."
+messme "\nNow checking to make sure Raspbian and SD Card images are the same."
 sudo dd bs=4M if=/dev/sdj of=$TMP/copy-from-sd-card.img
 sudo truncate --reference $IMAGE $TMP/copy-from-sd-card.img
 diff -s $IMAGE $TMP/copy-from-sd-card.img
@@ -113,6 +113,7 @@ sudo umount /dev/sdj
 
 ############################ ############################
 
+messme "\n"
 umount $( awk '{ print $1 }' $TMP/filesystem-diff | awk 'NR%2{printf "%s ",$0;next;}1' )
 messme "The SD-Card is now unmounted and you can remove it."
 

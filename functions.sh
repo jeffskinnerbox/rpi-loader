@@ -63,7 +63,7 @@ function check_info() {
     echo -e ${CHECK}$@${NColor}
 }
 
-# Test if user is root and abort if not
+# Test to see if user is root and abort if not
 function roottest {
     if [[ $(whoami) != "root" ]];
     then
@@ -74,18 +74,8 @@ function roottest {
     fi
 }
 
-# Test if user is NOT root and abort if not
+# Test to see if user is NOT root and abort if they are
 function notroottest {
-    if [[ $(whoami) == "root" ]];
-    then
-        echo -e "${ALERT}ERROR: This utility should NOT run as root (or sudo)."
-        echo "Script Aborted."
-        echo -e -n ${NColor}
-        exit 1
-    fi
-}
-# Test if user is pi and abort if not
-function pitest {
     if [[ $(whoami) == "root" ]];
     then
         echo -e "${ALERT}ERROR: This utility should NOT run as root (or sudo)."

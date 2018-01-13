@@ -34,7 +34,7 @@ source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
 # Test if user is root and abort this script if not
-pitest
+notroottest
 
 TRUE=1
 FALSE=0
