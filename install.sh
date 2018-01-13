@@ -58,9 +58,9 @@ messme "\nThis script should be run on the local system (aka desktop) and the Ra
 askme "Are you on the Raspberry Pi?"
 if [ $? -eq $FALSE ]; then
     sed -i 's/HOME=\"\/home\/pi\"/HOME=\"'$LHOME'\"/' part-1.sh
+    sed -i 's/HOME=\"\/home\/pi\"/HOME=\"'$LHOME'\"/' part-2.sh
     messme "\nrpi-loader now fully installed on your local Linux system (aka desktop)."
 else
-    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-2.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-3.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-4.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-5.sh
@@ -69,6 +69,9 @@ else
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-8.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-9.sh
     sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-10.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-11.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-12.sh
+    sed -i 's/HOME=\"\/home\/jeff\"/HOME=\"'$RHOME'\"/' part-13.sh
     messme "\nrpi-loader now fully installed on the Raspberry Pi."
 fi
 
