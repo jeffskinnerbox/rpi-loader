@@ -22,7 +22,7 @@
 
 # Ubuntu / Intel Install
 #TARGET="Ubuntu"
-#HOME="/home/jeff"
+#HOME="/home/pi"
 #ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is installed
 
 # Raspbian / Raspberry Pi Install
