@@ -7,10 +7,10 @@ Version:      0.4
 In here are instructions on the creation, maintenance, and use of this repository
 via [git][01] and [GitHub][02].  For more information, check out these posts:
 
-* [Using Git and Github to Manage Your Dotfiles][03]
-* [Managing dot files with Git][04]
-
-Check this out: [git - the simple guide just a simple guide for getting started with git. no deep shit ;)](http://rogerdudler.github.io/git-guide/)
+* [Using Git and Github to Manage Your Dotfiles](http://blog.smalleycreative.com/tutorials/using-git-and-github-to-manage-your-dotfiles/)
+* [Managing dot files with Git](http://blog.sanctum.geek.nz/managing-dot-files-with-git/)
+* [The most useful git commands](https://orga.cat/posts/most-useful-git-commands)
+* [git - the simple guide just a simple guide for getting started with git. no deep shit ;)](http://rogerdudler.github.io/git-guide/)
 
 ## Managing the Git Repository and GitHub
 ====
@@ -144,5 +144,6 @@ these files will not be affected.
 
 [01]:http://git-scm.com/
 [02]:https://github.com/
-[03]:http://blog.smalleycreative.com/tutorials/using-git-and-github-to-manage-your-dotfiles/
-[04]:http://blog.sanctum.geek.nz/managing-dot-files-with-git/
+[03]:
+[04]:
+[05]:
