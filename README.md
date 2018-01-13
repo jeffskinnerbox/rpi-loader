@@ -484,6 +484,9 @@ assure this on next boot up.
 1. **Update your GPU/RAM split** to 16MB instead of the default allocate of 128MB the onboard GPU.
 Use this command `sudo raspi-config nonint do_memory_split 16`.
 
+>**NOTE:** See ["Install a Memory Drive as Swap for Compiling"][34]
+for an alternative way to increase your swap.
+
 Now reboot the Rsaspberry Pi via `sudo shutdown -r now` and
 run the script to load dlib:
 
@@ -877,7 +880,7 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 [31]:https://maven.apache.org/what-is-maven.html
 [32]:https://www.gnu.org/software/make/
 [33]:http://opencv.org
-[34]:
+[34]:https://github.com/samjabrahams/tensorflow-on-raspberry-pi/blob/master/GUIDE.md#2-install-a-memory-drive-as-swap-for-compiling
 [35]:https://www.tensorflow.org/install/install_sources
 [36]:
 [37]:
