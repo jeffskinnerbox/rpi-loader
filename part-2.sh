@@ -57,7 +57,7 @@ else
 fi
 
 # Ask to mount SD-Card and then parse information you need
-askme "Plug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
+askme "\nPlug in the SD-Card reader. Make sure to wait for windows to pop-up.\nAfter windows appear then enter yes, or no to abort."
 if [ $? -eq $FALSE ]; then
     df -h > $TMP/filesystem-after
     diff $TMP/filesystem-before $TMP/filesystem-after | grep -e ">" | grep media | awk '{ print $2, $7 }' > $TMP/filesystem-diff
