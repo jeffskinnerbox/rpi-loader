@@ -490,9 +490,9 @@ you can remove both the `~/src/opencv-3.3.0` and `~/src/opencv_contrib-3.3.0`
 directories to free up a bunch of space on your disk.
 
 -----
-## Building Machine Learning Tools
+## Building Deep Learning Tools
 
-###  Install dlib
+### Install dlib - DONE
 [!dlib-logo](http://dlib.net/dlib-logo.png)
 [Dlib][10] is a C++ toolkit containing machine learning,
 linear algebra, image processing, optimization, and other well established algorithms.
@@ -529,19 +529,15 @@ sudo -H ~/src/rpi-loader/part-11.sh
 
 >**NOTE:** This procedure doesn't load the C libraries for Dlib.
 To address this, see the article ["Install Dlib on Ubuntu"][37].
+Or does it ... since the setup.py appears to involve a long compile time.
 
 To validate the installation of dlib:
 
 ```bash
-$ python3
-Python 3.6.3 (default, Oct  3 2017, 21:45:48)
-[GCC 7.2.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import dlib
->>> import cv2
->>> cv2.__version__
-'3.3.0'
->>>
+# validate the install of dlib
+$ python3 -c "import dlib ; import cv2 ; print('OpenCV Version =', cv2.__version__) ; print('Dlib Version =', dlib.__version__)"
+OpenCV Version = 3.3.0
+Dlib Version = 19.8.1
 ```
 
 With this complete,
@@ -560,11 +556,174 @@ free -m
 # return the GPU/RAM split
 sudo raspi-config nonint do_memory_split 128
 
-# re-boot tye rpi
+# re-boot the raspberry pi
 sudo shutdown -r now
 ```
 
-## Step 6: Test the Camera and Install Required Python Module
+### Building a TensorFlow Environment
+TensorFlow is changing rapidlly, and you might want to consider installing it from source code.
+If you choose to install TensorFlow via it source code,
+the source code build and test tool being used by the TensorFlow project is [Bazel][29].
+Bazel, developed and supported by Google,
+is an open-source build and test tool similar to [Make][32], [Maven][31], and [Gradle][30].
+It uses a human-readable, high-level build language, supports projects in multiple languages,
+and builds outputs for multiple platforms.
+
+Building from source also gives you greater control of the features installed.
+During the build process, you'll be provided a series of questions, as shown [here][35],
+to customize your features.
+
+I choose to do the install from the Python repository,
+which is a much easier process.
+While not the latest and full featured version of TensorFlow,
+it does appear to be fairly complete and current.
+I installed it via:
+
+```bash
+# install TensorFlow
+sudo -H ~/src/rpi-loader/part-13.sh
+```
+
+To test the install:
+
+```bash
+# print version number of tensorflow
+$ python3 -c 'import tensorflow as tf; print(tf.__version__)'
+1.4.1
+
+# print tensorflow relate packages
+$ pip3 list | grep tensorflow
+tensorflow (1.4.1)
+tensorflow-tensorboard (0.4.0rc3)
+```
+**For GPU support, use pip install tensorflow-gpu -** https://www.tensorflow.org/versions/r0.12/get_started/os_setup
+
+
+-----
+## Building the Jupyter Notebook Environment
+Pewrsonally, I want a interactive and feature rich environment for doing my OpenCV work,
+and I found that in [Jupyter Notebook][55] does the trick.
+Just like the OpenCV package, giving a proper introduction to Jupyter Notebook
+could fill multiple books, web pages, news articles, and in fact does!
+Jupyter is an evolution of [Interactive Python (IPython) and its notebook][56],
+but now [language agnostic and much more][54]
+If you want to get a sense of the power and versatility of Jupyter Notebook,
+check out the links below:
+
+* [A gallery of interesting Jupyter Notebooks](https://github.com/jupyter/jupyter/wiki/A-gallery-of-interesting-Jupyter-Notebooks)
+* [Jupyter nbviewer](http://nbviewer.jupyter.org/)
+* [IPython Notebook best practices for data science](https://www.youtube.com/watch?v=JI1HWUAyJHE)
+
+If you wish to covert the Jupyter Notebooks to another format for publishing
+(ex. HTML, PDF, Markdown, and more),
+they can be created by using the [nbconvert][52] utility.
+Another nice fact is that Jupyter Notebook files
+(i.e. `*.ipynb`) will render automatically on GitHub/Gist ([example][53])
+giving you a public way to share or .
+
+### Step 1: Install Jupyter and Supporting Packages
+Installing Jupyter Notebook on your computer is documented [here][50].
+For new users, they highly recommend installing it via [Anaconda][51],
+but I install the the individual compoents using this script:
+
+```bash
+# install Jupyter Notebook
+sudo ~/src/rpi-loader/part-12.sh
+```
+
+### Step 2: Test Jupyter
+Your ready now to start the Jupyter Notebook.
+This can be done via several ways.
+The easiest is to just enter `jupyter notebook`
+in a terminal window on the Raspberry Pi
+and the default browser on teh Rasperry Pi will open with jupyter (`http://localhost:8888`).
+I prefer to put the burden of running the browser on my local computer.
+You can do this via running Jupyter as a server.
+
+With this, you Jupyter environment isn't on your local computer,
+but instead on a remote compute (Raspberry Pi) accessible over TCP/IP.
+You want to open and manipulate an Jupyter Notebook running on the remote computer.
+This can be done by [opening an SSH tunnel to the server][28].
+This tunnel will forward the port used by the remotely running Jupyter Notebook server instance
+to a port on your local machine,
+where it can be accessed in a browser just like a locally running Jupyter Notebook instance.
+
+On the remote machine, start the Jupyter Notebooks server:
+
+```bash
+# on the pberry pi (emote machine), start the jupyter notebooks server
+jupyter notebook --no-browser --port=8889
+```
+
+On the local machine, start an SSH tunnel:
+
+```bash
+# on you desktop linux (local machine), start an SSH tunnel
+# run in background: ssh -f -N -L localhost:8888:localhost:8889 remote_user@remote_host
+# run in foreground: ssh -N -L localhost:8888:localhost:8889 remote_user@remote_host
+ssh -N pi@BlueRPi -L localhost:8888:localhost:8889
+```
+
+Now enter `localhost:8888` in your favorite browser on your desktop linux (local machine)
+to use the Raspberry Pi (remote machine) Jupyter Notebook.
+You should see Jupyter popup in your browser.
+You need to enter the token provided via the server
+or a [password if you choose to set it up][19].
+
+To test Jupyter, enter the code from the script
+created earlier during the OpenCV install, `~/tmp/test_video.py`.
+You should get a popup window with the Raspberry Pi camera streaming live video.
+
+-----
+# Other Assorted Tools
+
+## Building Dweet for ThingSpace
+Now its time to install the People-Counter application.
+
+Dweepy is a simple Python library for [dweet.io][23]
+and modeled after the [BugLabs Javascript library][21].
+The developers of Dweepy claim they have fully test it
+and aims to have 100% coverage of the dweet.io API.
+
+What we'll install here is the equivalent of Dweepy but supporting
+[Verizon's ThingSpace version of dweet][22] instead of [Bub Labs dweet.io][20].
+Effectively, the Dweepy library was modified to no longer point to `https://dweet.io`
+and instead point to `https://thingspace.io`.
+
+### Step 1: Install TS_Dweepy Code
+The software for [`ts_dweepy` is on GitHub][09]
+and this downloads it, builds the Python library,
+installs it , and cleans up after itself.
+
+>**NOTE:** We are not using `sudo` to run this script.
+The tools your installing here should be owned by `pi` and not `root`.
+
+```bash
+# install ts_dweepy
+~/src/rpi-loader/part-9.sh
+```
+
+* [Video - Build Tensorflow From Source in Ubuntu 16.04](https://www.youtube.com/watch?v=VebcaH_gb0c)
+* [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
+* [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
+* [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
+
+
+################################################################################
+
+* [Install guide: Raspberry Pi 3 + Raspbian Jessie + OpenCV 3](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
+* [OpenCV and Pi Camera Board](https://thinkrpi.wordpress.com/2013/05/22/opencv-and-camera-board-csi/)
+* [OpenFace - Free and open source face recognition with deep neural networks](https://cmusatyalab.github.io/openface/)
+* [Face Detection Using OpenCV With Raspberry Pi](https://www.hackster.io/deligence-technologies/face-detection-using-opencv-with-raspberry-pi-93a8fe)
+* [Face Recognition: Kairos vs Microsoft vs Google vs Amazon vs OpenCV](https://www.kairos.com/blog/face-recognition-kairos-vs-microsoft-vs-google-vs-amazon-vs-opencv)
+
+* [How to Process Live Video Stream Using FFMPEG and OpenCV](http://blog.lemberg.co.uk/how-process-live-video-stream-using-ffmpeg-and-opencv)
+* [OpenCV remote (web-based) stream processing](https://github.com/ECI-Robotics/opencv_remote_streaming_processing)
+* [Raspberry Pi Camera openCV rendering with low latency streaming with gstreamer via RTP](http://hopkinsdev.blogspot.com/2016/06/raspberry-pi-camera-opencv-rendering.html)
+
+
+################################################################################
+# Test the Camera and Install Required Python Module
 Before we go any further,
 we need to make sure the camera on the Raspberry Pi works.
 The install instructions for the camera can bout found [here][47].
@@ -689,168 +848,7 @@ scp ~/Pictures/* pi@BlueRPi:~/Pictures
 scp ~/Videos/* pi@BlueRPi:~/Videos
 scp ~/Data/* pi@BlueRPi:~/Data
 ```
-
------
-## Building Dweet for ThingSpace
-Now its time to install the People-Counter applicatiion.
-
-Dweepy is a simple Python library for [dweet.io][23]
-and modeled after the [BugLabs Javascript library][21].
-The developers of Dweepy claim they have fully test it
-and aims to have 100% coverage of the dweet.io API.
-
-What we'll install here is the equivalent of Dweepy but supporting
-[Verizon's ThingSpace version of dweet][22] instead of [Bub Labs dweet.io][20].
-Effectively, the Dweepy library was modified to no longer point to `https://dweet.io`
-and instead point to `https://thingspace.io`.
-
-### Step 1: Install TS_Dweepy Code
-The software for [`ts_dweepy` is on GitHub][09]
-and this downloads it, builds the Python libarary,
-installs it , and cleans up afer itslef.
-
->**NOTE:** We are not using `sudo` to run this script.
-The tools your installing here should be owned by `pi` and not `root`.
-
-```bash
-# install ts_dweepy
-~/src/rpi-loader/part-9.sh
-```
-
------
-## Building the Jupyter Notebook Environment
-Pewrsonally, I want a interactive and feature rich environment for doing my OpenCV work,
-and I found that in [Jupyter Notebook][55] does the trick.
-Just like the OpenCV package, giving a proper introduction to Jupyter Notebook
-could fill multiple books, web pages, news articles, and in fact does!
-Jupyter is an evolution of [Interactive Python (IPython) and its notebook][56],
-but now [language agnostic and much more][54]
-If you want to get a sense of the power and versatility of Jupyter Notebook,
-check out the links below:
-
-* [A gallery of interesting Jupyter Notebooks](https://github.com/jupyter/jupyter/wiki/A-gallery-of-interesting-Jupyter-Notebooks)
-* [Jupyter nbviewer](http://nbviewer.jupyter.org/)
-* [IPython Notebook best practices for data science](https://www.youtube.com/watch?v=JI1HWUAyJHE)
-
-If you wish to covert the Jupyter Notebooks to another format for publishing
-(ex. HTML, PDF, Markdown, and more),
-they can be created by using the [nbconvert][52] utility.
-Another nice fact is that Jupyter Notebook files
-(i.e. `*.ipynb`) will render automatically on GitHub/Gist ([example][53])
-giving you a public way to share or .
-
-### Step 1: Install Jupyter and Supporting Packages
-Installing Jupyter Notebook on your computer is documented [here][50].
-For new users, they highly recommend installing it via [Anaconda][51],
-but I install the the individual compoents using this script:
-
-```bash
-# install Jupyter Notebook
-sudo ~/src/rpi-loader/part-12.sh
-```
-
-### Step 2: Test Jupyter
-Your ready now to start the Jupyter Notebook.
-This can be done via several ways.
-The easiest is to just enter `jupyter notebook`
-in a terminal window on the Raspberry Pi
-and the default browser on teh Rasperry Pi will open with jupyter (`http://localhost:8888`).
-I prefer to put the burden of running the browser on my local computer.
-You can do this via running Jupyter as a server.
-
-With this, you Jupyter environment isn't on your local computer,
-but instead on a remote compute (Raspberry Pi) accessible over TCP/IP.
-You want to open and manipulate an Jupyter Notebook running on the remote computer.
-This can be done by [opening an SSH tunnel to the server][28].
-This tunnel will forward the port used by the remotely running Jupyter Notebook server instance
-to a port on your local machine,
-where it can be accessed in a browser just like a locally running Jupyter Notebook instance.
-
-On the remote machine, start the Jupyter Notebooks server:
-
-```bash
-# on the pberry pi (emote machine), start the jupyter notebooks server
-jupyter notebook --no-browser --port=8889
-```
-
-On the local machine, start an SSH tunnel:
-
-```bash
-# on you desktop linux (local machine), start an SSH tunnel
-# run in background: ssh -f -N -L localhost:8888:localhost:8889 remote_user@remote_host
-# run in foreground: ssh -N -L localhost:8888:localhost:8889 remote_user@remote_host
-ssh -N pi@BlueRPi -L localhost:8888:localhost:8889
-```
-
-Now enter `localhost:8888` in your favorite browser on your desktop linux (local machine)
-to use the Raspberry Pi (remote machine) Jupyter Notebook.
-You should see Jupyter popup in your browser.
-You need to enter the token provided via the server
-or a [password if you choose to set it up][19].
-
-To test Jupyter, enter the code from the script
-created earlier during the OpenCV install, `~/tmp/test_video.py`.
-You should get a popup window with the Raspberry Pi camera streaming live video.
-
------
-## Building a TensorFlow Environment
-TensorFlow is changing rapidlly, and you might want to consider installing it from source code.
-If you choose to install TensorFlow via it source code,
-the source code build and test tool being used by the TensorFlow project is [Bazel][29].
-Bazel, developed and supported by Google,
-is an open-source build and test tool similar to [Make][32], [Maven][31], and [Gradle][30].
-It uses a human-readable, high-level build language, supports projects in multiple languages,
-and builds outputs for multiple platforms.
-
-Building from source also gives you greater control of the features installed.
-During the build process, you'll be provided a series of questions, as shown [here][35],
-to customize your features.
-
-I choose to do the install from the Python repository,
-which is a much easier process.
-While not the latest and full featured version of TensorFlow,
-it does appear to be fairly complete and current.
-I installed it via:
-
-```bash
-# install TensorFlow
-sudo ~/src/rpi-loader/part-13.sh
-```
-
-To test the install:
-
-```bash
-# print version number of tensorflow
-$ python3 -c 'import tensorflow as tf; print(tf.__version__)'
-1.4.1
-
-# print tensorflow relate packages
-$ pip3 list | grep tensorflow
-tensorflow (1.4.1)
-tensorflow-tensorboard (0.4.0rc3)
-```
-**For GPU support, use pip install tensorflow-gpu -** https://www.tensorflow.org/versions/r0.12/get_started/os_setup
-
-
-* [Video - Build Tensorflow From Source in Ubuntu 16.04](https://www.youtube.com/watch?v=VebcaH_gb0c)
-* [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
-* [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
-* [Installing Tflearn on Raspberry Pi 3](http://www.instructables.com/id/Installing-Tflearn-on-Raspberry-Pi-3/)
-
-
 ################################################################################
-
-* [Install guide: Raspberry Pi 3 + Raspbian Jessie + OpenCV 3](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
-* [OpenCV and Pi Camera Board](https://thinkrpi.wordpress.com/2013/05/22/opencv-and-camera-board-csi/)
-* [OpenFace - Free and open source face recognition with deep neural networks](https://cmusatyalab.github.io/openface/)
-* [Face Detection Using OpenCV With Raspberry Pi](https://www.hackster.io/deligence-technologies/face-detection-using-opencv-with-raspberry-pi-93a8fe)
-* [Face Recognition: Kairos vs Microsoft vs Google vs Amazon vs OpenCV](https://www.kairos.com/blog/face-recognition-kairos-vs-microsoft-vs-google-vs-amazon-vs-opencv)
-
-* [How to Process Live Video Stream Using FFMPEG and OpenCV](http://blog.lemberg.co.uk/how-process-live-video-stream-using-ffmpeg-and-opencv)
-* [OpenCV remote (web-based) stream processing](https://github.com/ECI-Robotics/opencv_remote_streaming_processing)
-* [Raspberry Pi Camera openCV rendering with low latency streaming with gstreamer via RTP](http://hopkinsdev.blogspot.com/2016/06/raspberry-pi-camera-opencv-rendering.html)
-
-
 ################################################################################
 
 ### Step 2: Install People-Counter
