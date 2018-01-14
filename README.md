@@ -240,7 +240,7 @@ while on `desktop`.
 Next will place the SD-Card in the Raspberry Pi
 and complete all the remaining loading from there.
 
-### Step 4: Start Up the Raspberry Pi
+### Step 4: Start Up the Raspberry Pi - DONE
 Place the SD-Card into the Raspberry Pi, power it up,
 and login via ssh via WiFi or via Ethernet.
 The hostname will be what you provided during the running
@@ -252,7 +252,7 @@ You will login as the `pi` user and password will be `raspberry`.
 ssh -X pi@<hostname>
 ```
 
-### Step X: Clone the rpi-loader Tool
+### Step 5: Clone the rpi-loader Tool - DONE
 The `rpi-loader` will be heavely used on the Raspberry Pi for installing software,
 but you now need to install it first.
 
@@ -277,13 +277,14 @@ cd rpi-loader
 ./install.sh
 ```
 
-### Step X: Run the part-2.sh Script
-Now your going to run `raspi-config` as a non-interactive command line tool
+### Step 6: Package Update and Run rasp-config Utility - DONE
+Now your going to update the Linux package list and the currently installed packages.
+This is followed by running `raspi-config` as a non-interactive command line tool
 setting multiple low level options on the Raspberry Pi.
 
 ```bash
-# run raspi-config tool and ste the time zone
-sudo ~/src/rpi-loader/part-2.sh
+# run raspi-config tool and set the time zone
+sudo -H ~/src/rpi-loader/part-3.sh
 
 # reboot the raspberry pi
 sudo shutdown -r now
@@ -298,38 +299,28 @@ statments found within "[How could one automate the raspbian raspi-config setup?
 **This capabilitiy is not documented, and as such,
 could change without notice.**
 
-### Step X: Run the part-3.sh Script
-Now we will update the Linux package list and the currently installed packages.
-
-```bash
-# update currently install linux packages
-sudo ~/src/rpi-loader/part-3.sh
-
-# if packages were installed, reboot the raspberry pi
-sudo shutdown -r now
-```
-
-### Step X: Run the part-4.sh Script
+### Step 7: Update the Raspberry Pi Firmware - DONE
 Now we'll update the Raspberry Pi firmware.
 
 ```bash
 # update raspberry pi firmware
-sudo ~/src/rpi-loader/part-4.sh
+sudo -H ~/src/rpi-loader/part-4.sh
 
 # if if new firmware was installed, reboot the raspberry pi
 sudo shutdown -r now
 ```
 
-### Step X: Run the part-5.sh Script
+### Step 8: Install Development Tools and Other Utilities - DONE
 Now we'll install multiple Linux packages that will likely see the greatest use.
+There are many packages, and some are large, so this could run for up to an hour.
 
 ```bash
 # load linux packages
-sudo ~/src/rpi-loader/part-5.sh
+sudo -H ~/src/rpi-loader/part-5.sh
 ```
 
-### Step X: Run the part-6.sh Script
-Install your personal tools for your Linux environment.
+### Step X: Install Your Personal Tools
+At this point, I'm going to install my personal tools I use for Linux.
 
 >**NOTE:** We are not using `sudo` to run this script.
 The tools your installing here should be owned by `pi` and not `root`.
@@ -337,7 +328,11 @@ The tools your installing here should be owned by `pi` and not `root`.
 ```bash
 # install your tools
 ~/src/rpi-loader/part-6.sh
+```
 
+To conplete the install, perfrom the following:
+
+```bash
 # copy scripts for python virual env
 sudo cp ~/.bash/virtualenvwrapper.sh ~/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
 
