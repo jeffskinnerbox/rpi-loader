@@ -64,6 +64,9 @@ ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
 ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
 ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
 
+# source the resource file so its currently active
+source ~/.bashrc
+
 # install X configuration files
 cd $HOME
 git clone https://github.com/jeffskinnerbox/.X.git
@@ -91,7 +94,7 @@ curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv
 #eval "$(pyenv virtualenv-init -)" >> $HOME/.bashrc
 
 # install python 3.6.4 via pyenv
-$ pyenv install 3.6.4
+pyenv install 3.6.4
 
 # assure the pyenv shims are updated
 pyenv rehash
