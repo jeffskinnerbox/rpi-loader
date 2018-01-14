@@ -319,7 +319,7 @@ There are many packages, and some are large, so this could run for up to an hour
 sudo -H ~/src/rpi-loader/part-5.sh
 ```
 
-### Step X: Install Your Personal Tools
+### Step 9: Install Your Personal Tools - DONE
 At this point, I'm going to install my personal tools I use for Linux.
 
 >**NOTE:** We are not using `sudo` to run this script.
@@ -330,47 +330,54 @@ The tools your installing here should be owned by `pi` and not `root`.
 ~/src/rpi-loader/part-6.sh
 ```
 
-To conplete the install, perfrom the following:
-
-```bash
-# copy scripts for python virual env
-sudo cp ~/.bash/virtualenvwrapper.sh ~/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
-
-# make your bash tools active now
-source ~/.bashrc
-```
-
-This completes the building of the Raspberry Pi's foundational operating environment.
-We can now layer on additional tools for our applications.
-
-### Options
-You might want to always use an Ethernet connection,
-so you need to disable the WiFi such that it does not even turn on after a reboot.
-One sure fire way to do this is to disable the WiFi drivers.
-This can be done by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
-
-```bash
-# disable wifi
-blacklist brcmfmac
-blacklist brcmutil
-```
-
-In a similar fashion, your could disable Bluetooth
-by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
-
-```bash
-# disable bluetooth
-blacklist btbcm
-blacklist hci_uart
-```
-
-Of course, WiFi can be temporally turned off via `sudo iwconfig wlan0 txpower off`,
-and for Bluetooth, you can use `sudo systemctl disable hciuart`.
-
-################################################################################
-
 -----
-## Building the OpenCV Environment
+## Building Image and Video Processing Tools
+
+### Install GStreamer and FFmpeg Environment
+[GStreamer][76] is a framework for creating streaming media applications.
+The GStreamer framework is designed to make it easy to write applications
+that handle audio or video or both.
+It isn't restricted to audio and video,
+and can process any kind of data flow.
+Its main advantages are that the pluggable components can be mixed and matched
+into arbitrary pipelines so that it's possible to write a
+full-fledged video or audio editing application.
+You can also use the pipelining capabilities of GStreamer
+to take the video output from a Raspberry Pi camera module
+and encode the video in H.264 format before passing it on to Janus.
+GStreamer is a pipeline-based multimedia framework that links together
+a wide variety of media processing systems to complete complex workflows.
+For instance, GStreamer can be used to build a system that reads files in one format,
+processes them, and exports them in another.
+The formats and processes can be changed in a plug and play fashion.
+(See this [diagram of the pipeline processing][77] for an example.)
+This processing can be done on the [shell command line][82] or via
+[Python bingdings][80] or [C bindings][81].
+
+[FFmpeg][62] claims to play pretty much anything that humans and machines have created;
+supporting the most obscure ancient formats up to the cutting edge.
+FFmpeg is able to decode, encode, transcode, mux, demux, stream, filter and play most anything.
+Effectively, FFmpeg continuously streams a webcam's video to single `.jpg` file.
+This toolkit contains:
+
+* `**[ffmpeg][61]**` - is a command line tool for fast video and audio converter that can also grab from a live audio/video source.
+* `**[ffserver][60]`** - is a streaming server for both audio and video.
+* `**[ffplay][59]**` - is a command line simple and portable media player using the FFmpeg libraries and the SDL library.
+* `**[ffprobe][58]**` - is a command line tool to gathers information from multimedia streams and prints it in human- and machine-readable fashion.
+
+Unfortunately, Debian Jessie and later [no longer include the ffmpeg package][64].
+To install it and make sure we have the latest and greatest ffmpeg,
+I choose to [install from source code][63].
+
+You can install this two powerful image/video processing tools on the  Raspberry Pi
+via the following script:
+
+```bash
+# install GStreamer and FFmpeg
+~/src/rpi-loader/part-10.sh
+```
+
+### OpenCV Environment
 This solution requires [OpenCV][33] to be used with the Raspberry Pi Camera.
 First of all, hopefully its one of the [RPi Board Cameras][44].
 While you could use a cheaper [USB-Webcam on the RPi][38],
@@ -863,6 +870,38 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 ################################################################################
 
 
+###############################################################################
+
+This completes the building of the Raspberry Pi's foundational operating environment.
+We can now layer on additional tools for our applications.
+
+### Options
+You might want to always use an Ethernet connection,
+so you need to disable the WiFi such that it does not even turn on after a reboot.
+One sure fire way to do this is to disable the WiFi drivers.
+This can be done by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
+
+```bash
+# disable wifi
+blacklist brcmfmac
+blacklist brcmutil
+```
+
+In a similar fashion, your could disable Bluetooth
+by editing the file `/etc/modprobe.d/raspi-blacklist.conf` and adding:
+
+```bash
+# disable bluetooth
+blacklist btbcm
+blacklist hci_uart
+```
+
+Of course, WiFi can be temporally turned off via `sudo iwconfig wlan0 txpower off`,
+and for Bluetooth, you can use `sudo systemctl disable hciuart`.
+
+###############################################################################
+
+
 
 
 [01]:https://www.52pi.com/blog/19-instructions-of-command-line-in-raspi-config
@@ -922,3 +961,17 @@ git clone https://github.com/jeffskinnerbox/people-counter.git
 [55]:http://jupyter.org/
 [56]:https://ipython.org/
 [57]:https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
+[58]:https://ffmpeg.org/ffprobe.html
+[59]:https://ffmpeg.org/ffplay.html
+[60]:https://ffmpeg.org/ffserver.html
+[61]:https://ffmpeg.org/ffmpeg.html
+[62]:https://ffmpeg.org/documentation.html
+[63]:http://superuser.com/questions/286675/how-to-install-ffmpeg-on-debian
+[64]:http://unix.stackexchange.com/questions/242399/why-was-ffmpeg-removed-from-debian
+
+
+[76]:https://gstreamer.freedesktop.org/
+[77]:http://developers-club.com/posts/236805/
+[80]:http://www.jonobacon.org/2006/08/28/getting-started-with-gstreamer-with-python/
+[81]:https://arashafiei.files.wordpress.com/2012/12/gst-doc.pdf
+[82]:http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet

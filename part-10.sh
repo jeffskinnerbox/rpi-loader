@@ -33,7 +33,7 @@ ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is instal
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is pi and abort this script if not
+# Test if user is root and abort this script if not
 notroottest
 
 TRUE=1
@@ -81,7 +81,7 @@ sudo make install
 
 ############################ ############################
 
-messme "\nFFmpeg is now installed.\n"
+messme "\nGStreamer and FFmpeg are now installed.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
