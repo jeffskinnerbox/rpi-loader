@@ -64,16 +64,37 @@ ln -s $HOME/.bash/bash_logout $HOME/.bash_logout
 ln -s $HOME/.bash/bash_profile $HOME/.bash_profile
 ln -s $HOME/.bash/dircolors.old $HOME/.dircolors
 
-# install python virtual env scripts
-#sudo cp $HOME/.bash/virtualenvwrapper.sh $HOME/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
-pip install virtualenvwrapper
-
 # install X configuration files
 cd $HOME
 git clone https://github.com/jeffskinnerbox/.X.git
 ln -s $HOME/.X/xbindkeysrc $HOME/.xbindkeysrc
 ln -s $HOME/.X/Xresources $HOME/.Xresources
 ln -s $HOME/.X/xsessionrc $HOME/.xsessionrc
+
+############################ ############################
+
+messme "\nInstalling tools for python virtual environment (i.e. pyenv)"
+#messme "You'll need to provide root password when prompted.\n"
+
+# install python virtual env scripts
+#pip install virtualenvwrapper
+
+# copy scripts for python virual env
+#sudo cp ~/.bash/virtualenvwrapper.sh ~/.bash/virtualenvwrapper_lazy.sh /usr/local/bin
+
+# execute the pyenv installer
+curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+
+# update your profile / bashrc with this
+#export PATH="/home/jeff/.pyenv/bin:$PATH" >> $HOME/.bashrc
+#eval "$(pyenv init -)" >> $HOME/.bashrc
+#eval "$(pyenv virtualenv-init -)" >> $HOME/.bashrc
+
+# install python 3.6.4 via pyenv
+$ pyenv install 3.6.4
+
+# assure the pyenv shims are updated
+pyenv rehash
 
 ############################ ############################
 
