@@ -406,7 +406,7 @@ Now let install OpenCV dependency packages.
 sudo -H ~/src/rpi-loader/part-7.sh
 ```
 
-### Step 4: Install and Compile OpenCV Source Code
+### Step 4: Install and Compile OpenCV Source Code - DONE
 We are now ready to compile and install OpenCV.
 We will grab the [latest version of OpenCV][41] from GitHub and install it.
 Make sure your `opencv` and `opencv_contrib` versions match up,
@@ -466,9 +466,9 @@ cd ~/src/cv_env/lib/python3.5/dist-packages/
 ln -s /usr/local/lib/python3.5/dist-packages/cv2.so cv2.so
 ```
 
-### Step 5: Test OpenCV 3 Install
+### Step 5: Test OpenCV 3 Install - DONE
 To validate the install of OpenCV and its binding with Python3,
-open up a new terminal, execute the `source` and `workon` commands,
+open up a new terminal,
 and then attempt to import the Python + OpenCV bindings:
 
 ```bash
@@ -489,7 +489,10 @@ Once your absolutely sure OpenCV has been successfully installed,
 you can remove both the `~/src/opencv-3.3.0` and `~/src/opencv_contrib-3.3.0`
 directories to free up a bunch of space on your disk.
 
-### Step X: Install dlib
+-----
+## Building Machine Learning Tools
+
+###  Install dlib
 [!dlib-logo](http://dlib.net/dlib-logo.png)
 [Dlib][10] is a C++ toolkit containing machine learning,
 linear algebra, image processing, optimization, and other well established algorithms.
@@ -516,13 +519,16 @@ Use this command `sudo raspi-config nonint do_memory_split 16`.
 >**NOTE:** See ["Install a Memory Drive as Swap for Compiling"][34]
 for an alternative way to increase your swap.
 
-Now reboot the Rsaspberry Pi via `sudo shutdown -r now` and
+Now reboot the Raspberry Pi via `sudo shutdown -r now` and
 run the script to load dlib:
 
 ```bash
 # install and compile dlib
 sudo -H ~/src/rpi-loader/part-11.sh
 ```
+
+>**NOTE:** This procedure doesn't load the C libraries for Dlib.
+To address this, see the article ["Install Dlib on Ubuntu"][37].
 
 To validate the installation of dlib:
 
@@ -539,7 +545,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ```
 
 With this complete,
-return the you system settings to their orginal state
+return the you system settings to their original state
 ([see warning about leaving you swap too large][17]):
 
 ```bash
@@ -943,7 +949,7 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [34]:https://github.com/samjabrahams/tensorflow-on-raspberry-pi/blob/master/GUIDE.md#2-install-a-memory-drive-as-swap-for-compiling
 [35]:https://www.tensorflow.org/install/install_sources
 [36]:http://www.jeffgeerling.com/blogs/jeff-geerling/raspberry-pi-microsd-card
-[37]:
+[37]:https://www.learnopencv.com/install-dlib-on-ubuntu/
 [38]:https://www.raspberrypi.org/documentation/usage/webcams/
 [39]:
 [40]:

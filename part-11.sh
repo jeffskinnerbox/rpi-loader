@@ -67,6 +67,9 @@ messme "\nNext installing dlib.\n"
 # and then compile and install it
 pip3 install dlib
 
+# NOTE: This procedure doesn't load the C libraries for Dlib.
+# See the following to do that - https://www.learnopencv.com/install-dlib-on-ubuntu/
+
 ############################ ############################
 
 messme "\ndlib C libraries and it's Python bindings is now installed.\n"
