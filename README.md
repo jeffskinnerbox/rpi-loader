@@ -333,7 +333,7 @@ The tools your installing here should be owned by `pi` and not `root`.
 -----
 ## Building Image and Video Processing Tools
 
-### Install GStreamer and FFmpeg Environment
+### Install GStreamer and FFmpeg
 [GStreamer][76] is a framework for creating streaming media applications.
 The GStreamer framework is designed to make it easy to write applications
 that handle audio or video or both.
@@ -377,7 +377,7 @@ via the following script:
 ~/src/rpi-loader/part-10.sh
 ```
 
-### OpenCV Environment
+### OpenCV
 This solution requires [OpenCV][33] to be used with the Raspberry Pi Camera.
 First of all, hopefully its one of the [RPi Board Cameras][44].
 While you could use a cheaper [USB-Webcam on the RPi][38],

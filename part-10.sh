@@ -33,7 +33,7 @@ ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is instal
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is root and abort this script if not
+# Test if user is NOT root and abort this script if they are
 notroottest
 
 TRUE=1
@@ -72,11 +72,13 @@ messme "\nCreating configuration for FFmpeg Makefile. This takes several minutes
 cd FFmpeg
 ./configure
 
+messme "\nBuilding FFmpeg with Makefile. This takes several minutes.\n"
+
 # build ffmpeg
 make
 
 # install ffmpeg and all its libraries and tools
-messme "\nTo install FFmpeg and all its libraries and tools, you may need to provide password for sudo.\n"
+messme "\nInstalling FFmpeg and all its libraries and tools, you may need to provide password for sudo.\n"
 sudo make install
 
 ############################ ############################
