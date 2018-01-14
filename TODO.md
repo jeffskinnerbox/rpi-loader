@@ -10,6 +10,7 @@ Version:      0.4
 * High Priority
 
 * Medium Priority
+    * Shouldn't the "TARGET" variable be updated via the install.sh script
     * Have the script print comments about what its doing as the packages are load.  This is particularly tneeded for `part-5.sh`.
     * Using `getopt`, pass argument for HOME, ROOT, etc.
 
