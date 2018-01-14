@@ -63,6 +63,17 @@ function check_info() {
     echo -e ${CHECK}$@${NColor}
 }
 
+# Test to see if user is pi and abort if not
+function pitest {
+    if [[ $(whoami) != "pi" ]];
+    then
+        echo -e "${ALERT}ERROR: This utility must be run as user pi."
+        echo "Script Aborted."
+        echo -e -n ${NColor}
+        exit 1
+    fi
+}
+
 # Test to see if user is root and abort if not
 function roottest {
     if [[ $(whoami) != "root" ]];
