@@ -333,7 +333,7 @@ The tools your installing here should be owned by `pi` and not `root`.
 -----
 ## Building Image and Video Processing Tools
 
-### Install GStreamer and FFmpeg
+### Install GStreamer and FFmpeg - DONE
 [GStreamer][76] is a framework for creating streaming media applications.
 The GStreamer framework is designed to make it easy to write applications
 that handle audio or video or both.
@@ -386,7 +386,7 @@ you'll get none of the benefits of the Raspberry Pi's native GPU or [Graphics Pr
 My major source of inspiration for the steps below are from:
 "[Optimizing OpenCV on the Raspberry Pi][06]".
 
-### Step 1: Install OpenCV Dependencies
+### Step 1: Install OpenCV Dependencies - DONE
 The first thing we should do is update and upgrade any existing packages,
 followed by updating the Raspberry Pi firmware.
 
@@ -403,7 +403,7 @@ Now let install OpenCV dependency packages.
 
 ```bash
 # install opencv dependency packages
-sudo ~/src/rpi-loader/part-7.sh
+sudo -H ~/src/rpi-loader/part-7.sh
 ```
 
 ### Step 4: Install and Compile OpenCV Source Code
@@ -432,13 +432,18 @@ and use `make -j` but this does have draw backs.
 Read more about this [here][06].)
 
 Provided the above steps finished without error,
-OpenCV should now be installed in `/usr/local/lib/python3.5/site-packages`
+and assuming your Python 3 version is 3.5.x,
+OpenCV should now be installed in `/usr/local/lib/python3.5/dist-packages`
 or `/usr/local/lib/python3.5/dist-packages`.
 You should verify this:
 
 ```bash
+# check your python 3 version
+$ python3 --version
+Python 3.5.3
+
 # verify the opencv install
-$ ls -l /usr/local/lib/python3.5/site-packages/
+$ ls -l /usr/local/lib/python3.5/dist-packages/
 total 3876
 -rw-r--r-- 1 root staff 3968464 Sep  5 17:11 cv2.cpython-35m-arm-linux-gnueabihf.so
 ```
@@ -451,16 +456,14 @@ This needs to be fixed:
 
 ```bash
 # enter the target directory
-cd /usr/local/lib/python3.5/site-packages/
+cd /usr/local/lib/python3.5/dist-packages/
 
 # rename the file
 sudo mv cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
 
 # sym-link our opencv bindings into the cv virtual environment for python 3.5
-#cd ~/src/cv_env/lib/python3.5/site-packages/
-#ln -s /usr/local/lib/python3.5/site-packages/cv2.so cv2.so
-cd ~/.pyenv/versions/3.6.4/lib/python3.6/site-packages/
-ln -s /usr/local/lib/python3.6/site-packages/cv2.so cv2.so
+cd ~/src/cv_env/lib/python3.5/dist-packages/
+ln -s /usr/local/lib/python3.5/dist-packages/cv2.so cv2.so
 ```
 
 ### Step 5: Test OpenCV 3 Install

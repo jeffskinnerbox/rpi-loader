@@ -106,7 +106,7 @@ sudo ldconfig
 
 ############################ ############################
 
-messme "\nThe In the next step, you will install OpenCV in its target locations.\n"
+messme "\nYour next step is to manually install OpenCV in its target locations.\n"
 
 # clean up before exiting
 echo -e -n ${NColor}
