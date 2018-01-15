@@ -52,24 +52,35 @@ OPTS=" --yes"        # option parameters used for apt-get command
 
 messme "\nBuilding the TensorFlow Environment.\n"
 
+messme "\nInstall required development tools.\n"
+
 # make sure you have the required development tools
 apt-get $OPTS install libblas-dev liblapack-dev python-dev libatlas-base-dev gfortran python-setuptools
 
 # go to a tmp directory, create it if you must
-if [ -d "/home/pi/tmp" ]; then
-    cd /home/pi/tmp
+if [ -d "$HOME/tmp" ]; then
+    cd $HOME/tmp
 else
-    mkdir /home/pi/tmp
-    cd /home/pi/tmp
+    mkdir $HOME/tmp
+    chown pi $HOME/tmp
+    chgrp pi $HOME/tmp
+    chmod 755 $HOME/tmp
+    cd $HOME/tmp
 fi
 
-# for python 3.5.x
-# download the python wheel form TensorFlow’s Jenkins continuous integration system
-curl -O http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/lastSuccessfulBuild/artifact/output-artifacts/tensorflow-1.4.0-cp34-none-any.whl
+messme "\nDownload the Python Wheel for TensorFlow.\n"
 
+# download the python wheel form TensorFlow’s Jenkins continuous integration system
+# Build #86 (Dec 31, 2017 12:03:00 AM) - last successful build for TensorFlow 1.4.0 / Python 3.4.x
+curl -O http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/86/artifact/output-artifacts/tensorflow-1.4.0-cp34-none-any.whl
+
+# when  running Python 3.5, you can use the 3.4 wheel but need slight change to the file name.
+# You will see a couple of warnings every time you import tensorflow, but it should work correctly.
 mv tensorflow-1.4.0-cp34-none-any.whl tensorflow-1.4.0-cp35-none-any.whl
 
-pip install tensorflow-1.4.0-cp35-none-any.whl
+messme "\nBuild and install TensorFlow.\n"
+
+pip3 install tensorflow-1.4.0-cp35-none-any.whl
 
 # make sure you have the development tools
 #apt-get $OPTS install python3-pip python3-dev
