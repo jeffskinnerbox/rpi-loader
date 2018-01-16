@@ -33,7 +33,7 @@ ROOT="$HOME/src/rpi-loader"           # directory for where rpi-loader is instal
 source "$ROOT/ansi.sh"
 source "$ROOT/functions.sh"
 
-# Test if user is pi and abort this script if not
+# Test if user is not root and abort this script if they are
 notroottest
 
 TRUE=1
@@ -54,6 +54,8 @@ git clone https://github.com/xorbit/LiFePO4wered-Pi.git
 # build the software
 cd LiFePO4wered-Pi
 python build.py
+
+messme "\nYou will need to provide root access to install the LiFePO4wered/Pi3 software.\n"
 
 # install the software
 # this also performs enablement of I2C bus and GPIO UART

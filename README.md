@@ -560,7 +560,7 @@ sudo raspi-config nonint do_memory_split 128
 sudo shutdown -r now
 ```
 
-### Building a TensorFlow Environment
+### Building a TensorFlow Environment - DONE
 TensorFlow is changing rapidlly, and you might want to consider installing it from source code.
 If you choose to install TensorFlow via it source code,
 the source code build and test tool being used by the TensorFlow project is [Bazel][29].
@@ -577,27 +577,40 @@ I choose to do the install from the Python repository,
 which is a much easier process.
 While not the latest and full featured version of TensorFlow,
 it does appear to be fairly complete and current.
-I installed it via:
+I found where several Google folks where [cross-compiling TensorFlow for the Raspberry Pi][65]
+and loading it up [TensorFlow’s Jenkins continuous integration system][66].
+
+**What about TensorFlow Learn = TFLearn - http://tflearn.org/**
 
 ```bash
 # install TensorFlow
 sudo -H ~/src/rpi-loader/part-13.sh
 ```
 
-To test the install:
+To test the install, import the TensorFlow and check the version:
 
 ```bash
 # print version number of tensorflow
-$ python3 -c 'import tensorflow as tf; print(tf.__version__)'
-1.4.1
-
-# print tensorflow relate packages
-$ pip3 list | grep tensorflow
-tensorflow (1.4.1)
-tensorflow-tensorboard (0.4.0rc3)
+ $ python3 -c 'import tensorflow as tf; print(tf.__version__)'
+/usr/lib/python3.5/importlib/_bootstrap.py:222: RuntimeWarning: compiletime version 3.4 of module 'tensorflow.python.framework.fast_tensor_util' does not match runtime version 3.5
+  return f(*args, **kwds)
+/usr/lib/python3.5/importlib/_bootstrap.py:222: RuntimeWarning: builtins.type size changed, may indicate binary incompatibility. Expected 432, got 412
+  return f(*args, **kwds)
+RuntimeError: module compiled against API version 0xb but this version of numpy is 0xa
+1.4.0
 ```
-**For GPU support, use pip install tensorflow-gpu -** https://www.tensorflow.org/versions/r0.12/get_started/os_setup
 
+Note that because we are running Python 3.5 on a Wheel built for Python 3.4,
+you will see a couple of warnings every time you `import tensorflow`, but it should work correctly.
+
+Notice that [TensorBoard][39] is also loaded:
+
+```bash
+# print tensorflow relate packages
+$ pip3 list --format=columns | grep tensorflow
+tensorflow             1.4.0
+tensorflow-tensorboard 0.1.8
+```
 
 -----
 ## Building the Jupyter Notebook Environment
@@ -673,6 +686,85 @@ or a [password if you choose to set it up][19].
 To test Jupyter, enter the code from the script
 created earlier during the OpenCV install, `~/tmp/test_video.py`.
 You should get a popup window with the Raspberry Pi camera streaming live video.
+
+-----
+# Battery Supply + Power Monitoring
+[!LiFePO4wered/Pi](https://cdn.hackaday.io/images/9332751457457361166.jpg)
+The [LiFePO4wered/Pi][85] (purchase on [Tindie][87])
+may be the best power solution for the Raspberry Pi Zero.
+It combines both the UPS and power monitoring functions into a single solution.
+It also has PCB touch button that gives you clean shutdown instead of just pulling power.
+A ultra-low power [MSP430G2231 microcontroller][86] monitors the battery
+and also connected to the Pi's I2C bus and monitors the Pi's running state.
+
+The designer provides a [open source software package to interact with the LiFePO4wered/Pi][88].
+It contains an application development library,
+a CLI interface to read/write device registers over the I2C bus,
+and a tiny daemon (`lifepo4wered-daemon`) that continually tracks the power state.
+The daemon can initiate a clean shutdown when the battery is empty
+or the user wants to turn the RPi off using the touch button.
+Touch button parameters, voltage thresholds,
+and an auto boot flag can be customized by the user and saved to flash.
+You can also set it up so the RPi will automatically boot whenever there is enough battery charge.
+There is also a wake up timer that can be set so the Pi can shut down,
+and automatically be started again after the wake timer expires.
+
+The LiFePO4wered/Pi works fine for the Raspberry Pi Zero and 1,
+but it could have difficulty maintaining a charge for a RPi 2 or 3 under load.
+The  latest version, the [LiFePO4wered/18650][89], can hand these heavy load conditions.
+You can even get a case with room for the RPi3 and the LiFePO4wered/Pi [on Tindie][90].
+**Note:** Adafruit has a similar solution to the LiFePO4wered/Pi
+doing a [hack of its PowerBoost 500 Charger][84].
+
+The LiFePO4wered/Pi requires software to be running on the Raspberry Pi to operate correctly.
+This software provides a daemon that automatically
+manages the power state and shutdown of the RPi,
+a library that allows integration of LiFePO4wered/Pi functionality in user programs,
+and a CLI (command line interface) program that allows the user to
+easily configure the LiFePO4wered/Pi or control it from shell scripts.
+
+```bash
+# install LiFePO4wered/Pi3 software
+~/src/rpi-loader/part-14.sh
+```
+
+At this time, the blinking LiFePO4wered/Pi PWR LED should now go on solid.
+If the PWR LED does not yet go on solid,
+it is likely that the I2C was not yet enabled before the installer was run,
+and a reboot is required.
+
+The only necessary user interaction is with the touch button,
+with feedback provided by the green PWR LED.
+The LiFePO4wered/Pi touch button can be used to turn the Raspberry Pi on and off.
+The touch button needs to be pressed and held to take effect.
+During this press-and-hold delay, the PWR LED glow will ramp up.
+During booting or shutdown,
+if the user touches the button during this time,
+the PWR LED will do a quick flashing sequence to
+indicate it cannot comply with the user request at that time.
+
+To make it convenient to interact with the LiFePO4wered/Pi,
+the software package installed on the RPi provides a command line tool.
+
+```bash
+# get help message
+lifepo4wered-cli
+
+# get the current battery voltage
+# returns the battery voltage in millivolts
+lifepo4wered-cli get vbat
+
+# get the supply voltage
+# returns the  raspberry pi supply battery voltage in millivolts
+lifepo4wered-cli get vout
+
+# to set the wake time to an hour
+# if you shut down the Raspberry Pi, it will wake up again in about 60 minutes
+lifepo4wered-cli set wake_time 60
+
+# Raspberry Pi to always run whenever there is power to do so
+lifepo4wered­cli set auto_boot 1
+```
 
 -----
 # Other Assorted Tools
@@ -949,7 +1041,7 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [36]:http://www.jeffgeerling.com/blogs/jeff-geerling/raspberry-pi-microsd-card
 [37]:https://www.learnopencv.com/install-dlib-on-ubuntu/
 [38]:https://www.raspberrypi.org/documentation/usage/webcams/
-[39]:
+[39]:https://www.tensorflow.org/get_started/summaries_and_tensorboard
 [40]:
 [41]:https://github.com/opencv/opencv
 [42]:https://www.npmjs.com/package/opencv
@@ -975,10 +1067,28 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [62]:https://ffmpeg.org/documentation.html
 [63]:http://superuser.com/questions/286675/how-to-install-ffmpeg-on-debian
 [64]:http://unix.stackexchange.com/questions/242399/why-was-ffmpeg-removed-from-debian
-
-
+[65]:https://petewarden.com/2017/08/20/cross-compiling-tensorflow-for-the-raspberry-pi/
+[66]:http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/86/
+[67]:
+[68]:
+[69]:
+[70]:
+[71]:
+[72]:
+[73]:
+[74]:
+[75]:
 [76]:https://gstreamer.freedesktop.org/
 [77]:http://developers-club.com/posts/236805/
 [80]:http://www.jonobacon.org/2006/08/28/getting-started-with-gstreamer-with-python/
 [81]:https://arashafiei.files.wordpress.com/2012/12/gst-doc.pdf
 [82]:http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet
+[83]:
+[84]:https://blog.adafruit.com/2015/12/18/how-to-run-a-pi-zero-and-other-pis-from-a-lipo-including-low-battery-raspberry_pi-piday-raspberypi/
+[85]:http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf
+[86]:http://www.ti.com/product/msp430g2231?utm_source=GOOGLE&utm_medium=cpc&utm_term=msp430g2231&utm_campaign=MSP_MSP_US_P_E_MSP430&utm_content=c97b21ff-897a-4a49-ab05-768cbb131e72&gclid=Cj0KEQiAperBBRDfuMf72sr56fIBEiQAPFXszTBkL4s4n9_P97FxDOL0d8UuoD1Gcq1jyD1Jw38jNbIaAs8j8P8HAQ
+[87]:https://www.tindie.com/products/xorbit/lifepo4weredpi/
+[88]:https://github.com/xorbit/LiFePO4wered-Pi
+[89]:https://hackaday.io/project/18041-lifepo4wered18650
+[90]:https://www.tindie.com/products/mjrice/enclosure-for-raspberry-pi-3-and-lifepo4weredpi/
+
