@@ -752,18 +752,21 @@ lifepo4wered-cli
 
 # get the current battery voltage
 # returns the battery voltage in millivolts
-lifepo4wered-cli get vbat
+lifepo4wered-cli get vbat
 
 # get the supply voltage
 # returns the  raspberry pi supply battery voltage in millivolts
-lifepo4wered-cli get vout
+lifepo4wered-cli get vout
 
 # to set the wake time to an hour
 # if you shut down the Raspberry Pi, it will wake up again in about 60 minutes
-lifepo4wered-cli set wake_time 60
+lifepo4wered-cli set wake_time 60
 
 # Raspberry Pi to always run whenever there is power to do so
-lifepo4wered­cli set auto_boot 1
+lifepo4wered-cli set auto_boot 1
+
+# Raspberry Pi to boot whenever the USB input voltage is applied
+lifepo4wered-cli set auto_boot 3
 ```
 
 -----

@@ -53,13 +53,13 @@ git clone https://github.com/xorbit/LiFePO4wered-Pi.git
 
 # build the software
 cd LiFePO4wered-Pi
-python build.py
+python build.py
 
 messme "\nYou will need to provide root access to install the LiFePO4wered/Pi3 software.\n"
 
 # install the software
 # this also performs enablement of I2C bus and GPIO UART
-sudo ./INSTALL.sh
+sudo ./INSTALL.sh
 
 messme "\nAt this time, the blinking LiFePO4wered/Pi3 PWR LED should now go on solid."
 messme "If not, a reboot is required.\n"
