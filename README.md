@@ -45,7 +45,7 @@ This guide has been of great value to me to help repeatedly and consistently est
 But the work is all manual requiring dozens of command line entries.
 This utility takes the drudgery out of setting up a new Raspberry Pi by automating this manual tasks.
 
-Clearly, not all everything can be scripted.
+Clearly, not everything can be scripted.
 You still have to download the latest version of Raspbian,
 burn it to a SD Card, and things like that.
 My objective is to ultimate create some utilities that will make this easier,
@@ -561,7 +561,7 @@ sudo shutdown -r now
 ```
 
 ### Building a TensorFlow Environment - DONE
-TensorFlow is changing rapidlly, and you might want to consider installing it from source code.
+TensorFlow is changing rapidly, and you might want to consider installing it from source code.
 If you choose to install TensorFlow via it source code,
 the source code build and test tool being used by the TensorFlow project is [Bazel][29].
 Bazel, developed and supported by Google,
@@ -614,7 +614,7 @@ tensorflow-tensorboard 0.1.8
 
 -----
 ## Building the Jupyter Notebook Environment
-Pewrsonally, I want a interactive and feature rich environment for doing my OpenCV work,
+Personally, I want a interactive and feature rich environment for doing my OpenCV work,
 and I found that in [Jupyter Notebook][55] does the trick.
 Just like the OpenCV package, giving a proper introduction to Jupyter Notebook
 could fill multiple books, web pages, news articles, and in fact does!
@@ -634,22 +634,22 @@ Another nice fact is that Jupyter Notebook files
 (i.e. `*.ipynb`) will render automatically on GitHub/Gist ([example][53])
 giving you a public way to share or .
 
-### Step 1: Install Jupyter and Supporting Packages
+### Step 1: Install Jupyter and Supporting Packages - DONE
 Installing Jupyter Notebook on your computer is documented [here][50].
 For new users, they highly recommend installing it via [Anaconda][51],
-but I install the the individual compoents using this script:
+but I install the individual components using this script:
 
 ```bash
 # install Jupyter Notebook
-sudo ~/src/rpi-loader/part-12.sh
+sudo -H ~/src/rpi-loader/part-12.sh
 ```
 
-### Step 2: Test Jupyter
+### Step 2: Test Jupyter - DONE
 Your ready now to start the Jupyter Notebook.
 This can be done via several ways.
 The easiest is to just enter `jupyter notebook`
 in a terminal window on the Raspberry Pi
-and the default browser on teh Rasperry Pi will open with jupyter (`http://localhost:8888`).
+and the default browser on teh Raspberry Pi will open with Jupyter (`http://localhost:8888`).
 I prefer to put the burden of running the browser on my local computer.
 You can do this via running Jupyter as a server.
 
@@ -664,7 +664,7 @@ where it can be accessed in a browser just like a locally running Jupyter Notebo
 On the remote machine, start the Jupyter Notebooks server:
 
 ```bash
-# on the pberry pi (emote machine), start the jupyter notebooks server
+# on the raspberry pi (remote machine), start the jupyter notebooks server
 jupyter notebook --no-browser --port=8889
 ```
 
@@ -677,7 +677,7 @@ On the local machine, start an SSH tunnel:
 ssh -N pi@BlueRPi -L localhost:8888:localhost:8889
 ```
 
-Now enter `localhost:8888` in your favorite browser on your desktop linux (local machine)
+Now enter `localhost:8888` in your favorite browser on your desktop Linux (local machine)
 to use the Raspberry Pi (remote machine) Jupyter Notebook.
 You should see Jupyter popup in your browser.
 You need to enter the token provided via the server
@@ -686,9 +686,17 @@ or a [password if you choose to set it up][19].
 To test Jupyter, enter the code from the script
 created earlier during the OpenCV install, `~/tmp/test_video.py`.
 You should get a popup window with the Raspberry Pi camera streaming live video.
+Or if you don't have a camera installed,
+do something simple like the following:
+
+```python
+from IPython.display import Image
+
+Image(url='http://api.brain-map.org/api/v2/atlas_image_download/100883869?downsample=4&annotation=true')
+```
 
 -----
-# Battery Supply + Power Monitoring
+# Battery Supply + Power Monitoring - DONE
 [!LiFePO4wered/Pi](https://cdn.hackaday.io/images/9332751457457361166.jpg)
 The [LiFePO4wered/Pi][85] (purchase on [Tindie][87])
 may be the best power solution for the Raspberry Pi Zero.
@@ -711,7 +719,8 @@ and automatically be started again after the wake timer expires.
 
 The LiFePO4wered/Pi works fine for the Raspberry Pi Zero and 1,
 but it could have difficulty maintaining a charge for a RPi 2 or 3 under load.
-The  latest version, the [LiFePO4wered/18650][89], can hand these heavy load conditions.
+The  latest version, the [LiFePO4wered/18650][89] ([product brief][40]),
+can hand these heavy load conditions.
 You can even get a case with room for the RPi3 and the LiFePO4wered/Pi [on Tindie][90].
 **Note:** Adafruit has a similar solution to the LiFePO4wered/Pi
 doing a [hack of its PowerBoost 500 Charger][84].
@@ -770,7 +779,7 @@ lifepo4wered-cli set auto_boot 3
 ```
 
 -----
-# Other Assorted Tools
+# Other Assorted Tools (Optional)
 
 ## Building Dweet for ThingSpace
 Now its time to install the People-Counter application.
@@ -797,6 +806,10 @@ The tools your installing here should be owned by `pi` and not `root`.
 # install ts_dweepy
 ~/src/rpi-loader/part-9.sh
 ```
+
+
+
+
 
 * [Video - Build Tensorflow From Source in Ubuntu 16.04](https://www.youtube.com/watch?v=VebcaH_gb0c)
 * [Installing TensorFlow on Raspberry Pi 3](https://github.com/samjabrahams/tensorflow-on-raspberry-pi)
@@ -826,7 +839,7 @@ To test out the camera, just use some of the simple tools
 that come with the RPi:
 
 ```bash
-# test the raspberry pi camer to make sure it works
+# test the raspberry pi camera to make sure it works
 raspistill -o ~/tmp/output.jpg
 
 # view the image captured
@@ -1045,7 +1058,7 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [37]:https://www.learnopencv.com/install-dlib-on-ubuntu/
 [38]:https://www.raspberrypi.org/documentation/usage/webcams/
 [39]:https://www.tensorflow.org/get_started/summaries_and_tensorboard
-[40]:
+[40]:https://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf
 [41]:https://github.com/opencv/opencv
 [42]:https://www.npmjs.com/package/opencv
 [43]:http://www.pyimagesearch.com/2017/09/04/raspbian-stretch-install-opencv-3-python-on-your-raspberry-pi/
@@ -1083,6 +1096,8 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [75]:
 [76]:https://gstreamer.freedesktop.org/
 [77]:http://developers-club.com/posts/236805/
+[78]:
+[79]:
 [80]:http://www.jonobacon.org/2006/08/28/getting-started-with-gstreamer-with-python/
 [81]:https://arashafiei.files.wordpress.com/2012/12/gst-doc.pdf
 [82]:http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet
@@ -1090,7 +1105,7 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [84]:https://blog.adafruit.com/2015/12/18/how-to-run-a-pi-zero-and-other-pis-from-a-lipo-including-low-battery-raspberry_pi-piday-raspberypi/
 [85]:http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf
 [86]:http://www.ti.com/product/msp430g2231?utm_source=GOOGLE&utm_medium=cpc&utm_term=msp430g2231&utm_campaign=MSP_MSP_US_P_E_MSP430&utm_content=c97b21ff-897a-4a49-ab05-768cbb131e72&gclid=Cj0KEQiAperBBRDfuMf72sr56fIBEiQAPFXszTBkL4s4n9_P97FxDOL0d8UuoD1Gcq1jyD1Jw38jNbIaAs8j8P8HAQ
-[87]:https://www.tindie.com/products/xorbit/lifepo4weredpi/
+[87]:https://lifepo4wered.com/
 [88]:https://github.com/xorbit/LiFePO4wered-Pi
 [89]:https://hackaday.io/project/18041-lifepo4wered18650
 [90]:https://www.tindie.com/products/mjrice/enclosure-for-raspberry-pi-3-and-lifepo4weredpi/

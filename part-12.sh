@@ -55,7 +55,7 @@ pip3 install jupyter
 
 ############################ ############################
 
-messme "\nInstalling some packages often used with Jupyter Notebook.  This could take over one hour.\n"
+messme "\nInstalling some packages often used with Jupyter Notebook.  This could take 30 minutes.\n"
 
 # install some of the python packages commonly used in jupyter
 pip3 install numpy matplotlib
