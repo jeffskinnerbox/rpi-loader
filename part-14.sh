@@ -61,7 +61,13 @@ messme "\nYou will need to provide root access to install the LiFePO4wered/Pi3 s
 # this also performs enablement of I2C bus and GPIO UART
 sudo ./INSTALL.sh
 
-messme "\nAt this time, the blinking LiFePO4wered/Pi3 PWR LED should now go on solid."
+# set the auto-boot flag so that the raspberry pi does not start when external power is applied
+lifepo4wered-cli set auto_boot 1
+
+# make these change permanent by saving it to flash
+lifepo4wered-cli set cfg_write 0x46
+
+messme "\nAt this time, the blinking LiFePO4wered/Pi3 PWR LED should go on solid."
 messme "If not, a reboot is required.\n"
 
 ############################ ############################
