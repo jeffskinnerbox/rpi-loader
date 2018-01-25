@@ -58,9 +58,18 @@ messme "\nInstalling the latest version of FFmpeg from source.\n"
 
 messme "\nNeed to first remove any old version of FFmpeg. You need to provide password for sudo.\n"
 sudo apt-get $OPTS remove ffmpeg
+# see https://gist.github.com/yjxiong/d716c857258f0295b58d148fbf8c489d
+echo "Removing any pre-installed ffmpeg and x264"
+sudo apt-get -qq remove ffmpeg x264 libx264-dev
 
 # install dependancies
 sudo apt-get $OPTS install yasm nasm
+# see https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
+sudo apt-get $OPTS install autoconf automake build-essential cmake git libass-dev libfreetype6-dev libsdl2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev mercurial pkg-config texinfo wget zlib1g-dev
+# see https://github.com/opencv/opencv/issues/5088
+sudo apt-get $OPTS install libsdl2-dev
+# see https://stackoverflow.com/questions/41670584/opencv-linux-how-to-install-ffmpeg
+sudo apt-get $OPTS install *libavformat-dev libavcodec-dev libswscale-dev libavresample-dev
 
 # install ffmpeg source
 cd $HOME/src
