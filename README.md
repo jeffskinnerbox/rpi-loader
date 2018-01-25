@@ -110,19 +110,16 @@ by checking its digital signature (SHA1 hash value).
 
 ```bash
 # validate file is uncorrupted via check of digital signature
-$ sha1sum /home/jeff/Downloads/2017-08-16-raspbian-stretch.zip
-da329713833e0785ffd94796304b7348803381db  /home/jeff/Downloads/2017-08-16-raspbian-stretch.zip
+$ sha256sum /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
+da329713833e0785ffd94796304b7348803381db  /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
 ```
-
->**NOTE:** Latest versons of Raspian may be using SHA-256,
-so replace `sha1sum` with `sha256sum` in the above command.
 
 Next you need to unzip the file to retrieve the Linux image file:
 
 ```bash
-$ unzip 2017-08-16-raspbian-stretch.zip
-Archive:  2017-08-16-raspbian-stretch.zip
-  inflating: 2017-08-16-raspbian-stretch.img
+$ unzip 2017-11-29-raspbian-stretch.zip
+Archive:  2017-11-29-raspbian-stretch.zip
+  inflating: 2017-11-29-raspbian-stretch.img
 ```
 
 ### Step 2: Write Raspberry Pi Image to SD Card - DONE
@@ -139,7 +136,7 @@ and execute the command below:
 
 ```bash
 # create your raspbian image on the sd card
-sudo ~/src/rpi-loader/part-1.sh
+~/src/rpi-loader/part-1.sh
 ```
 
 If you use the `part-1.sh` script, you can skip the manual procedure below,
@@ -198,15 +195,15 @@ cd /home/jeff/Downloads/Raspbian
 sudo umount /dev/sdj1
 
 # write the image to the sd card reader
-sudo dd bs=4M if=2017-08-16-raspbian-stretch.img of=/dev/sdj
+sudo dd bs=4M if=2017-11-29-raspbian-stretch.img of=/dev/sdj
 
 # ensure the write cache is flushed
 sudo sync
 
 # (optional) check the integrity of the sd card image
 sudo dd bs=4M if=/dev/sdj of=copy-from-sd-card.img
-sudo truncate --reference 2017-08-16-raspbian-stretch.img copy-from-sd-card.img
-diff -s 2017-08-16-raspbian-stretch.img copy-from-sd-card.img
+sudo truncate --reference 2017-11-29-raspbian-stretch.img copy-from-sd-card.img
+diff -s 2017-11-29-raspbian-stretch.img copy-from-sd-card.img
 
 # unmount the sd card reader
 sudo umount /dev/sdj1 /dev/sdj2
@@ -386,6 +383,11 @@ you'll get none of the benefits of the Raspberry Pi's native GPU or [Graphics Pr
 My major source of inspiration for the steps below are from:
 "[Optimizing OpenCV on the Raspberry Pi][06]".
 
+>**NOTE:** Make sure you install FFmpeg prior to the OpenCV install.
+OpenCV can use the FFmpeg library as backend to record, convert and stream audio and video.
+A common symptom in OpenCV of a poorly install FFmpeg is when `cv2.VideoCapture`
+fails to read a file or video device.
+
 ### Step 1: Install OpenCV Dependencies - DONE
 The first thing we should do is update and upgrade any existing packages,
 followed by updating the Raspberry Pi firmware.
@@ -480,6 +482,40 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> cv2.__version__
 '3.3.0'
 >>>
+```
+
+SLEEP......wait until it opens otherwise it fails!!
+* [A Comprehensive Guide to Installing and Configuring OpenCV 2.4.2 on Ubuntu](http://www.ozbotz.org/opencv-installation/)
+* [Compile OpenCV (and ffmpeg) on Ubuntu Linux](http://www.wiomax.com/compile-opencv-and-ffmpeg-on-ubuntu/)
+* [Installing OpenCV 2.3.1 with FFmpeg on 64-bit Ubuntu](http://vinayhacks.blogspot.com/2011/11/installing-opencv-231-with-ffmpeg-on-64.html)
+* [Installing OpenCV on Debian Linux](https://indranilsinharoy.com/2012/11/01/installing-opencv-on-linux/)
+* [FFmpeg Compilation Guide](https://trac.ffmpeg.org/wiki/CompilationGuide)
+
+```python
+import cv2
+import platform
+
+print('Python Version =', platform.python_version())
+print('OpenCV Version =', cv2.__version__)
+
+# read data from device /dev/video0
+video = cv2.VideoCapture(0)
+
+if video.isOpened():
+    while True:
+        check, frame = video.read()
+        if check:
+            cv2.imshow('Color Frame', frame)
+            key = cv2.waitKey(50)
+            if chr(key & 255) == 'q' or key == 27:   # break on 'q' or esc key
+                break
+        else:
+            print('Frame not available')
+            print(video.isOpened())
+
+# close your display window
+video.release()
+cv2.destroyAllWindows()
 ```
 
 Appears that OpenCV 3.3.0 has been successfully installed
