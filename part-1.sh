@@ -44,6 +44,7 @@ IMAGE="dummy-value"  # string will store path to raspbian image
 
 # make sure you only proceed if your on a Raspberry Pi / Raspbian system
 if [ $TARGET == "Raspbian" ]; then
+    mess_abort "This script is not fully ready ... remove referances to /dev/sdj!"
     mess_abort "This script is not to be run on the Raspberry Pi / Raspbian!"
 fi
 
