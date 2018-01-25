@@ -55,14 +55,12 @@ git clone https://github.com/xorbit/LiFePO4wered-Pi.git
 cd LiFePO4wered-Pi
 python build.py
 
-messme "\nYou will need to provide root access to install the LiFePO4wered/Pi3 software.\n"
-
 # install the software
 # this also performs enablement of I2C bus and GPIO UART
 sudo ./INSTALL.sh
 
 # set the auto-boot flag so that the raspberry pi does not start when external power is applied
-lifepo4wered-cli set auto_boot 1
+lifepo4wered-cli set auto_boot 0
 
 # make these change permanent by saving it to flash
 lifepo4wered-cli set cfg_write 0x46
