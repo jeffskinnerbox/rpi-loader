@@ -111,7 +111,7 @@ by checking its digital signature (SHA1 hash value).
 ```bash
 # validate file is uncorrupted via check of digital signature
 $ sha256sum /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
-da329713833e0785ffd94796304b7348803381db  /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
+64c4103316efe2a85fd2814f2af16313abac7d4ad68e3d95ae6709e2e894cc1b /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
 ```
 
 Next you need to unzip the file to retrieve the Linux image file:
@@ -307,16 +307,7 @@ sudo -H ~/src/rpi-loader/part-4.sh
 sudo shutdown -r now
 ```
 
-### Step 8: Install Development Tools and Other Utilities - DONE
-Now we'll install multiple Linux packages that will likely see the greatest use.
-There are many packages, and some are large, so this could run for up to an hour.
-
-```bash
-# load linux packages
-sudo -H ~/src/rpi-loader/part-5.sh
-```
-
-### Step 9: Install Your Personal Tools - DONE
+### Step 8: Install Your Personal Tools - DONE
 At this point, I'm going to install my personal tools I use for Linux.
 
 >**NOTE:** We are not using `sudo` to run this script.
@@ -326,6 +317,15 @@ The tools your installing here should be owned by `pi` and not `root`.
 # install your tools
 ~/src/rpi-loader/part-6.sh
 ```
+### Step 9: Install Development Tools and Other Utilities - DONE
+Now we'll install multiple Linux packages that will likely see the greatest use.
+There are many packages, and some are large, so this could run for up to an hour.
+
+```bash
+# load linux packages
+sudo -H ~/src/rpi-loader/part-5.sh
+```
+
 
 -----
 ## Building Image and Video Processing Tools
