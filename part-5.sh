@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.4
+# Version:      0.5
 #
 # DESCRIPTION:
 #
@@ -124,29 +124,6 @@ messme "\nInstalling web browser utilities.\n"
 
 # install the midori and links2 browser
 apt-get $OPTS install midori links2
-
-############################ ############################
-
-messme "\nEstablish your Node.js tools and environment.\n"
-
-# first you need to modify your .bashrc file since you copied it from github
-sed --in-place 's/\/home\/jeff\/.nvm/\/home\/pi\/.nvm/' $HOME/.bashrc
-source $HOME/.bashrc
-
-#install or update the node version manager (nvm), do the following
-# https://github.com/creationix/nvm
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# install the latest stable version of node and make it the default version
-nvm install 6.11.1
-
-# install the latest version of npm
-npm install npm@latest --global
-
-# node development tools
-npm install jshint --global
 
 ############################ ############################
 
