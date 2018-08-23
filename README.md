@@ -29,6 +29,9 @@ procedures and uses a ???Mb ??? PiCamera with software version 1.13
 * people-counter - the MassMutual camera based people counter
 * [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
 * [Install dlib on the Raspberry Pi](https://www.pyimagesearch.com/2017/05/01/install-dlib-raspberry-pi/)
+* [Install dlib (the easy, complete guide)](https://www.pyimagesearch.com/2018/01/22/install-dlib-easy-complete-guide/)
+
+Check this out - [Building a Digits Dev Machine on Ubuntu 16.04](https://blog.kickview.com/building-a-digits-dev-machine-on-ubuntu-16-04/)
 
 
 ################################################################################
@@ -317,6 +320,7 @@ The tools your installing here should be owned by `pi` and not `root`.
 # install your tools
 ~/src/rpi-loader/part-6.sh
 ```
+
 ### Step 9: Install Development Tools and Other Utilities - DONE
 Now we'll install multiple Linux packages that will likely see the greatest use.
 There are many packages, and some are large, so this could run for up to an hour.

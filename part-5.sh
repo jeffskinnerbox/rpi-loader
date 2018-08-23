@@ -118,6 +118,9 @@ pip3 install speedtest-cli
 # set to multi-user mode and don't use graphic user interface
 systemctl set-default multi-user.target
 
+# disable hdmi since your working headless and this saves power
+sed -i '/exit 0/i # disable HDMI\n\/usr\/bin\/tvservice -o\n' /etc/rc.local
+
 ############################ ############################
 
 messme "\nInstalling web browser utilities.\n"
