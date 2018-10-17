@@ -30,6 +30,8 @@ procedures and uses a ???Mb ??? PiCamera with software version 1.13
 * [Installing Keras with TensorFlow backend](https://www.pyimagesearch.com/2016/11/14/installing-keras-with-tensorflow-backend/)
 * [Install dlib on the Raspberry Pi](https://www.pyimagesearch.com/2017/05/01/install-dlib-raspberry-pi/)
 * [Install dlib (the easy, complete guide)](https://www.pyimagesearch.com/2018/01/22/install-dlib-easy-complete-guide/)
+* [How to install OpenCV 4 on Ubuntu](https://www.pyimagesearch.com/2018/08/15/how-to-install-opencv-4-on-ubuntu/)
+* [pip install opencv](https://www.pyimagesearch.com/2018/09/19/pip-install-opencv/)
 
 Check this out - [Building a Digits Dev Machine on Ubuntu 16.04](https://blog.kickview.com/building-a-digits-dev-machine-on-ubuntu-16-04/)
 
@@ -56,6 +58,9 @@ but that will wait until another version of this script.
 
 Some of the ideas for this script were taken from the following:
 "[Scripts to update the Raspberry Pi and Debian-based Linux Distros][05]".
+
+## Running Raspberry Pi Without an SD Card
+* [Hack My House: Running Raspberry Pi Without an SD Card](https://hackaday.com/2018/10/08/hack-my-house-running-raspberry-pi-without-an-sd-card/)
 
 ### Step 0: Select SD-Card and Install Scripts - DONE
 The tools you are about to install take up a great deal of space,
