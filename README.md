@@ -35,11 +35,13 @@ procedures and uses a ???Mb ??? PiCamera with software version 1.13
 
 Check this out - [Building a Digits Dev Machine on Ubuntu 16.04](https://blog.kickview.com/building-a-digits-dev-machine-on-ubuntu-16-04/)
 
+# Alternative Methods
+Source of more ideas for these scripts:
 
-################################################################################
-
+* [Set Up A Headless Raspberry Pi, All From Another Computer’s Command Line](https://hackaday.com/2018/11/24/set-up-a-headless-raspberry-pi-all-from-another-computers-command-line/)
 
 -----
+
 ## Building the OS Environment
 I have written a detailed [step-by-step guide][03]
 (you'll also find it [here][04])
