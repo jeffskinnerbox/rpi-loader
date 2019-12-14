@@ -8,6 +8,8 @@ Version:      0.5
 
 ---
 
+
+
 # Raspberry Pi Loader
 
 **This is a work in progress**
@@ -35,10 +37,18 @@ procedures and uses a ???Mb ??? PiCamera with software version 1.13
 
 Check this out - [Building a Digits Dev Machine on Ubuntu 16.04](https://blog.kickview.com/building-a-digits-dev-machine-on-ubuntu-16-04/)
 
+# Raspberry Pi 4
+* [Raspberry Pi 4 Update Cools Temps, Adds Network Booting](https://www.tomshardware.com/features/raspberry-pi-4-firmware-cool-temps-network-boot)
+
+# Reducing SD Card Wear
+*[Give Your Raspberry Pi SD Card a Break: Log to RAM](https://hackaday.com/2019/04/08/give-your-raspberry-pi-sd-card-a-break-log-to-ram/)
+
 # Alternative Methods
 Source of more ideas for these scripts:
 
 * [Set Up A Headless Raspberry Pi, All From Another Computer’s Command Line](https://hackaday.com/2018/11/24/set-up-a-headless-raspberry-pi-all-from-another-computers-command-line/)
+    * [Headless Raspberry Pi Configuration](http://peter.lorenzen.us/linux/headless-raspberry-pi-configuration)
+* [How to manage your workstation configuration with Ansible](https://opensource.com/article/18/3/manage-workstation-ansible)
 
 -----
 

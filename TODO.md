@@ -8,6 +8,9 @@ Version:      0.5
 -----
 
 * High Priority
+* Consider using this model / tool for your next round of deveploment
+    * [Set Up A Headless Raspberry Pi, All From Another Computer’s Command Line](https://hackaday.com/2018/11/24/set-up-a-headless-raspberry-pi-all-from-another-computers-command-line/)
+    * [Headless Raspberry Pi Configuration](http://peter.lorenzen.us/linux/headless-raspberry-pi-configuration)
 
 * Medium Priority
     * Shouldn't the "TARGET" variable be updated via the install.sh script
