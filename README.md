@@ -4,7 +4,10 @@ Version:      0.5
 -->
 
 
-![work-in-progress](http://worktrade.eu/img/uc.gif "These materials require additional work and are not ready for general use.")
+<div align="center">
+<img src="http://www.foxbyrd.com/wp-content/uploads/2018/02/file-4.jpg" title="These materials require additional work and are not ready for general use." align="center">
+</div>
+
 
 ---
 
@@ -37,8 +40,12 @@ procedures and uses a ???Mb ??? PiCamera with software version 1.13
 
 Check this out - [Building a Digits Dev Machine on Ubuntu 16.04](https://blog.kickview.com/building-a-digits-dev-machine-on-ubuntu-16-04/)
 
+* [How to Update Your Raspberry Pi to the Latest Raspbian OS](https://www.makeuseof.com/tag/raspberry-pi-update-raspbian-os/)
+* [Turn Raspberry Pi into Server and Implement CI/CD pipeline in AWS](https://levelup.gitconnected.com/turn-raspberry-pi-into-server-and-implement-ci-cd-pipeline-in-aws-752c5321dfe4)
+
 # Raspberry Pi 4
 * [Raspberry Pi 4 Update Cools Temps, Adds Network Booting](https://www.tomshardware.com/features/raspberry-pi-4-firmware-cool-temps-network-boot)
+* [How to Network Boot a Raspberry Pi Without a MicroSD Card](https://www.makeuseof.com/tag/network-boot-raspberry-pi-without-microsd/)
 
 # Reducing SD Card Wear
 *[Give Your Raspberry Pi SD Card a Break: Log to RAM](https://hackaday.com/2019/04/08/give-your-raspberry-pi-sd-card-a-break-log-to-ram/)
@@ -119,9 +126,9 @@ cd rpi-loader
 
 ### Step 1: Download Raspberry Pi Image - DONE
 Before you can load a copy of the latest Raspberry Pi image onto your micro SD Card,
-you must first download the official Raspberry Pi operating system, [Raspbian][12]
+you must first download the official Raspberry Pi operating system, [Raspbian][13]
 (in my case, the version is [Stretch][11]).
-You can get that download [here][13].
+You can get that download [here][12].
 
 The Raspbian download site also lists a check sum for the download file.
 (In my case, I down loaded the Raspbian file to `/home/jeff/Downloads/`.)
@@ -233,12 +240,12 @@ Remove SD card from the reader on your computer.
 We’re going to set up the WiFi interface next.
 
 >**NOTE:** You could immediately put the SD Card in the RPi and boot it up,
-but you will have no WiFi access and you'll need to use the Ethernet interface,
-or if there is no Ethernet interface,
-you'll need to use a console cable to make the file modification
-outline in the next step.
-[Adafruit has good description on how to use a console cable][17]
-and the how to [enable the UART for the console][18].
+>but you will have no WiFi access and you'll need to use the Ethernet interface,
+>or if there is no Ethernet interface,
+>you'll need to use a console cable to make the file modification
+>outline in the next step.
+>[Adafruit has good description on how to use a console cable][17]
+>and the how to [enable the UART for the console][18].
 
 ### Step 3: Setup Hostname and Networking - DONE
 We now execute another script to run on the local system
