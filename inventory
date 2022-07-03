@@ -1,0 +1,25 @@
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.1
+
+# aka ansible hosts file
+
+# ansible control node
+#[controller]
+#127.0.0.1 ansible_connection=local
+
+# ansible managed hosts (aka nodes)
+[nodes]
+test-pi ansible_ssh_host=192.168.1.79 ansible_ssh_port=22 kubernetes_role=node
+#node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
+#node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
+#node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
+
+# ansible varables applied to [nodes]
+[nodes:vars]
+ansible_user='pi'
+ansible_ssh_user=pi
+deploy_target=pi
+ansible_become=yes
+ansible_become_method=sudo
+ansible_python_interpreter='/usr/bin/env python3'
+#ansible_python_interpreter=/usr/bin/python3

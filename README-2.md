@@ -40,29 +40,22 @@ Version:      0.5
 * [How to manage your workstation configuration with Ansible](https://opensource.com/article/18/3/manage-workstation-ansible)
 * [Manage your workstation with Ansible: Automating configuration](https://opensource.com/article/18/3/manage-your-workstation-configuration-ansible-part-2)
 
+
 -----
 
-## Building the OS Environment
+
+## Create the Raspberry Pi OS SD-Card
 I have written a detailed [step-by-step guide][03]
 on how to set up your Raspberry Pi as a "headless" computer.
+(Some of the ideas for this script were taken from the following:
+"[Scripts to update the Raspberry Pi and Debian-based Linux Distros][05]".)
 This includes configuring the RPi for my local network, updating firmware,
 loading all my favorite development tools and utilities.
 This guide has been of great value to me to help repeatedly and consistently establish my devices.
-But the work is all manual requiring dozens of command line entries.
-This utility takes the drudgery out of setting up a new Raspberry Pi by automating this manual tasks.
+But this work is nolong valid starting in April 2022
+with the release of the Bullseye version of Raspberry Pi OS.
 
-Clearly, not everything can be scripted.
-You still have to download the latest version of Raspbian,
-burn it to a SD Card, and things like that.
-My objective is to ultimate create some utilities that will make this easier,
-but that will wait until another version of this script.
-
-Some of the ideas for this script were taken from the following:
-"[Scripts to update the Raspberry Pi and Debian-based Linux Distros][05]".
-
-## Running Raspberry Pi Without an SD Card
-
-### Step 0: Select SD-Card and Install Scripts
+### Step 0: Select SD-Card - DONE
 The tools you are about to install take up a great deal of space,
 and since this is for video applications,
 anything you record will consume significant disk space.
@@ -76,157 +69,418 @@ If your considering using Jupyter and some of the popular Python libraries,
 your looking at 11 to 12GB of SD-Card storage being consumed.
 My advice is to consider using a 16G or larger SD-Card.
 
-#### Install rpi-loader Script
-To minimize the amount of keyboard entry and eliminate "fat finger" errors,
-we use several Bash Shell scripts for building the Raspberry Pi
-operating environment, required software packages,
-and the people counting application.
-Those scripts need to be downloaded and install on both a local
-Linux machine, which I'll call `desktop`, and the Raspberry Pi.
-
-The first install is on `desktop` as follows:
-
-```bash
-# change direct to where the rpi-loader will be installed
-cd ~/src
-
-# clone the rpi-loader software
-git clone https://github.com/jeffskinnerbox/rpi-loader.git
-```
-
-Now you must do the final set of the install by running the `install.sh` script.
-Run it and just answer the questions when prompted.
-
-```bash
-# enter the rpi-loader directory
-cd rpi-loader
-
-# complete the install
-./install.sh
-```
-
-### Step 1: Download Raspberry Pi Image
+### Step 1: Download Raspberry Pi Image - DONE
 Before you can load a copy of the latest Raspberry Pi image onto your micro SD Card,
-you must first download the official Raspberry Pi operating system, [Raspbian][13]
-(in my case, the version is [Stretch][11]).
-You can get that download [here][12].
+you must first download the official Raspberry Pi operating system, [Raspberry Pi OS][13]
+(in my case, the version is [Bullseye Lite][11]).
+You can get that download [here][13].
 
-The Raspbian download site also lists a check sum for the download file.
-(In my case, I down loaded the Raspbian file to `/home/jeff/Downloads/`.)
+The Raspberry Pi OS download site also lists a check sum for the download file.
+(In my case, I down loaded the Raspberry Pi OS file to `/home/jeff/Downloads/`.)
 Check whether the file has been changed from its original state
-by checking its digital signature (SHA1 hash value).
+by checking its digital signature (SHA256 hash value).
 
 ```bash
+# move to the working directory
+cd ~/Downloads/RPi-OS/Bullseye-lite-image
+
 # validate file is uncorrupted via check of digital signature
-$ sha256sum /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
-64c4103316efe2a85fd2814f2af16313abac7d4ad68e3d95ae6709e2e894cc1b /home/jeff/Downloads/2017-11-29-raspbian-stretch.zip
+$ sha256sum 2022-04-04-raspios-bullseye-armhf-lite.img.xz
+34987327503fac1076e53f3584f95ca5f41a6a790943f1979262d58d62b04175  2022-04-04-raspios-bullseye-armhf-lite.img.xz
+
+# uncompress the raspberry pi os download
+unxz 2022-04-04-raspios-bullseye-armhf-lite.img.xz
 ```
 
-Next you need to unzip the file to retrieve the Linux image file:
-
-```bash
-$ unzip 2017-11-29-raspbian-stretch.zip
-Archive:  2017-11-29-raspbian-stretch.zip
-  inflating: 2017-11-29-raspbian-stretch.img
-```
-
-### Step 2: Write Raspberry Pi Image to SD Card
-Next using Linux, you have copied the Raspbian image onto the SD card mounted to your system.
+### Step 2: Write Raspberry Pi Image to SD Card - DONE
+Next using Linux, you have copied the Raspberry Pi OS image onto the SD card mounted to your system.
 I'll be using the [Rocketek 11-in-1 4 Slots USB 3.0 Memory Card Reader][14] to create my SD Card.
 Make sure to [choose a reputable SD Card][15] from [here][36], don't go cheap.
 
-You can use the `part-1.sh` script for this step,
-but for the sufficiently paranoid,
-you may want to do this step manually.
-To run the script,
-make sure the SD Card reader isn't plugged in the system (aka `desktop`)
-and execute the command below:
+As of April 2022 (Bullseye version),
+[Raspberry Pi OS has removed the default 'pi' user][73] to make it
+harder for attackers to find and compromise Internet-exposed Raspberry Pi
+devices using default credentials.
+This requires you to make use of the [Raspberry Pi SD-Card imager][74] to get SSH access on fist boot
+instead of using the trick of placing a file name `ssh` in the `/boot` directory of the Raspberry Pi.
+
+To create you SD-Card image of Raspberry Pi OS,
+install and use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/),
+as shown below:
 
 ```bash
-# create your raspbian image on the sd card
-~/src/rpi-loader/part-1.sh
+# install the raspberry pi imager on your desktop linux
+sudo apt install rpi-imager
+
+# execute the imager
+rpi-imager
 ```
 
-If you use the `part-1.sh` script, you can skip the manual procedure below,
-otherwise, do the install via this procedure.
+#### Step 3: Booting From the SD-Card - DONE
+Install into your Raspberry Pi the SD Card created earlier,
+connect an Ethernet cable from you LAN,
+and then press the power switch on the Argon ONE M.2.
 
-#### Manual Procedure
-When using your card reader,
-you'll need to know the device name of the reader.
-The easiest way to find this is just unplug your card reader from the USB port,
-run `df -h`, then plug it back in, and run `df -h` again.
+Once the RPi boots up,
+you can [find your Raspberry P on your network][69] using [`arp-scan`][70]
+or [`netdiscover`][71]:
 
 ```bash
-# with the SD card reader unplugged
-$ df -h
-Filesystem      Size  Used Avail Use% Mounted on
-udev            3.9G   12K  3.9G   1% /dev
-tmpfs           783M  1.7M  781M   1% /run
-/dev/sda3       110G   14G   90G  14% /
-none            4.0K     0  4.0K   0% /sys/fs/cgroup
-none            5.0M     0  5.0M   0% /run/lock
-none            3.9G   90M  3.8G   3% /run/shm
-none            100M   80K  100M   1% /run/user
-/dev/sda1       461M  132M  306M  31% /boot
-/dev/md0        917G  224G  647G  26% /home
-/dev/sdb        3.6T  2.5T  950G  73% /mnt/backup
+# actively scan the network for all live hosts and then passively scan indefinitely
+# to abtain the ip address of your raspberry pi
+sudo netdiscover -c 3 -s 10 -L -N -r 192.168.1.0/24 | grep Raspberry
 
-# with the SD card reader plugged in USB
-$ df -h
-Filesystem      Size  Used Avail Use% Mounted on
-udev            3.9G   12K  3.9G   1% /dev
-tmpfs           783M  1.8M  781M   1% /run
-/dev/sda3       110G   14G   90G  14% /
-none            4.0K     0  4.0K   0% /sys/fs/cgroup
-none            5.0M     0  5.0M   0% /run/lock
-none            3.9G   90M  3.8G   3% /run/shm
-none            100M   80K  100M   1% /run/user
-/dev/sda1       461M  132M  306M  31% /boot
-/dev/md0        917G  224G  647G  26% /home
-/dev/sdb        3.6T  2.5T  950G  73% /mnt/backup
-/dev/sdj1        15G   32K   15G   1% /media/jeff/3CB1-D9D9
+# or you can ping the new devices by its hostname, if you specified it during the imaging
+ping raspberrypi.local
 ```
 
-Note that in my example above, the new device is `/dev/sdj1`.
-The last part (the number 1) is the partition number
-but we want to write to the whole SD card, not just one partition.
-Therefore you need to remove that part when creating the image.
-With this information, and know the location of the Raspbian image and
-where we need to write the Raspbian image to the SD Card
-(see more detail instructions [here][16]).
+Now using the IP address you found for the RPi,
+`192.168.1.79` in my case,
+in the next steps we can change the hostname,
+and provides the Raspberry Pi with SSH access keys,
+enabling us to automate the update of the OS via Ansible.
+
+#### Step 4: Update the Hostname - DONE
+We gave the Raspberry Pi OS a generic hosname (ie. `raspberrypi.local`)
+and we now want to change this to something more specific for our project.
 
 ```bash
-# go to directory with the RPi image
-cd /home/jeff/Downloads/Raspbian
+# login to the raspberry pi, validating ssh works
+ssh pi@192.168.1.79
 
-# unmount the sd card reader
-sudo umount /dev/sdj1
+# modify the host name to 'test-pi'
+sudo sed --in-place 's/raspberrypi/test-pi/g' /etc/hostname
+sudo sed --in-place 's/raspberrypi/test-pi/g' /etc/hosts
 
-# write the image to the sd card reader
-sudo dd bs=4M if=2017-11-29-raspbian-stretch.img of=/dev/sdj
-
-# ensure the write cache is flushed
-sudo sync
-
-# (optional) check the integrity of the sd card image
-sudo dd bs=4M if=/dev/sdj of=copy-from-sd-card.img
-sudo truncate --reference 2017-11-29-raspbian-stretch.img copy-from-sd-card.img
-diff -s 2017-11-29-raspbian-stretch.img copy-from-sd-card.img
-
-# unmount the sd card reader
-sudo umount /dev/sdj1 /dev/sdj2
+# reboot and valitate the name change has taken effect
+sudo reboot
+ssh pi@192.168.1.79
+hostname
 ```
 
-Remove SD card from the reader on your computer.
-We’re going to set up the WiFi interface next.
+#### Step 5: Query Hardware for Version - DONE
+To find out what version of Raspberry Pi hardware your on,
+execut the following command:
 
->**NOTE:** You could immediately put the SD Card in the RPi and boot it up,
->but you will have no WiFi access and you'll need to use the Ethernet interface,
->or if there is no Ethernet interface,
->you'll need to use a console cable to make the file modification
->outline in the next step.
->[Adafruit has good description on how to use a console cable][17]
->and the how to [enable the UART for the console][18].
+```bash
+# query for version of hardware your on
+$ cat /proc/device-tree/model
+Raspberry Pi 3 Model B Rev 1.2
+```
+
+#### Step 6: Copy Ansible SSH Keys to Raspberry Pi - DONE
+Ansible primarily communicates with client computers through SSH.
+While it has the ability to handle password-based SSH authentication,
+using SSH keys can help to keep things simple.
+(Check [here][72] if you need more information concerning SSH,
+how to generate keys, using keys, etc.)
+
+On my Ansible server (my Linux desktop computer),
+I have created a specific SSH key for Ansible work.
+That key is `~/.ssh/ansible.pub`.
+I'll use one of the methods below to push that key to my Raspberry Pi.
+
+##### Method A: Copying Public Key Using ssh-copy-id - DONE
+The simplest method to provide the SSH keys to the client computer
+is to use the `ssh-copy-id` tool.
+Launching from the Ansible server, the syntax is:
+`ssh-copy-id username@remote_host`.
+In my case:
+
+```bash
+# from my desktop computer, copying public key using ssh-copy-id
+ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.79
+```
+
+To test if this is successful,
+login to your Ansible client via SSH: `pi@192.168.1.203`
+and you should get in without being prompted for a password.
+
+##### Method B: Copying Public Key Using SSH
+If you do not have `ssh-copy-id` available on your computer,
+but you have password-based SSH access to an account on your server,
+you can upload your keys using a conventional SSH method:
+
+```bash
+# from my desktop computer, copying public key using ssh
+cat ~/.ssh/ansible.pub | ssh pi@test-pi "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod -R go= ~/.ssh && cat >> ~/.ssh/authorized_keys"
+```
+
+##### Method C: Copying Public Key Manually
+The final method is just to do it all manually.
+Assuming SSH is already established on your Ansible server,
+use the `cat` command to print the contents of your
+non-root user’s SSH public key file to the terminal’s output:
+
+```bash
+# copy this public ssh key
+cat ~/.ssh/id_rsa.pub
+```
+
+Copy the resulting output to your clipboard,
+then open a new terminal and connect to one of your Ansible hosts using SSH,
+and do the following:
+
+1. Switch to the client machine’s root user.
+1. As the root user, open the `authorized_keys` within the `~/.ssh` directory:
+1. In the file, paste your Ansible server user’s SSH key, then save the file.
+
+### Step 7: Creating Inventory File - DONE
+Ansible needs to know your remote server names or IP address.
+This information is stored in a file called `hosts`, or often refered to as your "inventory".
+The default file is `/etc/ansible/hosts`.
+You can edit this one or create a new one in your `$HOME` directory,
+or better yet, place the `hosts` file in your projects directory referance it
+on the command-line when running `ansible`.
+
+```bash
+# create the hosts (aka inventory) file for your raspberry pi
+cat <<EOF > inventory
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.1
+
+# aka ansible hosts file
+
+# ansible control node
+#[controller]
+#127.0.0.1 ansible_connection=local
+
+# ansible managed hosts (aka nodes)
+[nodes]
+test-pi ansible_ssh_host=192.168.1.79 ansible_ssh_port=22 kubernetes_role=node
+#node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
+#node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
+#node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
+
+# ansible varables applied to [nodes]
+[nodes:vars]
+ansible_user='pi'
+ansible_ssh_user=pi
+deploy_target=pi
+ansible_become=yes
+ansible_become_method=sudo
+ansible_python_interpreter='/usr/bin/env python3'
+#ansible_python_interpreter=/usr/bin/python3
+EOF
+```
+
+#### Step 8: Test Ansible Configuration - DONE
+Ansilbe support many ad-hoc commands that can be used to manage your nodes.
+You find a long list in the webpost "[How to Use Ansible: A Reference Guide][07]"
+and some listed below.
+Use them to test your Ansible setup so far.
+
+```bash
+# check your inventory
+ansible-inventory -i inventory --list -y
+
+# gather facts about a node
+ansible test-pi -i inventory -m setup
+
+# connectivity test, including localhost (aka controller)
+ansible all -i inventory -m ping
+
+# install the package vim on test-pi from your inventory
+ansible test-pi -i inventory -m apt -a "name=vim"
+
+# you can conduct a dry run to predict how the servers would be affected by your command
+ansible test-pi -i inventory -m apt -a "name=vim" --check
+
+# get current disk usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "df -h"
+
+# get current memory usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "free -m"
+
+# reboot all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -r now" -b -B 60 -P 0
+
+# shut down all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -h now" -b -B 60 -P 0
+
+# uptime check for individual host 'test-pi'
+ansible test-pi -i inventory -a "uptime" -u root
+
+# specify multiple hosts by separating them with colons
+ansible test-pi:node-2 -i inventory -a "uptime" -u root
+
+# install vim-nox package on test-pi
+ansible test-pi -m apt -a "name=vim-nox" --become
+```
+
+
+-----
+
+
+## Prepare Ansible
+
+#### Step 1: Installing Ansible on Ansible Server
+The Ansible host computers could exist anywhere as long as they are reachable via SSH.
+On your Ansible host machine,
+your first step is to install Ansible and any extension you may want to use.
+See `using-vagrant-docker-and-ansible.md` to understand how to do this.
+
+#### Step 2: Copy SSH Keys to Client
+Ansible primarily communicates with client computers through SSH.
+While it has the ability to handle password-based SSH authentication,
+using SSH keys can help to keep things simple.
+(Check [here][67] if you need more information concerning SSH,
+how to generate keys, using keys, etc.)
+
+On my Ansible server, I have created a specific SSH key for Ansible work.
+That key is `~/.ssh/ansible.pub`.
+
+##### Method A: Copying Public Key Using ssh-copy-id
+The simplest method to provide the SSH keys to the client computer
+is to use the `ssh-copy-id` tool.
+Launching from the Ansible server, the syntax is:
+`ssh-copy-id username@remote_host`.
+In my case:
+
+```bash
+# from my desktop computer, copying public key using ssh-copy-id
+ssh-copy-id -i ~/.ssh/ansible.pub pi@test-pi
+
+# or
+ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.203
+```
+
+To test if this is successful,
+login to your Ansible client via SSH: `pi@192.168.1.203`
+and you should get in without being prompted for a password.
+
+##### Method B: Copying Public Key Using SSH
+If you do not have `ssh-copy-id` available on your computer,
+but you have password-based SSH access to an account on your server,
+you can upload your keys using a conventional SSH method:
+
+```bash
+# from my desktop computer, copying public key using ssh
+cat ~/.ssh/ansible.pub | ssh pi@test-pi "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod -R go= ~/.ssh && cat >> ~/.ssh/authorized_keys"
+```
+
+##### Method C: Copying Public Key Manually
+The final method is just to do it all manually.
+Assuming SSH is already established on your Ansible server,
+use the `cat` command to print the contents of your
+non-root user’s SSH public key file to the terminal’s output:
+
+```bash
+# copy this public ssh key
+cat ~/.ssh/id_rsa.pub
+```
+
+Copy the resulting output to your clipboard,
+then open a new terminal and connect to one of your Ansible hosts using SSH,
+and do the following:
+
+1. Switch to the client machine’s root user.
+1. As the root user, open the `authorized_keys` within the `~/.ssh` directory:
+1. In the file, paste your Ansible server user’s SSH key, then save the file.
+
+### Step 3: Creating Hosts File
+Ansible needs to know your remote server names or IP address.
+This information is stored in a file called `hosts`, or often refered to as your "inventory".
+The default file is `/etc/ansible/hosts`.
+You can edit this one or create a new one in your `$HOME` directory,
+or better yet, place the `hosts` file in your projects directory referance it
+on the command-line when running `ansible`.
+
+```bash
+# create the hosts (aka inventory) file for your raspberry pi
+cat <<EOF > inventory
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.1
+
+# aka ansible hosts file
+
+# ansible control node
+#[controller]
+#127.0.0.1 ansible_connection=local
+
+# ansible managed hosts (aka nodes)
+[nodes]
+test-pi ansible_ssh_host=192.168.1.203 ansible_ssh_port=22 kubernetes_role=node
+#node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
+#node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
+#node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
+
+# ansible varables applied to [nodes]
+[nodes:vars]
+ansible_user='pi'
+ansible_ssh_user=pi
+deploy_target=pi
+ansible_become=yes
+ansible_become_method=sudo
+ansible_python_interpreter='/usr/bin/env python3'
+#ansible_python_interpreter=/usr/bin/python3
+EOF
+```
+
+#### Step 4: Test Ansible Configuration
+Ansilbe support many ad-hoc commands that can be used to manage your nodes.
+You find a long list in the webpost "[How to Use Ansible: A Reference Guide][68]"
+and some listed below.
+Use them to test your Ansible setup so far.
+
+```bash
+# check your inventory
+ansible-inventory -i inventory --list -y
+
+# gather facts about a node
+ansible test-pi -i inventory -m setup
+
+# connectivity test, including localhost (aka controller)
+ansible all -i inventory -m ping
+
+# install the package vim on test-pi from your inventory
+ansible test-pi -i inventory -m apt -a "name=vim"
+
+# you can conduct a dry run to predict how the servers would be affected by your command
+ansible test-pi -i inventory -m apt -a "name=vim" --check
+
+# get current disk usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "df -h"
+
+# get current memory usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "free -m"
+
+# reboot all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -r now" -b -B 60 -P 0
+
+# shut down all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -h now" -b -B 60 -P 0
+
+# uptime check for individual host 'test-pi'
+ansible test-pi -i inventory -a "uptime" -u root
+
+# specify multiple hosts by separating them with colons
+ansible test-pi:node-2 -i inventory -a "uptime" -u root
+
+# install vim-nox package on test-pi
+ansible test-pi -m apt -a "name=vim-nox" --become
+```
+
+To run a playbook and execute all the tasks defined within it, use the `ansible-playbook` command:
+
+```bash
+# use a playbook to install the LEMP stack on test-pi
+ansible-playbook -i inventory -l test-pi tasks/lemp.yml
+
+# to understand the impacted of a play book without making changes
+ansible-playbook -i inventory -l test-pi tasks/lemp.yml --list-tasks
+
+# Ansible will then skip anything that comes before the specified task
+ansible-playbook -i inventory -l test-pi tasks/lemp.yml --start-at-task="Set Up Nginx"
+
+# only execute tasks associated with specific tags
+ansible-playbook -i inventory -l test-pi tasks/lemp.yml --tags=mysql,nginx
+```
+
+
+
+-----
+
 
 ### Step 3: Setup Hostname and Networking
 We now execute another script to run on the local system
@@ -1074,12 +1328,12 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [08]:https://developer.arm.com/technologies/floating-point
 [09]:https://github.com/jeffskinnerbox/ts_dweepy
 [10]:http://dlib.net/
-[11]:https://www.raspberrypi.org/blog/raspbian-stretch/
+[11]:https://www.raspberrypi.com/news/raspberry-pi-os-debian-bullseye/
 [12]:https://www.raspberrypi.org/downloads/raspbian/
-[13]:https://www.raspbian.org/
+[13]:https://www.raspberrypi.com/software/operating-systems/
 [14]:http://www.amazon.com/gp/product/B00GVRHON2?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s01
 [15]:http://www.wirelesshack.org/best-micro-sd-card-for-the-raspberry-pi-model-2.html
-[16]:https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
+[16]:
 [17]:https://www.bitpi.co/2015/02/11/how-to-change-raspberry-pis-swapfile-size-on-rasbian/
 [18]:https://cdn-learn.adafruit.com/downloads/pdf/adafruits-raspberry-pi-lesson-5-using-a-console-cable.pdf
 [19]:https://jupyter-notebook.readthedocs.io/en/stable/public_server.html
@@ -1130,14 +1384,14 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [64]:http://unix.stackexchange.com/questions/242399/why-was-ffmpeg-removed-from-debian
 [65]:https://petewarden.com/2017/08/20/cross-compiling-tensorflow-for-the-raspberry-pi/
 [66]:http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/86/
-[67]:
-[68]:
-[69]:
-[70]:
-[71]:
-[72]:
-[73]:
-[74]:
+[67]:https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804
+[68]:https://www.digitalocean.com/community/cheatsheets/how-to-use-ansible-cheat-sheet-guide
+[69]:https://www.youtube.com/watch?v=hx7DB7Iqslk
+[70]:https://www.linux-magazine.com/Online/Features/Using-ARP-for-Network-Recon
+[71]:https://shownotes.opensourceisawesome.com/netdiscover/
+[72]:https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804
+[73]:https://www.bleepingcomputer.com/news/security/raspberry-pi-removes-default-user-to-hinder-brute-force-attacks/
+[74]:https://www.raspberrypi.com/news/raspberry-pi-imager-imaging-utility/
 [75]:
 [76]:https://gstreamer.freedesktop.org/
 [77]:http://developers-club.com/posts/236805/
