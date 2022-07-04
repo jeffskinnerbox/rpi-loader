@@ -1,3 +1,6 @@
+
 ---
-  - name: stop lightdm
-    service: name=lightdm state=stopped
+
+- name: stop lightdm
+  service: name=lightdm state=stopped
+

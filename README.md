@@ -1,6 +1,6 @@
 <!--
 Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-Version:      0.5
+Version:      0.1
 -->
 
 
@@ -9,14 +9,10 @@ Version:      0.5
 </div>
 
 
----
-
+----
 
 
 # Raspberry Pi Loader
-
-**This is a work in progress**
-
 
 * rpi-loader - https://github.com/jeffskinnerbox/rpi-loader
     * fix the scripts concern the use of sudo

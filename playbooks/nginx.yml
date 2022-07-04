@@ -17,7 +17,7 @@
   become_method: sudo
 
   roles:
-    #- update
+    # - update
     - prerequisites
     - nginxinc.nginx
 

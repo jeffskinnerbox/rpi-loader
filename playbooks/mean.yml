@@ -19,7 +19,7 @@
     var_node: /tmp
 
   roles:
-    #- update
+    # - update
     - prerequisites
     - mongodb
     - nodejs

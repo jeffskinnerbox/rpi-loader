@@ -25,106 +25,106 @@
     - geerlingguy.php
 
 
-# - name: Install Linux, Apache, MySQL, PHP (LAMP) Stack
- # hosts: all
- # become: true
- # vars:
-   # install_status: latest     # for packages, use 'present' or 'latest' to install and 'absent' to remove
-   # mysql_root_password: "123"
-   # app_user: "vagrant"
-   # http_host: "html"
-   # http_port: "80"
-   # http_conf: "my.conf"
-   # disable_default: true
-
- # tasks:
-   # - name: install lamp pre-requisites
-     # apt:
-       # state: '{{ install_status }}'
-       # update_cache: true
-       # cache_valid_time: 3600
-       # pkg:
-         # - 'aptitude'
-
-   # # lamp configuration
-   # - name: install lamp packages
-     # apt:
-       # state: '{{ install_status }}'
-       # update_cache: true
-       # cache_valid_time: 3600
-       # pkg:
-         # - 'apache2'
-         # - 'mysql-server'
-         # - 'python3-pymysql'
-         # - 'php'
-         # - 'php-mysql'
-         # - 'libapache2-mod-php'
-
-   # # apache configuration
-   # - name: create apache document root
-     # file
-       # path: "/var/www/{{ http_host }}"
-       # state: directory
-       # owner: "{{ app_user }}"
-       # mode: '0755'
-
-   # - name: set up apache virtualhost
-     # template:
-       # src: "/home/jeff/src/vagrant-machines/ansible/tasks/files/apache.conf.j2"
-       # dest: "/etc/apache2/sites-available/{{ http_conf }}"
-     # notify: reload apache
-
-   # - name: enable new site
-     # shell: /usr/sbin/a2ensite {{ http_conf }}
-     # notify: reload apache
-
-   # - name: disable default apache site
-     # shell: /usr/sbin/a2dissite 000-default.conf
-     # when: disable_default
-     # notify: reload apache
-
-   # # mysql configuration
-   # - name: set the root password of mysql
-     # mysql_user:
-       # name: root
-       # password: "{{ mysql_root_password }}"
-       # login_unix_socket: /var/run/mysqld/mysqld.sock
-
-   # - name: removes all mysql anonymous user accounts
-     # mysql_user:
-       # name: ''
-       # host_all: true
-       # state: absent
-       # login_user: root
-       # login_password: "{{ mysql_root_password }}"
-
-   # - name: removes the mysql test database
-     # mysql_db:
-       # name: test
-       # state: absent
-       # login_user: root
-       # login_password: "{{ mysql_root_password }}"
-
-   # # UFW Configuration
-   # - name: "for ufw, allow http on port {{ http_port }}"
-     # ufw:
-       # rule: allow
-       # port: "{{ http_port }}"
-       # proto: tcp
-
-   # # php information page
-   # - name: sets up php information page
-     # template:
-       # src: "tasks/files/info.php.j2"
-       # dest: "/var/www/{{ http_host }}/info.php"
-
- # handlers:
-   # - name: reload apache
-     # service:
-       # name: apache2
-       # state: reloaded
-
-   # - name: restart apache
-     # service:
-       # name: apache2
-       # state: restarted
+# - name: install linux, apache, mysql, php (lamp) stack
+#  hosts: all
+#  become: true
+#  vars:
+#    install_status: latest     # for packages, use 'present' or 'latest' to install and 'absent' to remove
+#    mysql_root_password: "123"
+#    app_user: "vagrant"
+#    http_host: "html"
+#    http_port: "80"
+#    http_conf: "my.conf"
+#    disable_default: true
+#
+#  tasks:
+#    - name: install lamp pre-requisites
+#      apt:
+#        state: '{{ install_status }}'
+#        update_cache: true
+#        cache_valid_time: 3600
+#        pkg:
+#          - 'aptitude'
+#
+#    # lamp configuration
+#    - name: install lamp packages
+#      apt:
+#        state: '{{ install_status }}'
+#        update_cache: true
+#        cache_valid_time: 3600
+#        pkg:
+#          - 'apache2'
+#          - 'mysql-server'
+#          - 'python3-pymysql'
+#          - 'php'
+#          - 'php-mysql'
+#          - 'libapache2-mod-php'
+#
+#    # apache configuration
+#    - name: create apache document root
+#      file
+#        path: "/var/www/{{ http_host }}"
+#        state: directory
+#        owner: "{{ app_user }}"
+#        mode: '0755'
+#
+#    - name: set up apache virtualhost
+#      template:
+#        src: "/home/jeff/src/vagrant-machines/ansible/tasks/files/apache.conf.j2"
+#        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+#      notify: reload apache
+#
+#    - name: enable new site
+#      shell: /usr/sbin/a2ensite {{ http_conf }}
+#      notify: reload apache
+#
+#    - name: disable default apache site
+#      shell: /usr/sbin/a2dissite 000-default.conf
+#      when: disable_default
+#      notify: reload apache
+#
+#    # mysql configuration
+#    - name: set the root password of mysql
+#      mysql_user:
+#        name: root
+#        password: "{{ mysql_root_password }}"
+#        login_unix_socket: /var/run/mysqld/mysqld.sock
+#
+#    - name: removes all mysql anonymous user accounts
+#      mysql_user:
+#        name: ''
+#        host_all: true
+#        state: absent
+#        login_user: root
+#        login_password: "{{ mysql_root_password }}"
+#
+#    - name: removes the mysql test database
+#      mysql_db:
+#        name: test
+#        state: absent
+#        login_user: root
+#        login_password: "{{ mysql_root_password }}"
+#
+#    # UFW Configuration
+#    - name: "for ufw, allow http on port {{ http_port }}"
+#      ufw:
+#        rule: allow
+#        port: "{{ http_port }}"
+#        proto: tcp
+#
+#    # php information page
+#    - name: sets up php information page
+#      template:
+#        src: "tasks/files/info.php.j2"
+#        dest: "/var/www/{{ http_host }}/info.php"
+#
+#  handlers:
+#    - name: reload apache
+#      service:
+#        name: apache2
+#        state: reloaded
+#
+#    - name: restart apache
+#      service:
+#        name: apache2
+#        state: restarted

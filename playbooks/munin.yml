@@ -21,7 +21,7 @@
     var_node: /tmp
 
   roles:
-    #- update
+    # - update
     - prerequisites
     - geerlingguy.apache
     - geerlingguy.munin
