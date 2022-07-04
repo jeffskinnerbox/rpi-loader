@@ -1,0 +1,9 @@
+
+# tests file for node.js role
+
+---
+
+- hosts: localhost
+  remote_user: root
+  roles:
+    - nodejs

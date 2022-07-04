@@ -1,0 +1,9 @@
+
+# tests file for prerequisites role
+
+---
+
+- hosts: localhost
+  remote_user: root
+  roles:
+    - prerequisites

@@ -1,0 +1,61 @@
+
+# Execute on all of [nodes] in inventory
+#    ansible-playbook -i inventory playbooks/net-tools.yml
+#
+# Execute on test-pi in inventory
+#    cd ~/src/linux-tools/rpi-loader
+#    ansible-playbook -i inventory -l test-pi playbooks/net-tools.yml
+#
+# See: https://github.com/mrlesmithjr/ansible-network-tools
+
+---
+
+- name: Install Various Networking & Monitoring & Trouble-Shooting Tools
+  hosts: all
+  become: true
+  vars:
+    install_status: latest     # for packages, use 'present' or 'latest' to install and 'absent' to remove
+
+  tasks:
+    - name: install various networking and monitoring tools packages
+      apt:
+        state: {{install_status}}
+        update_cache: true
+        cache_valid_time: 3600
+        pkg:
+          - 'arp-scan'
+          - 'arping'
+          - 'arptables'
+          - 'bmon'
+          - 'dnsutils'
+          - 'ifstat'
+          - 'iftop'
+          - 'iperf3'
+          - 'iproute2'
+          - 'lldpd'
+          - 'lsof'
+          - 'nbtscan'
+          - 'netcat'
+          - 'netdiscover'
+          - 'netdiag'
+          - 'nethogs'
+          - 'netperf'
+          - 'netsniff-ng'
+          - 'net-tools'
+          - 'nfdump'
+          - 'ngrep'
+          - 'nicstat'
+          - 'nload'
+          - 'nmap'
+          - 'rfkill'
+          - 'socat'
+          - 'sysstat'
+          - 'tcpdump'
+          - 'tcpflow'
+          - 'tcpstat'
+          - 'tcptrace'
+          - 'tcptrack'
+          - 'telnet'
+          - 'traceroute'
+          - 'ufw'
+          - 'wavemon'

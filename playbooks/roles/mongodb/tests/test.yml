@@ -1,0 +1,9 @@
+
+# tests file for mongodb role
+
+---
+
+- hosts: localhost
+  remote_user: root
+  roles:
+    - mongodb

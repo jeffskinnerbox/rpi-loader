@@ -1,0 +1,14 @@
+
+# role file to install prerequisites
+
+---
+
+- name: run the equivalent of "apt-get update"
+  apt:
+    update_cache: true
+    cache_valid_time: 86400
+
+- name: install required prerequisite packages
+  apt:
+    name: ['git', 'curl', 'wget', 'ntp', 'apt-transport-https', 'gnupg2']
+    state: present

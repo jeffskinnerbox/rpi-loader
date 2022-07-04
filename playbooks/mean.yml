@@ -1,0 +1,25 @@
+
+# Execute on all of [nodes] in inventory
+#     ansible-playbook -i inventory playbooks/mean.yml
+#
+# Execute on test-pi in inventory
+#     cd ~/src/linux-tools/rpi-loader
+#     ansible-playbook -i inventory -l test-pi playbooks/mean.yml
+#
+# See: https://www.edureka.co/blog/ansible-roles-setup-mean-stack
+
+---
+
+- name: Install The Mean Stack (MongoDB, Node.js)
+  hosts: all
+  remote_user: ansible
+  become: true
+  become_method: sudo
+  vars:
+    var_node: /tmp
+
+  roles:
+    #- update
+    - prerequisites
+    - mongodb
+    - nodejs

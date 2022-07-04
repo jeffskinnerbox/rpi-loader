@@ -1,0 +1,17 @@
+
+# Execute on all of [nodes] in inventory
+#    ansible-playbook -i inventory playbooks/ping.yml
+#
+# Execute on test-pi in inventory
+#    cd ~/src/linux-tools/rpi-loader
+#    ansible-playbook -i inventory -l test-pi playbooks/ping.yml
+
+---
+
+- name: Ping Hosts
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: perform a single tcp/ip ping
+      action: ping

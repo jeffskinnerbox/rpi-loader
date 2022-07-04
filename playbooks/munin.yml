@@ -1,0 +1,27 @@
+
+# Execute on all of [nodes] in inventory
+#     ansible-playbook -i inventory playbooks/munin.yml
+#
+# Execute on test-pi in inventory
+#     cd ~/src/linux-tools/rpi-loader
+#     ansible-playbook -i inventory -l test-pi playbooks/munin.yml
+#
+# See: https://munin-monitoring.org/
+#      https://github.com/geerlingguy/ansible-role-munin
+#      https://www.digitalocean.com/community/tutorials/how-to-install-the-munin-monitoring-tool-on-ubuntu-14-04
+
+---
+
+- name: Install The Network Resource Monitoring Tool Munin
+  hosts: all
+  remote_user: ansible
+  become: true
+  become_method: sudo
+  vars:
+    var_node: /tmp
+
+  roles:
+    #- update
+    - prerequisites
+    - geerlingguy.apache
+    - geerlingguy.munin
