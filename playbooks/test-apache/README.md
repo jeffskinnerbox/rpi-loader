@@ -35,3 +35,8 @@ This produces the same output as actually running the playbook, except it will r
 ```bash
 ansible-playbook -i ../inventory test-apache/apache.yml --check
 ```
+
+# Test
+* [How To Set Up Apache Virtual Hosts on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-20-04)
+
+google-chrome http://192.168.1.79:80

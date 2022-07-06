@@ -46,15 +46,22 @@
         - name: "UFW firewall allow HTTP on port {{ http_port }}"
           ufw:
             rule: allow               # must be one of: allow, deny, limit, reject
-            port: ["{{ http_port }}", 22]
-            proto: all               # must be one of: any, tcp, udp, ipv6, esp, ah
+            port: "{{ http_port }}"
+            proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
             state: enabled           # must be one of: enabled, disabled, reloaded, reset
-      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute the block
+
+        - name: UFW firewall allow SSH on port 22 (so you are not locked out)
+          ufw:
+            rule: allow              # must be one of: allow, deny, limit, reject
+            port: ssh
+            proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
+            state: enabled           # must be one of: enabled, disabled, reloaded, reset
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
     # --------------------------------------------------------------------------
-    - name: Uninstall latest version of Apache2
+    - name: Uninstall Apache2
       block:
-        - name: Unstall latest version of Apache2 and its prerequisites
+        - name: Unstall Apache2 but leave its prerequisites
           apt:
             autoclean: true          # default is false
             state: absent            # must be one of: absent, build-dep, fixed, latest, present
@@ -67,11 +74,6 @@
             mode: '0755'
             state: absent            # must be one of: absent, directory, file, hard, link, touch
 
-        - name: Remove your index page to /var/www/{{ http_host }}/index.html
-          template:
-            src: "files/index.html.j2"
-            dest: "/var/www/{{ http_host }}/index.html"
-
         - name: Stop virtuahHost in /etc/apache2/sites-available/{{ http_conf }}
           template:
             src: "files/apache.conf.j2"
@@ -82,9 +84,9 @@
           ufw:
             rule: deny               # must be one of: allow, deny, limit, reject
             port: "{{ http_port }}"
-            proto: all               # must be one of: any, tcp, udp, ipv6, esp, ah
+            proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
             state: reloaded          # must be one of: enabled, disabled, reloaded, reset
-      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute the block
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
   handlers:
     - name: start-apache

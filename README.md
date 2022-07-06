@@ -189,7 +189,7 @@ ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.79
 ```
 
 To test if this is successful,
-login to your Ansible client via SSH: `pi@192.168.1.203`
+login to your Ansible client via SSH: `pi@192.168.1.79`
 and you should get in without being prompted for a password.
 
 ##### Method B: Copying Public Key Using SSH
