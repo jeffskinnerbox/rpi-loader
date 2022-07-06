@@ -11,11 +11,11 @@
     repo: "{{ googlechrome_repo_debian }}"
     state: "{{ googlechrome_repo_desired_state }}"
     filename: "{{ googlechrome_repo_debian_filename }}"
-    update_cache: yes
+    update_cache: true
 
 - name: Debian/Ubuntu Family | Installing {{ googlechrome_app_name }}
   apt:
     name: "{{ googlechrome_app_name }}"
     state: "{{ googlechrome_desired_state }}"
-    force_apt_get: yes
-    update_cache: yes
+    force_apt_get: true
+    update_cache: true

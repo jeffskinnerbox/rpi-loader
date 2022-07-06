@@ -16,4 +16,5 @@
   yum:
     name: "{{ googlechrome_app_name }}"
     state: "{{ googlechrome_desired_state }}"
-    update_cache: yes
+    update_cache: true
+

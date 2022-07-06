@@ -8,7 +8,7 @@ googlechrome_repo_el_name: google-chrome
 googlechrome_repo_el_description: google-chrome
 googlechrome_repo_el: http://dl.google.com/linux/chrome/rpm/stable/x86_64
 googlechrome_repo_el_filename: google-chrome
-googlechrome_repo_el_gpgcheck: yes
-googlechrome_repo_el_enabled: yes
+googlechrome_repo_el_gpgcheck: true
+googlechrome_repo_el_enabled: true
 googlechrome_repo_desired_state: present
 googlechrome_desired_state: present

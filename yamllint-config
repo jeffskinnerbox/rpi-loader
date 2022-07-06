@@ -1,0 +1,11 @@
+# place these linting rules in ~/.config/yamllint/config
+extends: default
+
+ignore: |
+  .github
+  *.template.yaml
+
+rules:
+  line-length: disable
+  empty-lines: disable
+  #brackets: disable

@@ -1,0 +1,13 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.5
+
+---
+
+http_host: "test-pi"
+http_conf: "test-pi.conf"
+http_port: "80"
+
+app_user: "pi"
+
+app-install: absent    # must be one of: absent, latest, present

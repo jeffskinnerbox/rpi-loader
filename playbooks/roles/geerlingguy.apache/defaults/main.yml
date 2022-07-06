@@ -1,8 +1,4 @@
-
-# defaults file for apache role
-
 ---
-
 apache_enablerepo: ""
 
 apache_listen_ip: "*"
@@ -44,14 +40,19 @@ apache_ignore_missing_ssl_certificate: true
 apache_ssl_protocol: "All -SSLv2 -SSLv3"
 apache_ssl_cipher_suite: "AES256+EECDH:AES256+EDH"
 
-# Only used on Debian/Ubuntu.
+# Only used on Debian/Ubuntu/Redhat.
 apache_mods_enabled:
-  - rewrite.load
-  - ssl.load
+  - rewrite
+  - ssl
 apache_mods_disabled: []
 
 # Set initial apache state. Recommended values: `started` or `stopped`
-apache_state: started
+# apache_state: started
+apache_state: stopped
+
+# Set initial apache service status. Recommended values: `yes` or `no`
+# apache_enabled: true
+apache_enabled: false
 
 # Set apache state when configuration changes are made. Recommended values:
 # `restarted` or `reloaded`
@@ -59,4 +60,5 @@ apache_restart_state: restarted
 
 # Apache package state; use `present` to make sure it's installed, or `latest`
 # if you want to upgrade or switch versions using a new repo.
-apache_packages_state: present
+# apache_packages_state: present
+apache_packages_state: absent

@@ -14,7 +14,7 @@
   hosts: all
   become: true
   vars:
-    install_status: latest     # for packages, use 'present' or 'latest' to install and 'absent' to remove
+    install_status: absent     # for packages, use 'present' or 'latest' to install and 'absent' to remove
 
   tasks:
     - name: install various networking and monitoring tools packages

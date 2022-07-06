@@ -1,0 +1,104 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.5
+
+---
+
+- name: Apache2 HTTP Server on {{ http_host }}
+  hosts: "{{ http_host }}"
+  remote_user: "{{ app_user }}"
+  become: true
+  become_method: sudo
+  gather_facts: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    # --------------------------------------------------------------------------
+    - name: Install latest version of Apache2 and its prerequisites
+      block:
+        - name: Install latest version of Apache2 and its prerequisites
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: true          # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [apache2, ufw]
+
+        - name: Create document root (/var/www/{{ http_host }}) for your domain
+          file:
+            path: "/var/www/{{ http_host }}"
+            owner: "{{ app_user }}"
+            mode: '0755'
+            state: directory         # must be one of: absent, directory, file, hard, link, touch
+
+        - name: Copy your index page to /var/www/{{ http_host }}/index.html
+          template:
+            src: "files/index.html.j2"
+            dest: "/var/www/{{ http_host }}/index.html"
+
+        - name: Set up virtuahHost in /etc/apache2/sites-available/{{ http_conf }}
+          template:
+            src: "files/apache.conf.j2"
+            dest: "/etc/apache2/sites-available/{{ http_conf }}"
+          notify: restart-apache
+
+        - name: "UFW firewall allow HTTP on port {{ http_port }}"
+          ufw:
+            rule: allow               # must be one of: allow, deny, limit, reject
+            port: ["{{ http_port }}", 22]
+            proto: all               # must be one of: any, tcp, udp, ipv6, esp, ah
+            state: enabled           # must be one of: enabled, disabled, reloaded, reset
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute the block
+
+    # --------------------------------------------------------------------------
+    - name: Uninstall latest version of Apache2
+      block:
+        - name: Unstall latest version of Apache2 and its prerequisites
+          apt:
+            autoclean: true          # default is false
+            state: absent            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [apache2]
+
+        - name: Remove document root (/var/www/{{ http_host }}) for your domain
+          file:
+            path: "/var/www/{{ http_host }}"
+            owner: "{{ app_user }}"
+            mode: '0755'
+            state: absent            # must be one of: absent, directory, file, hard, link, touch
+
+        - name: Remove your index page to /var/www/{{ http_host }}/index.html
+          template:
+            src: "files/index.html.j2"
+            dest: "/var/www/{{ http_host }}/index.html"
+
+        - name: Stop virtuahHost in /etc/apache2/sites-available/{{ http_conf }}
+          template:
+            src: "files/apache.conf.j2"
+            dest: "/etc/apache2/sites-available/{{ http_conf }}"
+          notify: stop-apache
+
+        - name: "UFW firewall deny HTTP on port {{ http_port }}"
+          ufw:
+            rule: deny               # must be one of: allow, deny, limit, reject
+            port: "{{ http_port }}"
+            proto: all               # must be one of: any, tcp, udp, ipv6, esp, ah
+            state: reloaded          # must be one of: enabled, disabled, reloaded, reset
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute the block
+
+  handlers:
+    - name: start-apache
+      service:
+        name: apache2
+        state: started
+
+    - name: restart-apache
+      service:
+        name: apache2
+        state: restarted
+
+    - name: stop-apache
+      service:
+        name: apache2
+        state: stopped
+
