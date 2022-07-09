@@ -50,7 +50,7 @@
             proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
             state: enabled           # must be one of: enabled, disabled, reloaded, reset
 
-        - name: UFW firewall allow SSH on port 22 (so you are not locked out)
+        - name: set UFW firewall to allow SSH on port 22 (so you are not locked out)
           ufw:
             rule: allow              # must be one of: allow, deny, limit, reject
             port: ssh

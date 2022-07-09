@@ -1,3 +1,16 @@
+<!--
+Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+Version:      0.0.1
+-->
+
+
+<div align="center">
+<img src="http://www.foxbyrd.com/wp-content/uploads/2018/02/file-4.jpg" title="These materials require additional work and are not ready for general use." align="center">
+</div>
+
+
+----
+
 
 
 * [How to use Ansible for setting up a Raspberry Pi Zero W Web Server with PHP 7](http://www.heidislab.com/tutorials/using-ansible-to-set-up-a-raspberry-pi-zero-w-as-php-7-web-server)
@@ -8,8 +21,6 @@
 * [Installing Ansible (Raspberry Pi)](https://geektechstuff.com/2019/06/25/installing-ansible-raspberry-pi/)
 * [Ansible Setting Up SSH (Raspberry Pi)](https://geektechstuff.com/2019/06/27/ansible-setting-up-ssh-raspberry-pi/)
 * [Ansible – Looking at commands & Playbooks (Raspberry Pi)](https://geektechstuff.com/2019/06/27/ansible-looking-at-commands-playbooks-raspberry-pi/)
-
-
 
 
 

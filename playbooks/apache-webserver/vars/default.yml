@@ -10,4 +10,3 @@ http_port: "80"
 
 app_user: "pi"
 
-app-install: absent    # must be one of: absent, latest, present

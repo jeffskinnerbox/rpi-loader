@@ -1,0 +1,114 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.5
+
+---
+
+- name: Create your login environment on {{ login_env_host }}
+  hosts: "{{ login_env_host }}"
+  # remote_user: "{{ app_user }}"
+  become: true                   # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    # --------------------------------------------------------------------------
+    - name: Install your login environment
+      block:
+        - name: Install required prerequisites
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [git, git-lfs]
+
+        - name: clone .bash git repository
+          become_user: "{{ app_user }}"
+          ansible.builtin.git:
+            repo: 'https://github.com/jeffskinnerbox/.bash.git'
+            dest: '/home/{{ app_user }}/.bash'
+            clone: true
+
+        - name: setup your bash environment
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            cd ~
+            rm ~/.bashrc ~/.bash_logout
+            ln -s ~/.bash/inputrc ~/.inputrc
+            ln -s ~/.bash/bashrc ~/.bashrc
+            ln -s ~/.bash/bash_login ~/.bash_login
+            ln -s ~/.bash/bash_logout ~/.bash_logout
+            ln -s ~/.bash/bash_profile ~/.bash_profile
+          args:
+            executable: /usr/bin/bash
+
+        - name: source/load the changes into your profile
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            source ~/.bashrc
+          args:
+            executable: /usr/bin/bash
+
+        - name: clone .vim git repository
+          become_user: "{{ app_user }}"
+          ansible.builtin.git:
+            repo: 'https://github.com/jeffskinnerbox/.vim.git'
+            dest: '/home/{{ app_user }}/.vim'
+            clone: true
+            update: true    # perform an update on submodules in the git repository in the git repository
+
+        - name: setup your vim environment
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            cd ~
+            ln -s ~/.vim/vimrc ~/.vimrc
+            mkdir ~/.vim/backup
+            mkdir ~/.vim/tmp
+          args:
+            executable: /usr/bin/bash
+
+        - name: clone .X git repository
+          become_user: "{{ app_user }}"
+          ansible.builtin.git:
+            repo: 'https://github.com/jeffskinnerbox/.X.git'
+            dest: '/home/{{ app_user }}/.X'
+            clone: true
+
+        - name: setup your x windows environment
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            cd ~
+            ln -s ~/.X/xbindkeysrc ~/.xbindkeysrc
+            ln -s ~/.X/Xresources ~/.Xresources
+            ln -s ~/.X/xsessionrc ~/.xsessionrc
+          args:
+            executable: /usr/bin/bash
+
+        - name: rebuilding $HOME/.Xauthority to avoid MIT magic cookie error
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            cd ~
+            touch ~/.Xauthority
+            xauth generate :0 . trusted
+            xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
+          args:
+            executable: /usr/bin/bash
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+    # --------------------------------------------------------------------------
+    - name: Uninstall your login environment
+      block:
+        - name: remove all login environment related files & directories
+          become_user: "{{ app_user }}"
+          ansible.builtin.shell: |
+            cd ~
+            rm .bash_logout .inputrc .bashrc .bash_login .bash_logout .bash_profile
+            rm .vimrc .xbindkeysrc .Xresources .xsessionrc .Xauthority
+            rm -r -f .bash .vim .X
+          args:
+            executable: /usr/bin/bash
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+

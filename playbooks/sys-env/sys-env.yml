@@ -1,0 +1,78 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.5
+
+---
+
+- name: Create your login environment on {{ login_env_host }}
+  hosts: "{{ login_env_host }}"
+  # remote_user: "{{ app_user }}"
+  become: true                   # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    # --------------------------------------------------------------------------
+    - name: Install your system environment
+      block:
+        - name: Install git tools
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [git, git-lfs]
+
+        - name: install the trash tool
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [trash-cli]
+
+        - name: install the network time protocal (ntp) tool
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [ntp]
+
+        - name: set the timezone
+          shell: timedatectl set-timezone America/New_York
+
+        - name: install the firewall tool
+          apt:
+            update_cache: true       # default is true
+            cache_valid_time: 3600   # default is zero
+            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            pkg: [ufw]
+
+        # - name: enable ufw firewall and allow SSH on port 22 (so you are not locked out)
+        #   ufw:
+        #     rule: allow              # must be one of: allow, deny, limit, reject
+        #     port: ssh
+        #     proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
+        #     state: enabled           # must be one of: enabled, disabled, reloaded, reset
+
+        # - name: install virtualbox and virtualbox guest tools
+        #   apt:
+        #     update_cache: true       # default is true
+        #     cache_valid_time: 3600   # default is zero
+        #     autoclean: false         # default is false
+        #     state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        #     pkg: [build-essential, virtualbox-guest-utils, virtualbox-guest-x11, virtualbox-guest-dkms]
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+    # --------------------------------------------------------------------------
+    - name: uninstall system environment
+      block:
+        - name: message to user
+          debug:
+            msg: Nothing needs to be uninstalled, therefore, it is not
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
