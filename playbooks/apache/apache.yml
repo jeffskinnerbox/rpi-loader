@@ -1,6 +1,17 @@
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      0.0.5
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbooks/dev-env
+#    ansible-playbook -i inventory playbooks/apache/apache.yml --check --tags install
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory playbooks/apache/apache.yml --syntax-check
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory playbooks/apache/apache.yml --check --tags install
+#
 
 ---
 
@@ -19,10 +30,9 @@
       block:
         - name: Install latest version of Apache2 and its prerequisites
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: true          # default is false
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            update_cache: true       # update the apt repository list cache
+            cache_valid_time: 86400  # update the apt cache if it is older than this seconds
             pkg: [apache2, ufw]
 
         - name: Create document root (/var/www/{{ http_host }}) for your domain
@@ -63,8 +73,9 @@
       block:
         - name: Unstall Apache2 but leave its prerequisites
           apt:
-            autoclean: true          # default is false
-            state: absent            # must be one of: absent, build-dep, fixed, latest, present
+            state: absent        # must be one of: absent, build-dep, fixed, latest, present
+            autoclean: true      # cleans the local repository packages that can no longer be downloaded
+            autoremove: true     # remove unused dependency with repository packages
             pkg: [apache2]
 
         - name: Remove document root (/var/www/{{ http_host }}) for your domain

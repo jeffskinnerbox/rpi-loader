@@ -1,6 +1,17 @@
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      0.0.5
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbooks/dev-env
+#    ansible-playbook -i inventory playbooks/sys-env/sys-env.yml --check --tags install
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory playbooks/sys-env/sys-env.yml --syntax-check
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory playbooks/sys-env/sys-env.yml --check --tags install
+#
 
 ---
 
@@ -19,25 +30,19 @@
       block:
         - name: Install git tools
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: false         # default is false
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            update_cache: true       # update the apt repository list cache
+            cache_valid_time: 86400  # update the apt cache if it is older than this seconds
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
             pkg: [git, git-lfs]
 
         - name: install the trash tool
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: false         # default is false
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
             pkg: [trash-cli]
 
         - name: install the network time protocal (ntp) tool
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: false         # default is false
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
             pkg: [ntp]
 
@@ -46,9 +51,6 @@
 
         - name: install the firewall tool
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: false         # default is false
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
             pkg: [ufw]
 
@@ -61,9 +63,6 @@
 
         # - name: install virtualbox and virtualbox guest tools
         #   apt:
-        #     update_cache: true       # default is true
-        #     cache_valid_time: 3600   # default is zero
-        #     autoclean: false         # default is false
         #     state: latest            # must be one of: absent, build-dep, fixed, latest, present
         #     pkg: [build-essential, virtualbox-guest-utils, virtualbox-guest-x11, virtualbox-guest-dkms]
       tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block

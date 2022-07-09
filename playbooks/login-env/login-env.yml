@@ -1,6 +1,17 @@
 
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      0.0.5
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbooks/dev-env
+#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --check --tags install
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --syntax-check
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --check --tags install
+#
 
 ---
 
@@ -17,13 +28,12 @@
     # --------------------------------------------------------------------------
     - name: Install your login environment
       block:
-        - name: Install required prerequisites
+        - name: Install required prerequisites and desirable tools
           apt:
-            update_cache: true       # default is true
-            cache_valid_time: 3600   # default is zero
-            autoclean: false         # default is false
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
-            pkg: [git, git-lfs]
+            update_cache: true       # update the apt repository list cache
+            cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+            pkg: ['git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'vim-gtk3', 'screen']
 
         - name: clone .bash git repository
           become_user: "{{ app_user }}"
@@ -96,7 +106,24 @@
             xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
           args:
             executable: /usr/bin/bash
-      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+        - name: add google chrome apt signing key
+          apt_key:
+            url: "https://dl.google.com/linux/linux_signing_key.pub"
+            state: present
+
+        - name: add google chrome repository into sources list
+          apt_repository:
+            repo: deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+            state: present
+            filename: google-chrome
+
+        - name: install google-chrome-stable - your favorite browser
+          apt:
+            state: latest
+            update_cache: true
+            pkg: ['google-chrome-stable']
+      tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
 
     # --------------------------------------------------------------------------
     - name: Uninstall your login environment
@@ -110,5 +137,10 @@
             rm -r -f .bash .vim .X
           args:
             executable: /usr/bin/bash
-      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+        - name: uninstall google-chrome-stable
+          apt:
+            name: google-chrome-stable
+            state: absent
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
 
