@@ -4,13 +4,12 @@
 #
 # YAML linter to spot Ansible YAML syntax errors
 #    yamllint playbooks/dev-env
-#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --check --tags install
 #
 # Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --syntax-check
+#    ansible-playbook -i inventory -l test-pi playbooks/login-env/login-env.yml --syntax-check
 #
 # Ansible dry-run checking for errors and showing results of a run
-#    ansible-playbook -i inventory playbooks/login-env/login-env.yml --check --tags install
+#    ansible-playbook -i inventory -l test-pi playbooks/login-env/login-env.yml --check --tags install
 #
 
 ---

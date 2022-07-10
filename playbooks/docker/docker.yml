@@ -1,0 +1,122 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.5
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbooks/dev-env
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbooks/docker/docker.yml --syntax-check
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory -l test-pi playbooks/docker/docker.yml --check --tags install
+#
+
+---
+
+- name: Create Docker, Docker Compose, and Portainer on {{ login_env_host }}
+  hosts: "{{ login_env_host }}"
+  # remote_user: "{{ app_user }}"
+  become: true         # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    # --------------------------------------------------------------------------
+    - name: Install docker environment
+      block:
+        - name: install docker's required system packages
+          apt:
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            update_cache: true       # update the apt repository list cache
+            cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+            pkg: ['aptitude', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+        - name: remove python-configparser package
+          apt:
+            state: absent
+            pkg: ['python-configparser']
+
+        - name: pulldown docker convenience script
+          shell: curl -fsSL https://get.docker.com -o get-docker.sh
+          args:
+            creates: "{{ tmp_path }}/get-docker.sh"
+
+        - name: install docker via executing docker convenience script
+          shell: "sh {{ tmp_path }}/get-docker.sh"
+          args:
+            creates: "{{ docker_path }}/docker"
+            executable: /usr/bin/bash
+
+        - name: install docker-compose
+          shell: pip3 -v install docker-compose
+          args:
+            creates: "{{ docker_path }}/docker-compose"
+            executable: /usr/bin/bash
+
+        - name: create test container (hello-world)
+          docker_container:
+            state: started       # must be one of: absent, present, stopped, started
+            name: hello-world
+            image: hello-world
+            auto_remove: true    # auto-removal of the container when the container's process exits
+
+        - name: create a portainer container
+          docker_container:
+            name: portainer
+            image: portainer/portainer-ce:latest
+            ports:
+              - "9000:9000"
+              - "8000:8000"
+            volumes:
+              - /var/run/docker.sock:/var/run/docker.sock
+              - portainer_data:/data
+            detach: true                     # set to true to leave the container running in background
+            restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+
+        - name: create a portainer agent
+          docker_container:
+            name: portainer-agent
+            image: portainer/portainer/agent:latest
+            ports:
+              - "9001:9001"
+            volumes:
+              - /var/run/docker.sock:/var/run/docker.sock
+              - portainer_volumes:/var/lib/docker/volumes
+            detach: true                     # set to true to leave the container running in background
+            restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+      tags: ['never', 'install']             # 'never' implies you must pass the tag to execute this block
+
+    # --------------------------------------------------------------------------
+    - name: Uninstall docker environment
+      block:
+        - name: remove any old versions of docker
+          apt:
+            state: absent        # must be one of: absent, build-dep, fixed, latest, present
+            pkg: ['docker', 'docker-engine docker.io', 'containerd', 'runc']
+
+        - name: stop portainer container and remove
+          docker_container:
+            name: portainer
+            keep_volumes: false      # to retain anonymous volumes associated with the removed container
+            state: absent            # must be one of: absent, present, stopped, started
+
+        - name: stop portainer-agent container and remove
+          docker_container:
+            name: portainer-agent
+            keep_volumes: false      # to retain anonymous volumes associated with the removed container
+            state: absent            # must be one of: absent, present, stopped, started
+
+        - name: Uninstall docker executable (delete file)
+          ansible.builtin.file:
+            path: "{{ docker_path }}/docker"
+            state: absent
+
+        - name: Uninstall docker-compose executable (delete file)
+          ansible.builtin.file:
+            path: "{{ docker_path }}/docker-compose"
+            state: absent
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+

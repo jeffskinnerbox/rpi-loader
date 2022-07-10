@@ -4,18 +4,17 @@
 #
 # YAML linter to spot Ansible YAML syntax errors
 #    yamllint playbooks/dev-env
-#    ansible-playbook -i inventory playbooks/apache/apache.yml --check --tags install
 #
 # Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory playbooks/apache/apache.yml --syntax-check
+#    ansible-playbook -i inventory -l test-pi playbooks/apache/apache.yml --syntax-check
 #
 # Ansible dry-run checking for errors and showing results of a run
-#    ansible-playbook -i inventory playbooks/apache/apache.yml --check --tags install
+#    ansible-playbook -i inventory -l test-pi playbooks/apache/apache.yml --check --tags install
 #
 
 ---
 
-- name: Apache2 HTTP Server on {{ http_host }}
+- name: Create Apache2 HTTP Server on {{ http_host }}
   hosts: "{{ http_host }}"
   remote_user: "{{ app_user }}"
   become: true

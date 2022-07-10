@@ -4,18 +4,17 @@
 #
 # YAML linter to spot Ansible YAML syntax errors
 #    yamllint playbooks/dev-env
-#    ansible-playbook -i inventory playbooks/crypto-tools/crypto-tools.yml --check --tags install
 #
 # Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory playbooks/crypto-tools/crypto-tools.yml --syntax-check
+#    ansible-playbook -i inventory -l test-pi playbooks/crypto-tools/crypto-tools.yml --syntax-check
 #
 # Ansible dry-run checking for errors and showing results of a run
-#    ansible-playbook -i inventory playbooks/crypto-tools/crypto-tools.yml --check --tags install
+#    ansible-playbook -i inventory -l test-pi playbooks/crypto-tools/crypto-tools.yml --check --tags install
 #
 
 ---
 
-- name: Create your login environment on {{ login_env_host }}
+- name: Create your cryptographic tools on {{ login_env_host }}
   hosts: "{{ login_env_host }}"
   # remote_user: "{{ app_user }}"
   become: true                   # set to 'true' to activate privilege escalation => use sudo and be root by default
