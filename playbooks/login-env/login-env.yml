@@ -69,6 +69,34 @@
             clone: true
             update: true    # perform an update on submodules in the git repository in the git repository
 
+        #        - name: ensure pathogen is installed
+        #          become_user: '{{ ansible_user }}'
+        #          get_url:
+        #            dest: "{{ vim_dir }}/autoload/pathogen.vim"
+        #            url: https://tpo.pe/pathogen.vim
+
+        #        - name: install plugins for vim
+        #          become_user: '{{ ansible_user }}'
+        #          git:
+        #            dest: "{{ vim_dir }}/bundle/{{ item.name }}"
+        #            repo: "{{ item.url }}"
+        #            clone: true
+        #            update: true
+        #            recursive: true
+        #          loop:
+        #            - name: vim-airline
+        #              url: https://github.com/vim-airline/vim-airline
+        #            - name: nerdtree
+        #              url: https://github.com/preservim/nerdtree
+        #            - name: fzf-vim
+        #              url: https://github.com/junegunn/fzf.vim
+        #            - name: vim-gitgutter
+        #              url: https://github.com/airblade/vim-gitgutter
+        #            - name: vim-fugitive
+        #              url: https://github.com/tpope/vim-fugitive
+        #            - name: vim-floaterm
+        #              url: https://github.com/voldikss/vim-floaterm
+
         - name: setup your vim environment
           become_user: "{{ app_user }}"
           ansible.builtin.shell: |
