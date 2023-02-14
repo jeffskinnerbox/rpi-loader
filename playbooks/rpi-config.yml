@@ -1,0 +1,170 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# While your within playbook directory, check the following prior to doing the play
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint rpi-config.yml roles/*/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi rpi-config.yml --syntax-check
+#
+# Generate a list of tasks that will be executed for the tags
+#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --list-tasks
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --check
+#
+# Run the playbook for real (assuming 'inventory' is up to date)
+#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install
+#
+# Run the playbook for real for the first time or after you did an 'uninstall'
+# Requires 'hosts: all' in the playbook and the ',' after the <ip address>
+#    ansible-playbook -i <ip address>, rpi-config.yml --user pi --ask-pass --tags install
+#
+
+---
+
+- name: Create your system environment on a Raspberry Pi
+  hosts: all
+  become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+
+  vars_prompt:
+    - name: "host_name"
+      prompt: "Hostname"
+      default: "test-pi"
+      private: false
+
+    - name: "user_name"
+      prompt: "User name"
+      default: "pi"
+      private: false
+
+    - name: "user_password"
+      prompt: "Password"
+      default: "raspberry"
+      private: true
+      encrypt: "sha512_crypt"
+      confirm: true
+
+    - name: "comment"
+      prompt: "Username description"
+      default: "raspberry pi used for various testing"
+      private: false
+
+    - name: "interface"
+      prompt: "Ethernet interface"
+      default: "enxb827eb0a63fd"
+      private: false
+
+    - name: "ip_address"
+      prompt: "Static Ethernet IPv4 address"
+      default: "192.168.1.205/24"
+      private: false
+
+    - name: "routers"
+      prompt: "Routers (comma separated)"
+      default: "192.168.1.1"
+      private: false
+
+    - name: "dns_servers"
+      prompt: "DNS servers (space separated)"
+      default: "192.168.1.1 1.1.1.1 1.0.0.1"
+      private: false
+
+  tasks:
+
+    # --- Install Block of Tasks ---------------------------------------------------
+
+    - name: Install custom raspberry pi configuration
+      block:
+        - name: install raspberry pi firmware update tool
+          apt:
+            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            update_cache: true       # update the apt repository list cache
+            cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+            pkg: ['rpi-update']
+
+        # - name: check for and install any required Raspberry Pi firmware upgrades
+        #   shell:
+        #     cmd: "BRANCH=next rpi-update"
+        #     args:
+        #       executable: /usr/bin/bash
+        # notify: reboot host and wait for it to restart
+
+        - name: execute raspi-config to enable raspberry pi hardware features
+          command: "{{ item }}"
+          loop:
+            - raspi-config nonint do_ssh 0                   # enable ssh
+            - raspi-config nonint do_spi 0                   # enable SPI controller (/dev/spidev0.0 and /dev/spidev0.1)
+            - raspi-config nonint do_i2c 0                   # enabling I2C bus /dev/i2c-1
+            - raspi-config nonint do_serial 0                # enable serial console for console cables
+            - raspi-config nonint do_camera 0                # enable camera
+            - raspi-config nonint do_onewire 0               # enable 1-wire
+            - raspi-config nonint do_expand_rootfs           # expand partition to use 100% of remaining space
+            - raspi-config nonint do_boot_behaviour B1       # require password to get console access
+          notify: reboot host and wait for it to restart
+
+        # - name: disable un-needed features that waste power or slows performance
+        #   command: "{{ item }}"
+        #   loop:
+        #     - systemctl set-default multi-user.target     # set to multi-user mode and don't use graphic user interface
+        #     - "sed -i '/exit 0/i # disable HDMI\n\/usr\/bin\/tvservice -o\n' /etc/rc.local"     # disable hdmi since your working headless and this saves power
+        # notify: reboot host and wait for it to restart
+
+        - name: set a new password for "{{ user_name }}" user account
+          user:
+            name: "{{ user_name }}"
+            comment: "{{ comment }}"
+            password: "{{ user_password | password_hash('sha512') }}"
+
+        - name: set the hostname
+          command: hostnamectl set-hostname "{{ host_name }}"
+          notify: reboot host and wait for it to restart
+
+        - name: update /etc/hosts with new hostname
+          lineinfile:
+            dest: /etc/hosts
+            regexp: "^127.0.1.1\traspberrypi$"
+            line: "127.0.1.1\t{{ host_name }}"
+            state: present
+          notify: reboot host and wait for it to restart
+
+        - name: add static ip-address to end of '/etc/dhcpcd.conf'
+          lineinfile:
+            state: present
+            insertafter: EOF
+            dest: /etc/dhcpcd.conf
+            line: "{{ item }}"
+          with_items:
+            - "\n# set static ip-address on ethernet port, along with dhcp on wifi"
+            - "interface {{ interface }}"
+            - "static ip_address={{ ip_address }}"
+            - "static routers={{ routers }}"
+            - "static domain_name_servers={{ dns_servers }}"
+          notify: reboot host and wait for it to restart
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+    # --- Uninstall Block of Tasks -------------------------------------------------
+
+    - name: Uninstall custom raspberry pi configuration
+      block:
+        - name: message to user
+          debug:
+            msg: WARNING - No action taken.  You can't do an uninstall via this playbook.  Uses rpi-default-config.yml instead.
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+  # ------------------------------------------------------------------------------
+
+  handlers:
+    - name: reboot host and wait for it to restart
+      reboot:
+        msg: "Ansible reboot triggered to finish install/uninstall tasks"
+        pre_reboot_delay: 0       # seconds to wait before reboot
+        post_reboot_delay: 30     # seconds to wait after the reboot command was successful before attempting to validate
+        reboot_timeout: 600       # keep attempting to connect for 10 minutes (600 seconds)
+        connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
+        test_command: whoami      # validate the node is up and working

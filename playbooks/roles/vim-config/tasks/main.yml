@@ -1,0 +1,67 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# role file to install resource file (.vimrc) and plugins for vi/vim editor
+#
+# See: https://www.redhat.com/sysadmin/ansible-configure-vim
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install Vim Terminal Visual Editor With Custom .vimrc and Plugins
+  block:
+    - name: install required packages to suport vim
+      apt:
+        state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
+
+    - name: clone the .vim github repository
+      become_user: "{{ app_user }}"
+      git:
+        repo: 'http://github.com/jeffskinnerbox/.vim.git'
+        dest: '{{ app_user_home }}/.vim'
+        clone: true
+        update: true    # perform an update on submodules in this git repository
+
+    - name: create symbolic links for .vimrc and .gvimrc
+      become_user: '{{ app_user }}'
+      file:
+        src: "{{ app_user_home }}/.vim/{{ item }}"
+        dest: "{{ app_user_home }}/.{{ item }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        state: link
+      loop:
+        - vimrc
+        # - gvimrc
+
+    - name: ensure .vim/backup, .vim/tmp directories are created
+      become_user: '{{ app_user }}'
+      file:
+        path: "{{ app_user_home }}/.vim/{{ item }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        state: directory
+        recurse: true
+        mode: 0750     # mode 0750 = user can rwx, the group write, and others cannot read, write, or execute
+      loop:
+        - backup
+        - tmp
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall Vim Terminal Visual Editor
+  block:
+    - name: remove all login vim related files & directories
+      file:
+        path: "{{ app_user_home }}/{{ item }}"
+        state: absent
+      loop: ['.vim', '.vimrc']
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+

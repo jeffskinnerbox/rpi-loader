@@ -1,0 +1,96 @@
+{
+  "CreatedByVersion": "2.0.6.3",
+  "Schedule": {
+    "ID": 1,
+    "Tags": [
+      "ID=1"
+    ],
+    "Time": "2022-08-14T20:00:00Z",
+    "Repeat": "1h",
+    "LastRun": "2022-08-14T19:00:00Z",
+    "Rule": "AllowedWeekDays=Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday",
+    "AllowedDays": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ]
+  },
+  "Backup": {
+    "ID": "1",
+    "Name": "test-backup",
+    "Description": "docker install duplicati",
+    "Tags": [],
+    "TargetURL": "webdavs://192.168.1.201:5006//NetBackup/test-pi?auth-username=backup_user&auth-password=R%24Ke9KweR09&accept-any-ssl-certificate=true",
+    "DBPath": "/config/NOZFBYZDCN.sqlite",
+    "Sources": [
+      "/source/"
+    ],
+    "Settings": [
+      {
+        "Filter": "",
+        "Name": "encryption-module",
+        "Value": "",
+        "Argument": null
+      },
+      {
+        "Filter": "",
+        "Name": "compression-module",
+        "Value": "zip",
+        "Argument": null
+      },
+      {
+        "Filter": "",
+        "Name": "dblock-size",
+        "Value": "50mb",
+        "Argument": null
+      },
+      {
+        "Filter": "",
+        "Name": "--no-encryption",
+        "Value": "true",
+        "Argument": null
+      }
+    ],
+    "Filters": [
+      {
+        "Order": 0,
+        "Include": false,
+        "Expression": "**/tmp*/"
+      },
+      {
+        "Order": 1,
+        "Include": false,
+        "Expression": "**/Trash*/"
+      },
+      {
+        "Order": 2,
+        "Include": false,
+        "Expression": "**/.Trash*/"
+      }
+    ],
+    "Metadata": {
+      "LastBackupDate": "20220814T190001Z",
+      "BackupListCount": "1",
+      "TotalQuotaSpace": "0",
+      "FreeQuotaSpace": "0",
+      "AssignedQuotaSpace": "-1",
+      "TargetFilesSize": "98243106",
+      "TargetFilesCount": "5",
+      "TargetSizeString": "93.69 MB",
+      "SourceFilesSize": "116221593",
+      "SourceFilesCount": "3641",
+      "SourceSizeString": "110.84 MB",
+      "LastBackupStarted": "20220814T190000Z",
+      "LastBackupFinished": "20220814T190207Z",
+      "LastBackupDuration": "00:02:07.7604820"
+    },
+    "IsTemporary": false
+  },
+  "DisplayNames": {
+    "/source/": "source"
+  }
+}

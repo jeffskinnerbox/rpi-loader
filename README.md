@@ -39,6 +39,15 @@ Version:      0.0.1
 
 -----
 
+# Create the Raspberry Pi Base Image
+Raspberry Pi OS boots off an SD card,
+and your going want to maintain base image to initate any new solution.
+This base image is an up-to-date version of the software on the SD card
+that can just plug in and it works in a minimal, predictable way.
+The creation of this base image will require some
+special tools (e.g. [Raspberry Pi SD-Card imager - `rpi-imager`][74]),
+but you will almost certainly require further changes to this base image
+and you're going to want to implement these additonal changes via standard tools like Ansible playbooks.
 
 ## Create the Raspberry Pi OS SD-Card
 I have written a detailed [step-by-step guide][03]
@@ -48,7 +57,7 @@ on how to set up your Raspberry Pi as a "headless" computer.
 This includes configuring the RPi for my local network, updating firmware,
 loading all my favorite development tools and utilities.
 This guide has been of great value to me to help repeatedly and consistently establish my devices.
-But this work is nolong valid starting in April 2022
+But this work is no long valid starting in April 2022
 with the release of the Bullseye version of Raspberry Pi OS.
 
 ### Step 0: Select SD-Card - DONE

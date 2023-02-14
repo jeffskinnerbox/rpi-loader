@@ -1,0 +1,52 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# task file for 'deploy-ssh' role - install useful devlopment utilities
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install / Unisntall SSH Authentication
+  block:
+    - name: Add a new user named provision
+      user:
+        name=provision
+        password={{ provision_password }}
+
+    - name: Add provision user to the sudoers
+      copy:
+        dest: "/etc/sudoers.d/provision"
+        content: "provision  ALL=(ALL)  NOPASSWD: ALL"
+
+    - name: Deploy SSH Key
+      authorized_key: user=provision
+        key="{{ lookup('file', '/home/provision/.ssh/id_rsa.pub') }}"
+        state=present
+
+    - name: Disable Password Authentication
+      lineinfile:
+        dest=/etc/ssh/sshd_config
+        regexp='^PasswordAuthentication'
+        line="PasswordAuthentication no"
+        state=present
+        backup=yes
+      notify:
+        - restart ssh
+
+    - name: Disable Root Login
+      lineinfile:
+        dest=/etc/ssh/sshd_config
+        regexp='^PermitRootLogin'
+        line="PermitRootLogin no"
+        state=present
+        backup=yes
+      notify:
+        - restart ssh
+  tags: ['never', 'install']           # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+

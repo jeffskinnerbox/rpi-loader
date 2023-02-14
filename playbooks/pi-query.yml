@@ -1,0 +1,70 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint pi-query.yml roles/*/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi pi-query.yml --syntax-check
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i <ip address>, pi-query.yml --user pi --ask-pass --check
+#
+# Run the playbook for real
+#    ansible-playbook -i inventory pi-query.yml
+#    ansible-playbook -i <ip address>, pi-query.yml --user pi --ask-pass
+#
+
+---
+
+- name: Parses the network interfaces and lists them out so you can spot the ethernet interface
+  hosts: all
+  become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+
+  vars:
+    host_path_playbooks: "/home/jeff/src/linux-tools/rpi-loader/playbooks"
+
+  tasks:
+
+    # ------------------------------------------------------------------------------
+
+    - name: query raspberry pi network interface information
+      shell:
+        cmd: ip address | grep default | awk '{ print $2 }' | awk '{ print substr( $0, 1, length($0)-1 ) }'
+      register: cmd_output
+      args:
+        executable: /bin/bash
+
+    - name: script output - the host's network interfaces
+      debug:
+        var: cmd_output.stdout_lines
+
+    # ------------------------------------------------------------------------------
+
+    - name: query raspberry pi model information
+      shell:
+        cmd: cat /proc/cpuinfo | grep 'Hardware\|Revision\|Serial\|Model' | sed 's/\t//g'
+      register: cmd_output
+      args:
+        executable: /bin/bash
+
+    - name: script output - the host's hardware version
+      debug:
+        var: cmd_output.stdout_lines
+
+    # ------------------------------------------------------------------------------
+
+    - name: query raspberry pi ram memory information
+      shell:
+        cmd: "cat /proc/meminfo | grep MemTotal | sed 's/ //g' | sed 's/:/: /'"
+      register: cmd_output
+      args:
+        executable: /bin/bash
+
+    - name: script output - the host's RAM memory information
+      debug:
+        var: cmd_output.stdout_lines
+

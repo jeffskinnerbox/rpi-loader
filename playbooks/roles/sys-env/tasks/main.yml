@@ -1,0 +1,49 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# role file to install desirable system wide tools and settings
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install your system environment
+  block:
+    - name: Install git tools
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: [git, git-lfs]
+
+    - name: install the trash tool
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        pkg: [trash-cli]
+
+    - name: install the network time protocal (ntp) tool
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        pkg: [ntp]
+
+    - name: set the timezone
+      timezone:
+        name: America/New_York
+
+    - name: install the ufw firewall tool but don't enable
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        pkg: [ufw]
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall system environment
+  block:
+    - name: message to user
+      debug:
+        msg: Nothing needs to be uninstalled, therefore, it is not
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+

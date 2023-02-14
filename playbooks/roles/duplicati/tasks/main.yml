@@ -1,0 +1,86 @@
+
+# role file to create the the duplicati backup process
+#
+#  Testing
+#
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install / Uninstall Duplicati
+  block:
+    # - name: create directory for docker compose files and duplicati database
+    #   become_user: "{{ backup_user }}"
+    #   file:
+    #     state: directory
+    #     path: "{{ duplicati_compose_path }}"
+
+    # - name: copy docker compose file and environment variables
+    #   become_user: "{{ backup_user }}"
+    #   copy:
+    #     src: "files/{{ item }}"
+    #     dest: "{{ duplicati_compose_path }}/{{ item }}"
+    #     mode: u=rw,g=r,o=r
+    #   loop:
+    #     - duplicati-docker-compose.yml
+    #     - environment
+
+    # - name: create a duplicati container via docker compose
+    #   docker_compose:
+    #     project_src: "{{ duplicati_compose_path }}"
+    #     state: present
+    #     env_file: environment
+    #     files:
+    #       - duplicati-docker-compose.yml
+
+    - name: create a directory for duplicati configuration and database
+      become_user: "{{ backup_user }}"
+      file:
+        state: directory
+        path: "{{ duplicati_config_path }}"
+
+    - name: create a duplicati container via docker
+      docker_container:
+        name: duplicati
+        state: started       # must be one of: absent, present, stopped, started
+        image: linuxserver/duplicati:latest
+        ports:
+          - "{{ duplicati_port }}:8200"
+        env:
+          CLI_ARGS: "--exclude='*/tmp/' --exclude='*Trash/' --exclude='*.Trash/'"
+        volumes:
+          - "{{ duplicati_config_path }}:/config"
+          - "{{ duplicati_source_path }}:/source"
+        detach: true                     # set to true to leave the container running in background
+        container_default_behavior: compatibility
+        restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall duplicati
+  block:
+    - name: stop the docker container
+      docker_container:
+        name: duplicati
+        state: stopped
+
+    - name: remove the docker image and docker networks
+      docker_container:
+        name: duplicati
+        purge_networks: true
+        state: absent
+
+    - name: delete the docker compose files and persistent data
+      file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "{{ backup_user_home }}/src/duplicati"
+        - "{{ duplicati_config_path }}"
+
+  tags: ['never', 'uninstall']     # 'never' implies you must pass the tag to execute this block
+

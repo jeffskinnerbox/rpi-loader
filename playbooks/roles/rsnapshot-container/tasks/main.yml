@@ -1,0 +1,59 @@
+
+# role file to create the container that runs the rsnapshot backup process
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install rsnapshot container
+  block:
+    - name: create a rsnapshot container
+      docker_container:
+        name: rsnapshot
+        image: lscr.io/linuxserver/rsnapshot:latest
+        state: started       # must be one of: absent, present, stopped, started
+        env:
+          PUID: "400"                # user id of backup_user
+          PGID: "400"                # group id of backup_user
+          TZ: "America/New_York"     # specify a timezone to use
+        volumes:
+          - "{{ backup_user_home }}/{{ rsnapshot_store }}/{{ rsnapshot_config }}:/config"
+        container_default_behavior: compatibility
+        detach: true                     # set to true to leave the container running in background
+        restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+
+    - name: change owner/group of rsnapshot volumes
+      file:
+        path: "{{ backup_user_home }}/{{ rsnapshot_store }}"
+        state: directory
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        recurse: true
+  tags: ['never', 'install']           # 'never' implies you must pass the other tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall rsnapshot container
+  block:
+    - name: make copy of rsnapshot configuration directory (i.e. synchronize two directories on remote)
+      synchronize:
+        src: "{{ backup_user_home }}/{{ rsnapshot_store }}/{{ rsnapshot_config }}"
+        dest: "{{ backup_user_home }}/tmp"
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: stop rsnapshot container and remove
+      docker_container:
+        name: rsnapshot
+        keep_volumes: false        # to retain anonymous volumes associated with the removed container
+        state: absent              # must be one of: absent, present, stopped, started
+        container_default_behavior: compatibility
+
+    - name: delete all rsnapshot volumes, data, files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ backup_user_home }}/{{ rsnapshot_store }}"
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+

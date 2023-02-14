@@ -1,0 +1,54 @@
+
+# role file to create a new user account for the filesystem backup process owner
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Create user with approprate access rights
+  block:
+    - name: Create a 'no-login' user account for {{ backup_user }}
+      user:
+        state: present           # taking action if the state is different from what is stated
+        name: "{{ backup_user }}"
+        home: "{{ backup_user_home }}"
+        uid: 400                 # use number less that 500 so user doesn't appear on login screen list
+        create_home: true
+        shell: /sbin/nologin
+        generate_ssh_key: true
+
+    - name: Create /etc/sudoers.d/{{ backup_user }} file with proper owner/group/mode
+      file:
+        state: touch
+        path: "/etc/sudoers.d/{{ backup_user }}"
+        owner: root
+        group: root
+        mode: u+rw,g-w,o-w
+
+    - name: Add "{{ backup_user }}" file to /etc/sudoers.d directory
+      copy:
+        dest: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for creation
+        follow: true                              # if true, 'dest' will be overwritten by 'content'
+        content: |
+          {{ backup_user }}    ALL=NOPASSWD:    /usr/bin/rsync
+          {{ backup_user }}    ALL=NOPASSWD:    /usr/bin/rsnapshot
+        # validate: /usr/sbin/visudo -csf %s
+  tags: ['never', 'install']         # 'never' implies you must pass the other tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Remove the user
+  block:
+    - name: remove "{{ backup_user }}" user account
+      user:
+        state: absent
+        name: "{{ backup_user }}"
+        remove: true                 # if true, remove the directories associated with the user
+
+    - name: Remove "{{ backup_user }}" from /etc/sudoers directory
+      file:
+        state: absent
+        path: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for deletion
+  tags: ['never', 'uninstall']       # 'never' implies you must pass the other tag to execute this block
+

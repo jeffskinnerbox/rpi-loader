@@ -1,0 +1,37 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# task file for 'crypto-tools' role - install encryption and certificate packages
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install cryptography and certificate tools
+  block:
+    - name: install encryption and certificate packages
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
+
+    - name: install secure hash algorithms (SHA) tools, specifically SHA256
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['hashalot']
+  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall cryptography and certificate tools
+  block:
+    - name: message to user
+      debug:
+        msg: Nothing needs to be uninstalled, therefore, it is not
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+

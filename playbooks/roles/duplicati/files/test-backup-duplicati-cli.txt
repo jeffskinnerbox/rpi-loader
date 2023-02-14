@@ -1,0 +1,2 @@
+
+mono /app/duplicati/Duplicati.CommandLine.exe backup "webdavs://192.168.1.201:5006//NetBackup/test-pi?auth-username=backup_user&auth-password=R%24Ke9KweR09&accept-any-ssl-certificate=true" /source/ --backup-name=test-backup --dbpath=/config/NOZFBYZDCN.sqlite --encryption-module= --compression-module=zip --dblock-size=50mb --no-encryption=true --disable-module=console-password-input --exclude="**/tmp*/" --exclude="**/Trash*/" --exclude="**/.Trash*/"

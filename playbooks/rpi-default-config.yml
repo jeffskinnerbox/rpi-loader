@@ -1,0 +1,95 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# While your within playbook directory, check the following prior to doing the play
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint rpi-default-config.yml roles/*/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi rpi-default-config.yml --syntax-check
+#
+# Generate a list of tasks that will be executed for the tags
+#    ansible-playbook -i inventory -l test-pi rpi-default-config.yml --tags uninstall --list-tasks
+#
+# Ansible dry-run checking for errors and showing results of a run
+#    ansible-playbook -i inventory -l test-pi rpi-default-config.yml --tags uninstall --check
+#
+# Run the playbook for real (assuming 'inventory' is up to date)
+#    ansible-playbook -i inventory -l test-pi rpi-default-config.yml --tags uninstall
+#
+# Run the playbook for real for the first time or after you did an 'uninstall'
+# MUST HAVE 'hosts: all' in the playbook and the ',' after the <ip address>
+#    ansible-playbook -i <ip address>, rpi-default-config.yml --user pi --ask-pass --tags uninstall
+#
+
+---
+
+- name: Create your system environment on the host
+  hosts: all
+  become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+
+  vars:
+    rpi_default_password: "raspberry"
+
+  tasks:
+
+    # --- Install Block of Tasks ---------------------------------------------------
+
+    - name: Install custom raspberry pi configuration
+      block:
+        - name: message to user
+          debug:
+            msg: WARNING - No action taken. You can't do an install via this playbook.  Uses rpi-config.yml instead.
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+    # --- Uninstall Block of Tasks -------------------------------------------------
+
+    - name: Uninstall custom raspberry pi configuration
+      block:
+        - name: enable ssh password authentication
+          lineinfile:
+            state: present
+            dest: "/etc/ssh/sshd_config"
+            regexp: "^PasswordAuthentication"
+            line: "PasswordAuthentication yes"
+          notify: reboot host and wait for it to restart
+
+        - name: re-establish '/etc/dhcpcd.conf' to its original state
+          copy:
+            src: ./files/default-dhcpcd.conf
+            dest: /etc/dhcpcd.conf
+          notify: reboot host and wait for it to restart
+
+        - name: update /etc/hosts with new 'raspberrypi'
+          lineinfile:
+            dest: /etc/hosts
+            regexp: "^127.0.1.1\t*"
+            line: "127.0.1.1\traspberrypi"
+            state: present
+
+        - name: set a 'pi' user account passward to default 'raspberry'
+          user:
+            name: "pi"
+            password: "{{ rpi_default_password | password_hash('sha512') }}"
+            state: present
+
+        - name: set the hostname back to default of 'rapsberrypi'
+          command: hostnamectl set-hostname "raspberrypi"
+          notify: reboot host and wait for it to restart
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+  # ------------------------------------------------------------------------------
+
+  handlers:
+    - name: reboot host and wait for it to restart
+      reboot:
+        msg: "Ansible reboot triggered to finish install/uninstall tasks"
+        pre_reboot_delay: 0       # seconds to wait before reboot
+        post_reboot_delay: 30     # seconds to wait after the reboot command was successful before attempting to validate
+        reboot_timeout: 600       # keep attempting to connect for 10 minutes (600 seconds)
+        connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
+        test_command: whoami      # validate the node is up and working

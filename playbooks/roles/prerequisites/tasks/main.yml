@@ -1,0 +1,45 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# role file to install desirable and required prerequisites
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install desirable and required prerequisites
+  block:
+    - name: run the equivalent of "apt-get update"
+      apt:
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+
+    - name: install required prerequisite packages
+      apt:
+        name: ['git', 'curl', 'wget', 'ntp', 'apt-transport-https', 'gnupg2']
+        state: present
+
+    - name: install desirable prerequisite packages
+      apt:
+        state: latest
+        update_cache: false
+        pkg: ['ca-certificates', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: install these packages for ansible, needed in some situations
+      apt:
+        state: latest
+        update_cache: false
+        pkg: ['acl']
+  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall desirable and required prerequisites
+  block:
+    - name: message to user
+      debug:
+        msg: Nothing done. Packages newly installed and up-grades are unchanged.
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+

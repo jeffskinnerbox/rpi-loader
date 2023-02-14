@@ -1,0 +1,66 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# role file to update all packages (equivalent to "apt update && apt full-upgrade")
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install full-upgrade, add required packages, and reboot if needed
+  block:
+    - name: update the apt repository cache
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+
+    - name: execute script to create list of upgrades needed
+      shell:
+        cmd: apt list --upgradeable
+      register: cmd_output
+      args:
+        executable: /bin/bash
+
+    - name: script output - the list of upgrades needed
+      debug:
+        var: cmd_output.stdout_lines
+
+    - name: upgrade all apt repository packages
+      apt:
+        state: latest
+        upgrade: dist
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+
+    - name: remove apt repositories not needed anymore
+      apt:
+        autoremove: true
+
+    - name: check if a reboot is needed because of kernel changes, etc.
+      register: reboot_required_file
+      stat:
+        path: var/run/reboot-required
+        get_md5: false
+
+    - name: reboot the box if needed
+      reboot:
+        msg: "Reboot Initiated By Ansible"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+      when: reboot_required_file.stat.exists
+  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall full-upgrade on all packages
+  block:
+    - name: message to user
+      debug:
+        msg: Nothing done. Packages newly installed and up-grades are unchanged.
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+

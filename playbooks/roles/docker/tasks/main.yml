@@ -1,0 +1,124 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+
+# role file to install docker, docker compose, and portainer
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install Docker, Docker Compose, and Portainer
+  block:
+  - name: install docker's required system packages
+    apt:
+      state: latest            # must be one of: absent, build-dep, fixed, latest, present
+      update_cache: true       # update the apt repository list cache
+      cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+      pkg: ['aptitude', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+  - name: pulldown docker installation script
+    get_url:
+      url: https://get.docker.com
+      dest: "{{ tmp_path }}/get-docker.sh"
+      # owner: "{{ user }}"
+      mode: u+rwx
+
+  - name: install docker via executing docker installation script
+    shell:
+      cmd: "sh {{ tmp_path }}/get-docker.sh"
+    args:
+      creates: "{{ docker_path }}/docker"
+      executable: /usr/bin/bash
+
+  - name: install docker-compose
+    pip:
+      name: docker-compose
+      state: present
+
+  - name: create test container (hello-world)
+    docker_container:
+      name: hello-world
+      image: hello-world
+      state: started       # must be one of: absent, present, stopped, started
+      container_default_behavior: compatibility
+      auto_remove: true    # auto-removal of the container when the container's process exits
+
+  - name: create a portainer container
+    docker_container:
+      name: portainer
+      state: started       # must be one of: absent, present, stopped, started
+      image: portainer/portainer-ce:latest
+      ports:
+        - "{{ portainer_port }}:9000"
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /var/run/docker.sock:/var/run/docker.sock
+        - "{{ app_user_home }}/{{ portainer_data }}:/data"
+      detach: true                     # set to true to leave the container running in background
+      container_default_behavior: compatibility
+      restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+
+  - name: create a portainer agent
+    docker_container:
+      name: portainer-agent
+      state: started       # must be one of: absent, present, stopped, started
+      image: portainer/agent:latest
+      ports:
+        - "{{ portainer_agent_port }}:9001"
+      volumes:
+        - "/var/run/docker.sock:/var/run/docker.sock"
+        - "{{ app_user_home }}/{{ portainer_volumes }}:/var/lib/docker/volumes"
+      detach: true                     # set to true to leave the container running in background
+      container_default_behavior: compatibility
+      restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+  tags: ['never', 'install']           # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall Docker, Docker Compose, and Portainer
+  block:
+    - name: stop portainer & portainer-agent containers and remove
+      docker_container:
+        name: "{{ item }}"
+        state: absent              # must be one of: absent, present, stopped, started
+        keep_volumes: false        # to retain anonymous volumes associated with the removed container
+      loop:
+        - portainer
+        - portainer-agent
+
+    - name: delete all portainer volumes
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ app_user_home }}/{{ portainer_data }}"
+        - "{{ app_user_home }}/{{ portainer_volumes }}"
+
+    - name: purging all unused or dangling images, containers, volumes, and networks
+      shell:
+        cmd: docker system prune -a
+      args:
+        executable: /usr/bin/bash
+
+    - name: uninstall docker engine
+      apt:
+        pkg: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
+        state: absent              # must be one of: absent, build-dep, fixed, latest, present
+
+    - name: Uninstall docker-compose executable (delete file)
+      pip:
+        name: docker-compose
+        state: absent
+
+    - name: remove any very old versions of docker that may have been left behind
+      apt:
+        pkg: ['docker', 'docker-engine docker.io', 'containerd', 'runc']
+        state: absent              # must be one of: absent, build-dep, fixed, latest, present
+        autoclean: true            # cleans the local repository packages that can no longer be downloaded
+        autoremove: true           # remove unused dependency with repository packages
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+

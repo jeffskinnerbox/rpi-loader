@@ -1,7 +1,0 @@
----
-- hosts: all
-  become: true
-  vars:
-    sys_packages: ['wget', 'vim', 'git']
-  roles:
-    - piconfig

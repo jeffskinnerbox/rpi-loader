@@ -1,0 +1,67 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# role file to install LiFePO4wered-Pi UPS tools for Raspberry Pi
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install LiFePO4wered-Pi UPS
+  block:
+    - name: Install prerequisite tools
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev']
+
+    - name: Create a '~/src' directory if it does not exist (as user)
+      become_user: "{{ app_user }}"
+      file:
+        path: "{{ app_user_home }}/src"
+        state: directory
+
+    - name: check if LiFePO4wered-Pi UPS git repository exists
+      stat:
+        path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
+      register: file_exists
+
+    - name: clone the LiFePO4wered-Pi UPS repository (as user)
+      become_user: "{{ app_user }}"
+      git:
+        repo: "https://github.com/xorbit/LiFePO4wered-Pi.git"
+        dest: "{{ app_user_home }}/src/LiFePO4wered-Pi"
+        clone: true
+      when: not file_exists.stat.exists
+
+    - name: build LiFePO4wered-Pi UPS tools & daemon (as user)
+      make:
+        chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
+        target: "{{ item }}"
+      loop:
+        - all
+        - user-install
+      notify: reboot host and wait for it to restart
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall LiFePO4wered-Pi UPS (really disable daemon & remove repository)
+  block:
+    - name: disable LiFePO4wered-Pi daemon
+      systemd:
+        name: lifepo4wered-daemon.service
+        state: stopped        # must be one of: reloaded, restarted, started, stopped
+        enabled: false        # start on boot? - must be true or false
+
+    - name: remove LiFePO4wered-Pi UPS git repository
+      file:
+        state: absent
+        path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+# ------------------------------------------------------------------------------
+

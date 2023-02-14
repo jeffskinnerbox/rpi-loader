@@ -1,0 +1,117 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# task file for 'login-env' role - install tools for your shell / login environment
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install / Uninstall your login environment
+  block:
+    - name: Install required prerequisites and desirable tools
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['chromium-browser', 'git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'screen', 'wmctrl']
+
+    - name: clone .bash git repository
+      become_user: "{{ app_user }}"
+      git:
+        repo: 'https://github.com/jeffskinnerbox/.bash.git'
+        dest: '/home/{{ app_user }}/.bash'
+        clone: true
+
+    - name: clean out the old bash environment (delete files)
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ app_user_home }}/.inputrc"
+        - "{{ app_user_home }}/.bashrc"
+        - "{{ app_user_home }}/.bash_login"
+        - "{{ app_user_home }}/.bash_logout"
+        - "{{ app_user_home }}/.bash_profile"
+
+    - name: setup your new bash environment
+      file:
+        src: "{{ app_user_home }}/.bash/{{ item.src }}"
+        dest: "{{ app_user_home }}/{{ item.dest }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        state: link
+      loop:
+        - {src: 'inputrc', dest: '.inputrc'}
+        - {src: 'bashrc', dest: '.bashrc'}
+        - {src: 'bash_login', dest: '.bash_login'}
+        - {src: 'bash_logout', dest: '.bash_logout'}
+        - {src: 'bash_profile', dest: '.bash_profile'}
+
+    - name: source/load the changes into your profile
+      become_user: "{{ app_user }}"
+      shell: |
+        source ~/.bashrc
+      args:
+        executable: /usr/bin/bash
+
+    - name: clone .X git repository
+      become_user: "{{ app_user }}"
+      ansible.builtin.git:
+        repo: 'https://github.com/jeffskinnerbox/.X.git'
+        dest: '{{ app_user_home }}/.X'
+        clone: true
+
+    - name: setup your x windows environment
+      file:
+        src: "{{ app_user_home }}/.X/{{ item.src }}"
+        dest: "{{ app_user_home }}/{{ item.dest }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        state: link
+      loop:
+        - {src: 'xbindkeysrc', dest: '.xbindkeysrc'}
+        - {src: 'Xresources', dest: '.Xresources'}
+        - {src: 'xsessionrc', dest: '.xsessionrc'}
+
+    - name: rebuilding $HOME/.Xauthority to avoid MIT magic cookie error
+      become_user: "{{ app_user }}"
+      shell: |
+        cd ~
+        touch ~/.Xauthority
+        xauth generate :0 . trusted
+        xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
+      args:
+        executable: /usr/bin/bash
+  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall your login environment
+  block:
+    # - name: remove all login environment related files & directories
+    #   become_user: "{{ app_user }}"
+    #   ansible.builtin.shell: |
+    #     cd ~
+    #     rm .bash_logout .inputrc .bashrc .bash_login .bash_logout .bash_profile
+    #     rm .vimrc .xbindkeysrc .Xresources .xsessionrc .Xauthority
+    #     rm -r -f .bash .vim .X
+    #   args:
+    #     executable: /usr/bin/bash
+
+    - name: remove all login environment related files & directories
+      file:
+        path: "{{ app_user_home }}/{{ item }}"
+        state: absent
+      loop: ['.bash_logout', '.inputrc', '.bashrc', '.bash_login', '.bash_logout', '.bash_profile', '.xbindkeysrc', '.Xresources', '.xsessionrc', '.Xauthority', '.bash', '.X']
+
+    - name: uninstall chromium-browser
+      apt:
+        name: chromium-browser
+        state: absent            # must be one of: absent, build-dep, fixed, latest, present
+        autoclean: true          # cleans the local repository packages that can no longer be downloaded
+        autoremove: true         # remove unused dependency with repository packages
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+

@@ -22,6 +22,116 @@ Version:      0.0.1
 * [Ansible Setting Up SSH (Raspberry Pi)](https://geektechstuff.com/2019/06/27/ansible-setting-up-ssh-raspberry-pi/)
 * [Ansible – Looking at commands & Playbooks (Raspberry Pi)](https://geektechstuff.com/2019/06/27/ansible-looking-at-commands-playbooks-raspberry-pi/)
 
+* [The Right Way to reboot a host with Ansible](https://earlruby.org/2019/07/rebooting-a-host-with-ansible/)
+* [Ansible: Tasks vs Roles vs Handlers](https://roelofjanelsinga.com/articles/ansible-difference-between-tasks-and-roles/)
+
+
+
+
+
+# Ansible's Interactive Input `vars_prompt`
+If you want your playbook to prompt the user for certain input,
+you can add a [`vars_prompt`][04] section.
+Prompting the user for variables lets you avoid recording sensitive data like passwords
+and dealing with data that may change over time or systems.
+In my case, I used it the `rpi-config.yml` playbook.
+It very useful to for initializing a fresh system with things like
+static IP addresses, WiFi SSID & passwords, etc.
+
+Sources
+* [Introduction to Ansible prompts and runtime variables][04]
+* [Interactive input: prompts](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html)
+
+
+
+
+# Ansible's Commandline
+
+## Tags
+ansible-playbook offers five tag-related command-line options:
+* `--tags all` - run all tasks, ignore tags (default behavior)
+* `--tags tag1,tag2` - run only tasks with either the tag `tag1` or the tag `tag2`
+* `--skip-tags tag3,tag4` - run all tasks except those with either the tag `tag3` or the tag `tag4`
+* `--tags tagged` - run only tasks with at least one tag
+* `--tags untagged` - run only tasks with no tags
+
+## No Inventory File
+There are times when you'll want to run a playbook on one or more host
+independently of any `inventory` file.
+This is particularly true when your setting up a host and readying it for provisioning via Ansible.
+This is a handy but quirky little feature of Ansible with [some rules you must follow][05]
+or it will not work properly.
+It takes the form:
+
+```bash
+# passing a host name
+ansible-playbook -i test-pi.local, playbook.yml
+
+# passing a host ip address
+ansible-playbook -i 192.168.1.79, playbook.yml
+```
+
+The quirky stuff is:
+
+* The `,` (comma) after the host is important.
+Without this `ansible-playbook` will think the next commandline argument is an inventory file.
+* You must `hosts` to `all` in your playbook or `ansible-playbook` command will fail.
+
+Source:
+* [Running Ansible without an Inventory File][05]
+* [How to run Ansible without specifying the inventory but the host directly?](https://gist.github.com/lilongen/ebc11f69ae2ba48971c77527d5c02fab)
+
+## Print Command Output
+Ordinarily, when you run an Ansible playbook,
+you get a summary of the execution on the terminal but you don't generally see `stdout` output.
+This is fine until you specifically want to see the output created,
+say from a shell script.
+The playbook `list-interfaces.yml` is specifically intended to parses the network interfaces
+and lists them out so you can spot the ethernet interface.
+
+Source:
+* [How to print command output in Ansible?](https://linuxhint.com/print-command-output-ansible/)
+
+
+
+
+# Predictable Network Interface Names
+The classic naming schemes for network interfaces used things like "eth0", "eth1", etc.
+as the operating system probed for the devices at boot up.
+Since the devices respond somewhat randomly,
+it might very well happen that "eth0" on one boot ends up being "eth1" on the next.
+This can have serious security implications.
+(For example, in firewall rules which are coded for certain naming schemes,
+and which are hence very sensitive to unpredictable changing names.)
+
+over the years, several predictable network interface naming schemes have been applied,
+depending on if the interface is on-board, PCI slot, etc.
+The name is a combination multiple physical/logical characteristics of the device,
+and therefore, should be unique and predictable.
+
+This has definite drawbacks.
+For one thing, you can nolong count on having a "eth0" interface.
+Also, a system administrator now has to check first what the local interface name is
+before they can invoke commands or make changes like establishing a static IP addess for the interface.
+
+There are ways you can disable the predictable network interface scheme.
+
+* To over ride the predictable network interface naming schemes,
+create your own manual naming scheme by defining your own [udev rules][02] file
+in the `/etc/udev/rules.d` folder and set the `NAME` property for the devices.
+* Tell the Linux kernel to return to the classic naming scheme by
+[adding some text to the `/boot/cmdline.txt` file][03].
+
+I choose to find a way to live with predictable network interface naming scheme.
+I this its best recognize that its here to stay and I want to find ways to cope with its use.
+
+Sources:
+* [Predictable Network Interface Names](https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/)
+* [Understanding systemd’s predictable network device names](https://major.io/2015/08/21/understanding-systemds-predictable-network-device-names/)
+* [Raspberry Pi 3 - eth0 wrongfully named 'enx...'](https://raspberrypi.stackexchange.com/questions/43560/raspberry-pi-3-eth0-wrongfully-named-enx)
+
+
+
 
 
 
@@ -36,8 +146,9 @@ since Ansible does not support Windows.
 
 ## Step 1A:
 ## Step 1B: Install Ansible
-Ansible is dead simple to install using Python’s package manager, pip.
-Just run:
+Ansible is dead simple to install using Python’s package manager, `pip`.
+You'll also need the [noninteractive ssh password utility `sshpass`][01]
+to allow you to use Ansible with login/password to enter your nodes.
 
 ```bash
 # using python's pip
@@ -45,6 +156,8 @@ sudo pip install ansible
 
 # OR using Unbutu's apt-get
 sudo apt install ansible
+
+sudo apt-get install sshpass
 ```
 
 With that you’re ready with Ansible on your local machine.
@@ -432,6 +545,204 @@ $ arp -a | grep -e 00:1f:1f -e 00:50:fc -e 00:0e:2e -e 00:00:b4 -e 08:be:ac -e 7
 So, we can now log into the Raspberry Pi via `ssh -X pi@berrygps` or `ssh -X pi@b192.168.1.230`.
 
 
+
+
+
+```bash
+# establish ssh login into the raspberry pi
+ansible-playbook -i inventory -l test-pi deploy-ssh.yml -u pi --ask-pass --tags install
+
+# configure the raspberry pi
+ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install
+```
+
+
+------
+
+
+# Ansible
+Ansible
+
+#### Step 1: Installing Ansible on Ansible Server - DONE
+The Ansible host computers could exist anywhere as long as they are reachable via SSH.
+On your Ansible host machine,
+your first step is to install Ansible and any extension you may want to use.
+See `using-vagrant-docker-and-ansible.md` to understand how to do this.
+
+#### Step 2: Copy SSH Keys to Client - DONE
+Ansible primarily communicates with client computers through SSH.
+While it has the ability to handle password-based SSH authentication,
+using SSH keys can help to keep things simple.
+(Check [here][06] if you need more information concerning SSH,
+how to generate keys, using keys, etc.)
+
+On my Ansible server, I have created a specific SSH key for Ansible work.
+That key is `~/.ssh/ansible.pub`.
+
+##### Method A: Copying Public Key Using ssh-copy-id - DONE
+The simplest method to provide the SSH keys to the client computer
+is to use the `ssh-copy-id` tool.
+Launching from the Ansible server, the syntax is:
+`ssh-copy-id username@remote_host`.
+In my case:
+
+```bash
+# from my desktop computer, copying public key using ssh-copy-id
+ssh-copy-id -i ~/.ssh/ansible.pub pi@home-assist
+
+# or
+ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.203
+```
+
+To test if this is successful,
+login to your Ansible client via SSH: `pi@192.168.1.203`
+and you should get in without being prompted for a password.
+
+##### Method B: Copying Public Key Using SSH
+If you do not have `ssh-copy-id` available on your computer,
+but you have password-based SSH access to an account on your server,
+you can upload your keys using a conventional SSH method:
+
+```bash
+# from my desktop computer, copying public key using ssh
+cat ~/.ssh/ansible.pub | ssh pi@home-assist "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod -R go= ~/.ssh && cat >> ~/.ssh/authorized_keys"
+```
+
+##### Method C: Copying Public Key Manually
+The final method is just to do it all manually.
+Assuming SSH is already established on your Ansible server,
+use the `cat` command to print the contents of your
+non-root user’s SSH public key file to the terminal’s output:
+
+```bash
+# copy this public ssh key
+cat ~/.ssh/id_rsa.pub
+```
+
+Copy the resulting output to your clipboard,
+then open a new terminal and connect to one of your Ansible hosts using SSH,
+and do the following:
+
+1. Switch to the client machine’s root user.
+1. As the root user, open the `authorized_keys` within the `~/.ssh` directory:
+1. In the file, paste your Ansible server user’s SSH key, then save the file.
+
+### Step 3: Creating Hosts File - DONE
+Ansible needs to know your remote server names or IP address.
+This information is stored in a file called `hosts`, or often refered to as your "inventory".
+The default file is `/etc/ansible/hosts`.
+You can edit this one or create a new one in your `$HOME` directory,
+or better yet, place the `hosts` file in your projects directory referance it
+on the command-line when running `ansible`.
+
+```bash
+# create the hosts (aka inventory) file for your raspberry pi
+cat <<EOF > inventory
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      0.0.1
+
+# aka ansible hosts file
+
+# ansible control node
+#[controller]
+#127.0.0.1 ansible_connection=local
+
+# ansible managed hosts (aka nodes)
+[nodes]
+home-assist ansible_ssh_host=192.168.1.203 ansible_ssh_port=22 kubernetes_role=node
+#node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
+#node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
+#node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
+
+# ansible varables applied to [nodes]
+[nodes:vars]
+ansible_user='pi'
+ansible_ssh_user=pi
+deploy_target=pi
+ansible_become=yes
+ansible_become_method=sudo
+ansible_python_interpreter='/usr/bin/env python3'
+#ansible_python_interpreter=/usr/bin/python3
+EOF
+```
+
+
+
+------
+
+
+
+# Test Ansible Configuration
+Ansilbe support many ad-hoc commands that can be used to manage your nodes.
+You find a long list in the webpost "[How to Use Ansible: A Reference Guide][07]"
+and some listed below.
+Use them to test your Ansible setup so far.
+
+```bash
+# check your inventory
+ansible-inventory -i inventory --list -y
+
+# gather facts about a node
+ansible home-assist -i inventory -m setup
+
+# connectivity test, including localhost (aka controller)
+ansible all -i inventory -m ping
+
+# install the package vim on home-assist from your inventory
+ansible home-assist -i inventory -m apt -a "name=vim"
+
+# you can conduct a dry run to predict how the servers would be affected by your command
+ansible home-assist -i inventory -m apt -a "name=vim" --check
+
+# get current disk usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "df -h"
+
+# get current memory usage, including localhost (aka controller)
+$ ansible all -i inventory -m shell -a "free -m"
+
+# reboot all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -r now" -b -B 60 -P 0
+
+# shut down all the linux hosts, but not localhost (aka controller)
+$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -h now" -b -B 60 -P 0
+
+# uptime check for individual host 'home-assist'
+ansible home-assist -i inventory -a "uptime" -u root
+
+# specify multiple hosts by separating them with colons
+ansible home-assist:node-2 -i inventory -a "uptime" -u root
+
+# install vim-nox package on home-assist
+ansible home-assist -m apt -a "name=vim-nox" --become
+```
+
+To run a playbook and execute all the tasks defined within it, use the `ansible-playbook` command:
+
+```bash
+# use a playbook to install the LEMP stack on home-assist
+ansible-playbook -i inventory -l home-assist tasks/lemp.yml
+
+# to understand the impacted of a play book without making changes
+ansible-playbook -i inventory -l home-assist tasks/lemp.yml --list-tasks
+
+# Ansible will then skip anything that comes before the specified task
+ansible-playbook -i inventory -l home-assist tasks/lemp.yml --start-at-task="Set Up Nginx"
+
+# only execute tasks associated with specific tags
+ansible-playbook -i inventory -l home-assist tasks/lemp.yml --tags=mysql,nginx
+```
+
+----
+
+
+
+[01]:https://linux.die.net/man/1/sshpass
+[02]:https://www.thegeekdiary.com/how-to-disable-predictable-network-interface-device-names-in-centos-rhel-7/
+[03]:https://kalitut.com/change-network-interfaces-in-raspbian/
+[04]:https://linuxconfig.org/introduction-to-ansible-prompts-and-runtime-variables
+[05]:https://ericsysmin.com/2017/01/29/running-ansible-without-an-inventory-file/
+[06]:https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804
+[07]:https://www.digitalocean.com/community/cheatsheets/how-to-use-ansible-cheat-sheet-guide
 
 [11]:https://www.raspberrypi.org/blog/raspbian-stretch/
 [12]:https://www.raspberrypi.org/downloads/raspbian/

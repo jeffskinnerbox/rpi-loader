@@ -1,0 +1,4 @@
+DUPLICATI_PORT=8270
+SOURCE_PATH='/home/'
+CONFIG_PATH='/home/backup_user/src/duplicati/config'
+

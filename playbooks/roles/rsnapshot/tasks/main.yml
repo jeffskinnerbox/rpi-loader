@@ -1,0 +1,189 @@
+
+# role file to create the the rsnapshot backup process
+#
+#  Testing
+#
+#     sudo rsnapshot configtest
+#     sudo rsnapshot -t hourly
+#     sudo /home/backup_user/bin/rsnapshot-wrapper.sh hourly
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install / Uninstall rsnapshot and the automation backup shell scripts that use it
+  block:
+    - name: Install prerequisite tools
+      apt:
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev', 'grsync']
+
+    - name: Create a '~/src' and '~/bin' directory if don't exist (as user)
+      become_user: "{{ backup_user }}"
+      file:
+        path: "{{ backup_user_home }}/{{ item }}"
+        state: directory
+      loop:
+        - src
+        - bin
+
+    - name: check if rsnapshot git repository exists
+      become_user: "{{ backup_user }}"
+      stat:
+        path: '{{ backup_user_home }}/src/rsnapshot'
+      register: file_exists
+
+    - name: clone the rsnapshot repository (as user)
+      become_user: "{{ backup_user }}"
+      git:
+        repo: "https://github.com/rsnapshot/rsnapshot.git"
+        dest: "{{ backup_user_home }}/src/rsnapshot"
+        clone: true
+      when: not file_exists.stat.exists
+
+    - name: do the preparation work so you can perform the build (as user)
+      become_user: "{{ backup_user }}"
+      shell:
+        cmd: "{{ item }}"
+        chdir: "{{ backup_user_home }}/src/rsnapshot"
+      loop:
+        - ./autogen.sh                 # generates the configure script
+        - ./configure --sysconfdir=/etc
+
+    - name: build rsnapshot tools (as root)
+      make:
+        chdir: "{{ backup_user_home }}/src/rsnapshot"
+        target: "{{ item }}"
+      loop:
+        - install
+
+    - name: copy the configuration file to it destination
+      shell:
+        cmd: cp /etc/rsnapshot.conf.default /etc/rsnapshot.conf
+      args:
+        executable: /bin/bash
+        creates: /etc/rsnapshot.conf
+
+    - name: copy the rsnapshot executable to /usr/bin
+      shell:
+        cmd: cp /usr/local/bin/rsnapshot /usr/bin/rsnapshot
+      args:
+        executable: /bin/bash
+        creates: /usr/bin/rsnapshot
+
+    # --------------------------------------------------------------------------
+
+    - name: copy backup's shell scripts to ~/backup_user/bin
+      become_user: "{{ backup_user }}"
+      copy:
+        src: "./scripts/{{ item }}"
+        dest: "{{ backup_user_home }}/bin/{{ item }}"
+        mode: u+rwx,g-rwx,o-rwx
+        remote_src: false
+      loop:
+        - full-backup.sh
+        - rsnapshot-wrapper.sh
+        - rsync-wrapper.sh
+        - apprise.sh
+
+    - name: copy rsync exclude files and secrets to ~/backup_user
+      become_user: "{{ backup_user }}"
+      copy:
+        src: ./files/{{ item }}
+        dest: "{{ backup_user_home }}/{{ item }}"
+        mode: u+rw,g-rwx,o-rwx
+        remote_src: false
+      loop:
+        - rsync-exclude-RPi
+        - secret.env
+
+    - name: creates the rsnapshot cron file under /etc/cron.d
+      copy:
+        src: ./files/{{ item }}
+        dest: "/etc/cron.d/{{ item }}"
+        mode: u+rw,g+rw,o+r
+        remote_src: false
+        backup: true                  # make backup if it already exists
+      loop:
+        - rsnapshot.crontab
+      notify: restart-cron
+
+    - name: copy the rsnapshot configuration file and backup any existing file
+      copy:
+        src: ./files/rsnapshot.conf
+        dest: /etc/rsnapshot.conf
+        mode: u+rw,g+rw,o+r
+        remote_src: false
+        backup: true                  # make backup if it already exists
+
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall rsnapshot and my shell scripts to use it
+  block:
+    - name: check if rsnapshot git repository exists
+      stat:
+        path: '{{ backup_user_home }}/src/rsnapshot'
+      register: file_exists
+
+    - name: clean-up rsnapshot build
+      make:
+        chdir: "{{ backup_user_home }}/src/rsnapshot"
+        target: "{{ item }}"
+      loop:
+        - clean
+      when: file_exists.stat.exists
+
+    - name: remove rsnapshot git repository
+      file:
+        state: absent
+        path: "{{ backup_user_home }}/src/rsnapshot"
+      when: file_exists.stat.exists
+
+    - name: delete the configuration files
+      file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - /etc/rsnapshot
+          conf.default
+        - /etc/rsnapshot.conf
+        - /usr/local/bin/rsnapshot
+        - /usr/bin/rsnapshot
+
+    # --------------------------------------------------------------------------
+
+    - name: remove backup shell scripts from ~/backup_user/bin
+      become_user: "{{ backup_user }}"
+      file:
+        path: "{{ backup_user_home }}/bin/{{ item }}"
+        state: absent
+      loop:
+        - full-backup.sh
+        - rsnapshot-wrapper.sh
+        - rsync-wrapper.sh
+        - apprise.sh
+
+    - name: remove rsync exclude files from ~/backup_user
+      become_user: "{{ backup_user }}"
+      file:
+        path: "{{ backup_user_home }}/{{ item }}"
+        state: absent
+      loop:
+        - rsync-exclude-RPi
+        - secret.env
+
+    - name: remove the rsnapshot cron file from /etc/cron.d
+      file:
+        path: "/etc/cron.d/{{ item }}"
+        state: absent
+      loop:
+        - rsnapshot.crontab
+      notify: restart-cron
+
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+

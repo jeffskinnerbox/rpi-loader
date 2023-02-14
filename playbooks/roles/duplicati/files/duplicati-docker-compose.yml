@@ -1,0 +1,54 @@
+#
+# Duplicati is a backup client that securely stores encrypted, incremental,
+# compressed remote backups of local files on cloud storage services and remote file servers.
+#
+# Duplicati supports not only various online backup services like OneDrive,
+# Amazon S3, Backblaze, Rackspace Cloud Files, Tahoe LAFS, and Google Drive,
+# but also any servers that support SSH/SFTP, WebDAV, or FTP.
+#
+# Duplicati uses standard components such as rdiff, zip, AESCrypt, and GnuPG.
+# This allows users to recover backup files even if Duplicati is not available.
+#
+# to start this docker container for ubuntu desktop
+#    cd ~/src/docker-containers/duplicati
+#    mkdir config
+#
+#    sudo DUPLICATI_PORT=8270 SOURCE_PATH='/' \
+#         CONFIG_PATH='/home/jeff/src/docker-containers/duplicati/config' \
+#         DUPLICATI_ARGS="--exclude='/home/jeff/tmp/' \
+#                 --exclude='*Trash/' --exclude='*.Trash/' \
+#                 --exclude='/home/jeff/Downloads/RPi-OS/' \
+#                 --exclude='/home/jeff/Downloads/_archive/' \
+#                 --exclude='/home/jeff/Downloads/Proxmox-7.1/' \
+#                 --exclude='/home/jeff/.config/google-chrome/' \
+#                 --exclude='/cdrom' --exclude='/media' --exclude='/mnt'" \
+#         docker-compose --file ./duplicati-docker-compose.yml up -d
+#
+# to start this docker container for raspberry pi
+#    cd ~/src/duplicati
+#    mkdir config
+#
+#    sudo DUPLICATI_PORT=8270 SOURCE_PATH='/home/' \
+#         CONFIG_PATH='/home/backup_user/src/duplicati/config' \
+#         DUPLICATI_ARGS="--exclude='*/tmp/' --exclude='*Trash/' --exclude='*.Trash/'" \
+#         docker-compose --file ./duplicati-docker-compose.yml up -d
+#
+
+
+version: '3'
+services:
+  duplicati:
+    image: linuxserver/duplicati:latest
+    container_name: duplicati
+    restart: unless-stopped
+    ports:
+      - ${DUPLICATI_PORT}:8200          # port for web user interface
+    environment:
+      - PUID=0                        # root user id so there are no permission problems
+      - PGID=0                        # root group id so there are no permission problems
+      - TZ=America/New_York           # time zone for backup scheduling
+      - CLI_ARGS=${DUPLICATI_ARGS}    # arguments for duplicati command line
+    volumes:
+      - ${CONFIG_PATH}:/config          # location of the duplicati config and database files
+      - ${SOURCE_PATH}:/source          # location of the backup source directory
+      #- ${BACKUP_PATH}:/backups         # if the backup stored on your machine, location for backup target
