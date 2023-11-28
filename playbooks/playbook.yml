@@ -66,23 +66,23 @@
 
 
   tasks:
-    - {include_role: {name: ups-pi}, tags: ups-pi}
-    - {include_role: {name: update}, tags: update}
-    - {include_role: {name: prerequisites}, tags: prerequisites}
-    - {include_role: {name: sys-env}, tags: sys-env}
-    - {include_role: {name: crypto-tools}, tags: crypto-tools}
-    - {include_role: {name: login-env}, tags: login-env}
-    - {include_role: {name: vim-config}, tags: vim-config}
-    - {include_role: {name: net-tools}, tags: net-tools}
-    - {include_role: {name: dev-env}, tags: dev-env}
-    - {include_role: {name: dev-tools}, tags: dev-tools}
-    - {include_role: {name: docker}, tags: docker}
-    - {include_role: {name: apache}, tags: apache}
-    - {include_role: {name: backup-user}, tags: backup-user}
-    - {include_role: {name: deploy-ssh}, tags: deploy-ssh}
-    - {include_role: {name: duplicati}, tags: duplicati}
-    # - {include_role: {name: rsnapshot}, tags: rsnapshot}
-    # - {include_role: {name: rsnapshot-container}, tags: rsnapshot-container}
+    - {import_role: {name: ups-pi}, tags: ups-pi}
+    - {import_role: {name: update}, tags: update}
+    - {import_role: {name: prerequisites}, tags: prerequisites}
+    - {import_role: {name: sys-env}, tags: sys-env}
+    - {import_role: {name: crypto-tools}, tags: crypto-tools}
+    - {import_role: {name: login-env}, tags: login-env}
+    - {import_role: {name: vim-config}, tags: vim-config}
+    - {import_role: {name: net-tools}, tags: net-tools}
+    - {import_role: {name: dev-env}, tags: dev-env}
+    - {import_role: {name: dev-tools}, tags: dev-tools}
+    - {import_role: {name: docker}, tags: docker}
+    - {import_role: {name: apache}, tags: apache}
+    - {import_role: {name: backup-user}, tags: backup-user}
+    - {import_role: {name: deploy-ssh}, tags: deploy-ssh}
+    - {import_role: {name: duplicati}, tags: duplicati}
+    #- {import_role: {name: rsnapshot}, tags: rsnapshot}
+    #- {import_role: {name: rsnapshot-container}, tags: rsnapshot-container}
 
   # --- Handlers ---------------------------------------------------------------
 

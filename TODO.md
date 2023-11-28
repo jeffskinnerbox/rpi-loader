@@ -9,6 +9,7 @@ Version:      0.1
 
 * High Priority
     * Consider using this model / tool for your next round of deveploment
+        * [Ansible by Example](https://dzone.com/articles/ansible-boots-kubernetes)
         * [Set Up A Headless Raspberry Pi, All From Another Computer’s Command Line](https://hackaday.com/2018/11/24/set-up-a-headless-raspberry-pi-all-from-another-computers-command-line/)
         * [Headless Raspberry Pi Configuration](http://peter.lorenzen.us/linux/headless-raspberry-pi-configuration)
     * Make use of the following "Maiden Script" capabilities

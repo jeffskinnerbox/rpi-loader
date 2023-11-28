@@ -5,17 +5,41 @@ Version:      0.1
 
 
 <div align="center">
-<img src="http://www.foxbyrd.com/wp-content/uploads/2018/02/file-4.jpg" title="These materials require additional work and are not ready for general use." align="center">
+<img src="https://raw.githubusercontent.com/jeffskinnerbox/blog/main/content/images/banners-bkgrds/work-in-progress.jpg" title="These materials require additional work and are not ready for general use." align="center" width=420px height=219px>
 </div>
 
 
 ----
+
 
 In this example, we are going to write an Ansible role to configure the Apache HTTP server.
 
 * [Ansible: Write Ansible role to configure apache webserver](https://faun.pub/ansible-write-ansible-role-to-configure-apache-webserver-9c08aaf66528)
 * [How to Use Ansible to Install and Set Up Apache on Ubuntu 18.04](https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-apache-on-ubuntu-18-04)
 * [How To Install/Uninstall Apache Using Ansible PlayBook](https://aspsqltutorials.blogspot.com/2019/10/how-to-install-apache-using-ansible.html)
+
+# Inventory Files
+* [How to create dynamic inventory files in Ansible](https://www.redhat.com/sysadmin/ansible-dynamic-inventories)
+
+# Ad hoc Commands
+The possibility to run ad hoc commands for quick (and dirty) tasks
+accross a large set of machines is one of the reasons to use Ansible.
+You can use these commands to gather information when you need them
+or to get things done without the need to write a playbook first.
+
+```bash
+# query package version
+ansible all -m command -a'/usr/bin/rpm -qi <PACKAGE NAME>' | grep 'SUCCESS\|Version'
+
+# query OS-Release
+ansible all -m command -a'/usr/bin/cat /etc/os-release'
+
+# query running kernel version
+ansible all -m command -a'/usr/bin/uname -r'
+
+# query DNS servers in use by nodes
+ansible all -m command -a'/usr/bin/cat /etc/resolv.conf' | grep 'SUCCESS\|nameserver'
+```
 
 #### Step 0: Install Your Ansible Tools
 

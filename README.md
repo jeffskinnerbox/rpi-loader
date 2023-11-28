@@ -5,11 +5,15 @@ Version:      0.0.1
 
 
 <div align="center">
-<img src="http://www.foxbyrd.com/wp-content/uploads/2018/02/file-4.jpg" title="These materials require additional work and are not ready for general use." align="center">
+<img src="https://raw.githubusercontent.com/jeffskinnerbox/blog/main/content/images/banners-bkgrds/work-in-progress.jpg" title="These materials require additional work and are not ready for general use." align="center" width=420px height=219px>
 </div>
 
 
 ----
+
+
+* [Kacper Leśniara's Ansible Playbook Sets Up Your Raspberry Pi in a Single Command](https://www.hackster.io/news/kacper-lesniara-s-ansible-playbook-sets-up-your-raspberry-pi-in-a-single-command-b06dc8f28a23)
+* [Ansible by Example](https://dzone.com/articles/ansible-boots-kubernetes)
 
 
 # Raspberry Pi Loader
@@ -35,6 +39,11 @@ Version:      0.0.1
 # Alternative Methods
 * [How to manage your workstation configuration with Ansible](https://opensource.com/article/18/3/manage-workstation-ansible)
 * [Manage your workstation with Ansible: Automating configuration](https://opensource.com/article/18/3/manage-your-workstation-configuration-ansible-part-2)
+
+# Create Alternative Base Images
+* [How to install Fedora IoT on Raspberry Pi 4](https://www.redhat.com/sysadmin/fedora-iot-raspberry-pi)
+* Ubuntu
+* EdgeX
 
 
 -----

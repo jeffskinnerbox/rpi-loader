@@ -5,7 +5,7 @@ Version:      0.1
 
 
 <div align="center">
-<img src="http://www.foxbyrd.com/wp-content/uploads/2018/02/file-4.jpg" title="These materials require additional work and are not ready for general use." align="center">
+<img src="https://raw.githubusercontent.com/jeffskinnerbox/blog/main/content/images/banners-bkgrds/work-in-progress.jpg" title="These materials require additional work and are not ready for general use." align="center" width=420px height=219px>
 </div>
 
 
@@ -22,7 +22,13 @@ it’s a strict superset of JSON,
 but with the addition of syntactically significant newlines and indentation, like Python.
 Unlike Python, however, YAML doesn’t allow literal tab characters for indentation.
 
+* [YAML for beginners](https://www.redhat.com/sysadmin/yaml-beginners)
+* [Understanding YAML for Ansible](https://www.redhat.com/sysadmin/understanding-yaml-ansible)
 * [YAML best practices for Ansible playbooks - tasks](https://www.jeffgeerling.com/blog/yaml-best-practices-ansible-playbooks-tasks)
+
+### Visual Inspection
+[yaml2json](https://gitlab.com/slackermedia/yaml2json)
+is a simple Python3 script to convert YAML to JSON and can be used to validate the YAML logic.
 
 ### Lint Tools
 
@@ -40,6 +46,8 @@ We can custom configure `ansible-lint` for your requirement.
 Apart from the default rules, we can specify additional rules in a file,
 and the command-line flag `-c <file path>` will lint the playbook based on the custom configuration.
 
+* [Check your YAML for errors with yamllint](https://www.redhat.com/sysadmin/check-yaml-yamllint)
+* [Avoid errors in your Ansible playbooks with ansible-lint](https://www.redhat.com/sysadmin/ansible-lint-YAML)
 * [Ansible Lint Documentation](https://ansible-lint.readthedocs.io/en/latest/)
 * [How and why you should lint your Ansible playbooks](https://loganmarchione.com/2020/04/how-and-why-you-should-lint-your-ansible-playbooks/)
 * [Linting your Ansible Playbooks and make a Continuous Integration(CI) Solution](https://faun.pub/linting-your-ansible-playbooks-and-make-a-continuous-integration-ci-solution-bcf8b4ea4c03)
