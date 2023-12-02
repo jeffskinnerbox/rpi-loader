@@ -3,6 +3,15 @@
 # Version:      1.5.0
 #
 # task file for 'crypto-tools' role - install encryption and certificate packages
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/crypto-tools/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags crypto-tools --skip-tags uninstall --list-tasks
 
 ---
 
@@ -11,27 +20,28 @@
 
 - name: Install cryptography and certificate tools
   block:
-    - name: install encryption and certificate packages
+    - name: install encryption and certificate packages (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
-    - name: install secure hash algorithms (SHA) tools, specifically SHA256
+    - name: install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
-        update_cache: true       # update the apt repository list cache
-        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        update_cache: false      # update the apt repository list cache
         pkg: ['hashalot']
   tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall cryptography and certificate tools
+- name: Uninstall cryptography and certificate tools (as root)
   block:
     - name: message to user
       debug:
         msg: Nothing needs to be uninstalled, therefore, it is not
   tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+
+# ------------------------------------------------------------------------------
 

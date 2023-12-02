@@ -46,17 +46,38 @@ Version:      0.0.1
 * EdgeX
 
 
+
 -----
 
-# Create the Raspberry Pi Base Image
+
+
+The Raspberry Pi board named `test-pi` is intended to be my physical environment for building
+and then testing new hardware, software, and operating systems for the Raspberry Pi hardware environment.
+It will be a safe space to make the inevitable mistakes before I commit myself to some new system,
+or just a place for experimentation.
+
+I want to create, in advance, multiple base images (e.g. Raspberry Pi OS, Proxmox, Ubuntu, etc.)
+so I could move quickly from one to another.
+These base images will reside some where other than the `test-pi` and should be easy loaded onto the `test-pi`.
+On top of these base images, I will load things like
+[Home Assistant][91], [EdgeX Foundry][92], [OpenCV][913, [Tensorflow][94], etc.
+I want Ansible scripts to be used, when ever possible, to facilitate the creating
+and destruction of the environments loaded on the `test-pi`.
+
+# Base Image
+Raspberry Pi
+Ubuntu
+Proxmox
+
+## Create the Raspberry Pi Base Image
 Raspberry Pi OS boots off an SD card,
-and your going want to maintain base image to initate any new solution.
+and your going want to maintain SD card base image to imitate any new solution.
 This base image is an up-to-date version of the software on the SD card
 that can just plug in and it works in a minimal, predictable way.
 The creation of this base image will require some
 special tools (e.g. [Raspberry Pi SD-Card imager - `rpi-imager`][74]),
 but you will almost certainly require further changes to this base image
-and you're going to want to implement these additonal changes via standard tools like Ansible playbooks.
+and you're going to want to implement these additional changes via standard tools like Ansible playbooks.
 
 ## Create the Raspberry Pi OS SD-Card
 I have written a detailed [step-by-step guide][03]
@@ -69,7 +90,40 @@ This guide has been of great value to me to help repeatedly and consistently est
 But this work is no long valid starting in April 2022
 with the release of the Bullseye version of Raspberry Pi OS.
 
-### Step 0: Select SD-Card - DONE
+#### Step 0: Check Your Current Environment - DONE
+Before do anything, you might want to check the version of OS
+and hardware your Raspberry Pi currently has:
+
+```bash
+# what version of debian you are running
+$ cat /etc/debian_version
+11.7
+
+# os release notes
+$ cat /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
+NAME="Debian GNU/Linux"
+VERSION_ID="11"
+VERSION="11 (bullseye)"
+VERSION_CODENAME=bullseye
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+
+# what kernel version is running
+$ uname -a
+Linux test-pi 6.1.21-v8+ #1642 SMP PREEMPT Mon Apr  3 17:24:16 BST 2023 aarch64 GNU/Linux
+
+# see what hardware you are using
+$ cat /proc/cpuinfo | grep Model
+Model		: Raspberry Pi 3 Model B Rev 1.2
+```
+
+Source:
+* [How to Check the Software and Hardware Version of a Raspberry Pi][16]
+
+#### Step 1: Select SD-Card - DONE
 The tools you are about to install take up a great deal of space,
 and since this is for video applications,
 anything you record will consume significant disk space.
@@ -79,47 +133,41 @@ A standard Raspberry Pi install will likely use over 4GB of the available space,
 and then you add your personal tools and more space is used up.
 I have found that attempting to load OpenCV and the OpenCV Contribution package
 will require 10GB of disk space.
+
 If your considering using Jupyter and some of the popular Python libraries,
 your looking at 11 to 12GB of SD-Card storage being consumed.
 My advice is to consider using a 16G or larger SD-Card.
 
-### Step 1: Download Raspberry Pi Image - DONE
+#### Step 2: Download Raspberry Pi Image - DONE
 Before you can load a copy of the latest Raspberry Pi image onto your micro SD Card,
 you must first download the official Raspberry Pi operating system, [Raspberry Pi OS][13]
-(in my case, the version is [Bullseye Lite][11]).
+(in my case, the version is [Raspberry Pi OS Lite][11]).
 You can get that download [here][13].
 
 The Raspberry Pi OS download site also lists a check sum for the download file.
-(In my case, I down loaded the Raspberry Pi OS file to `/home/jeff/Downloads/`.)
+(In my case, I down loaded the Raspberry Pi OS file to `/home/jeff/Downloads/ISO-Images/RPi-OS/`.)
 Check whether the file has been changed from its original state
 by checking its digital signature (SHA256 hash value).
 
 ```bash
 # move to the working directory
-cd ~/Downloads/RPi-OS/Bullseye-lite-image
+cd ~/Downloads/ISO-Images/RPi-OS/
 
 # validate file is uncorrupted via check of digital signature
-$ sha256sum 2022-04-04-raspios-bullseye-armhf-lite.img.xz
-34987327503fac1076e53f3584f95ca5f41a6a790943f1979262d58d62b04175  2022-04-04-raspios-bullseye-armhf-lite.img.xz
+$ sha256sum 2023-10-10-raspios-bookworm-arm64-lite.img.xz
+26ef887212da53d31422b7e7ae3dbc3e21d09f996e69cbb44cc2edf9e8c3a5c9  2023-10-10-raspios-bookworm-arm64-lite.img.xz
 
 # uncompress the raspberry pi os download
-unxz 2022-04-04-raspios-bullseye-armhf-lite.img.xz
+unxz 2023-10-10-raspios-bookworm-arm64-lite.img.xz
 ```
 
-### Step 2: Write Raspberry Pi Image to SD Card - DONE
+#### Step 3: Write Raspberry Pi Image to SD Card - DONE
 Next using Linux, you have copied the Raspberry Pi OS image onto the SD card mounted to your system.
 I'll be using the [Rocketek 11-in-1 4 Slots USB 3.0 Memory Card Reader][14] to create my SD Card.
 Make sure to [choose a reputable SD Card][15] from [here][36], don't go cheap.
 
-As of April 2022 (Bullseye version),
-[Raspberry Pi OS has removed the default 'pi' user][73] to make it
-harder for attackers to find and compromise Internet-exposed Raspberry Pi
-devices using default credentials.
-This requires you to make use of the [Raspberry Pi SD-Card imager][74] to get SSH access on fist boot
-instead of using the trick of placing a file name `ssh` in the `/boot` directory of the Raspberry Pi.
-
 To create you SD-Card image of Raspberry Pi OS,
-install and use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/),
+install and use the [Raspberry Pi Imager (`rpi-imager`)](https://www.raspberrypi.com/software/),
 as shown below:
 
 ```bash
@@ -130,10 +178,29 @@ sudo apt install rpi-imager
 rpi-imager
 ```
 
-#### Step 3: Booting From the SD-Card - DONE
+Next, you do the following:
+
+* For **Operating System** select your image you downloaded (i.e. **Use custom** at the bottom of the page)
+* For **Storage** you select the device containing the SD card you wish to write the image
+* Now select the "gear" icon and do the following:
+    * Set host name to `test-pi`
+    * enable SSH using password authentication
+    * set your username and password
+    * set your time zone
+
+>**NOTE:** As of April 2022 (Bullseye version),
+>[Raspberry Pi OS has removed the default 'pi' user][73] to make it
+>harder for attackers to find and compromise Internet-exposed Raspberry Pi
+>devices using default credentials.
+>This requires you to make use of the [Raspberry Pi SD-Card imager][74] to get SSH access on fist boot
+>instead of using the trick of placing a file name `ssh` in the `/boot` directory of the Raspberry Pi.
+
+#### Step 4: Booting From the SD-Card - DONE
 Install into your Raspberry Pi the SD Card created earlier,
 connect an Ethernet cable from you LAN,
-and then press the power switch on the Argon ONE M.2.
+and then press the power switch if you have one.
+If you are using the [LiFePO4wered/Pi][04],
+you should disconnect it for this first boot.
 
 Once the RPi boots up,
 you can [find your Raspberry P on your network][69] using [`arp-scan`][70]
@@ -145,56 +212,146 @@ or [`netdiscover`][71]:
 sudo netdiscover -c 3 -s 10 -L -N -r 192.168.1.0/24 | grep Raspberry
 
 # or you can ping the new devices by its hostname, if you specified it during the imaging
-ping raspberrypi.local
+ping test-pi.local
 ```
 
 Now using the IP address you found for the RPi,
 `192.168.1.79` in my case,
-in the next steps we can change the hostname,
-and provides the Raspberry Pi with SSH access keys,
+in the next steps we can provides the Raspberry Pi with additional SSH access keys,
 enabling us to automate the update of the OS via Ansible.
 
-#### Step 4: Update the Hostname - DONE
-We gave the Raspberry Pi OS a generic hosname (ie. `raspberrypi.local`)
-and we now want to change this to something more specific for our project.
-
-```bash
-# login to the raspberry pi, validating ssh works
-ssh pi@192.168.1.79
-
-# modify the host name to 'test-pi'
-sudo sed --in-place 's/raspberrypi/test-pi/g' /etc/hostname
-sudo sed --in-place 's/raspberrypi/test-pi/g' /etc/hosts
-
-# reboot and valitate the name change has taken effect
-sudo reboot
-ssh pi@192.168.1.79
-hostname
-```
-
-#### Step 5: Query Hardware for Version - DONE
-To find out what version of Raspberry Pi hardware your on,
-execut the following command:
+#### Step 5: Query Hardware/Software Versions - DONE
+To find out what version of Raspberry Pi hardware and software your are now running,
+execute the following command:
 
 ```bash
 # query for version of hardware your on
 $ cat /proc/device-tree/model
 Raspberry Pi 3 Model B Rev 1.2
+
+# what version of debian you are running
+$ cat /etc/debian_version
+12.2
+
+# os release notes
+$ cat /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+
+# what kernel version is running
+$ uname -a
+Linux test-pi 6.1.0-rpi4-rpi-v8 #1 SMP PREEMPT Debian 1:6.1.54-1+rpt2 (2023-10-05) aarch64 GNU/Linux
 ```
 
-#### Step 6: Copy Ansible SSH Keys to Raspberry Pi - DONE
+### Step 6: Set a Static IP Address - DONE
+If you’re using your Raspberry Pi as a server
+often need to access it remotely from another device,
+or provission it with with tools like Ansible,
+setting a [static IP address][78] for it is a very good idea.
+This way you find the Raspberry Pi at the same address every time,
+rather than a new address being set dynamically by [DHCP][79].
+
+With the release of Raspberry Pi OS Bookworm,
+networking on the Raspberry Pi was changed to use [NetworkManager][75] as the standard controller for networking,
+replacing the previous [dhcpcd][83] system.
+NetworkManager includes a command line tool called `nmcli`,
+which can control NetworkManager and report on the network status.
+I'll use `nmcli` to configure the network to use a static IP address,
+instead of editing files directly.
+
+My home router is my DHCP server (`192.168.1.1`) and I have reserved the IP range 2 to 199
+for dynamically allocated IP addresses.
+This leaves IP range 200 to 255 for static IP addresses.
+I'll use `192.168.1.205`.
+
+```bash
+# find the name of the network interface you want to set as static
+$ sudo nmcli -p connection show
+======================================
+  NetworkManager connection profiles
+======================================
+NAME                UUID                                  TYPE      DEVICE
+----------------------------------------------------------------------------------------------------------------------->
+Wired connection 1  d53f6b92-9fb5-3b83-ac07-769e4dfb65e1  ethernet  enxb827eb0a63fd
+lo                  d7f073fc-17da-4a04-adb8-c42047bd192e  loopback  lo
+```
+
+Now we know the name of the network connection we want to update,
+we can send three commands to set the new IP address, Gateway and DNS server.
+
+```bash
+# set the new ip address
+sudo nmcli c mod "Wired connection 1" ipv4.addresses 192.168.1.205/24 ipv4.method manual
+
+# set the new gateway address
+sudo nmcli con mod "Wired connection 1" ipv4.gateway 192.168.1.1
+
+# set the new dns server address
+sudo nmcli con mod "Wired connection 1" ipv4.dns "192.168.1.1,8.8.8.8"
+```
+
+When you have finished updating the network settings on your Raspberry Pi,
+you can restart the network connection with the following command:
+
+```bash
+# restart the network connection
+sudo nmcli c down "Wired connection 1" && sudo nmcli c up "Wired connection 1"
+```
+
+>**NOTE:** If you are using SSH to connect to your Raspberry Pi,
+>running the above command will cause the SSH session to end if the IP address changes.
+
+You'll need to re-login to the Raspberry Pi,
+but this time using the new IP address (i.e. `192.168.1.205`).
+
+```bash
+# re-login to the raspbrry pi
+ssh pi@192.168.1.205
+
+# examine the changes to the network interface
+$ sudo nmcli -p connection show
+```
+
+Source:
+* [Set a static IP Address on Raspberry Pi OS Bookworm](https://www.abelectronics.co.uk/kb/article/31/set-a-static-ip-address-on-raspberry-pi-os-bookworm)
+
+#### Step 7: Disable GUI Desktop Environment - DONE
+I'll be using my `test-pi` system as a server,
+instead of using the desktop GUI environment.
+I'll be using a terminal for all work on the system,
+and any GUI applications will run there graphics from my X Windows desktop environment.
+This will decrease the load on the `test-pi` system and make boot up quicker.
+
+To do this, we can use the `raspi-config` tool like this:
+* Execute the tool via `sudo raspi-config`
+* Select **System Options** > **Boot / Auto Login** > **Console**
+* After a brief pause, select **Finish** and reboot.
+
+#### Step 8: Copy Ansible SSH Keys to Raspberry Pi - DONE
 Ansible primarily communicates with client computers through SSH.
 While it has the ability to handle password-based SSH authentication,
 using SSH keys can help to keep things simple.
 (Check [here][72] if you need more information concerning SSH,
 how to generate keys, using keys, etc.)
 
+>**NOTE:** The Ansible server could exist anywhere as long as they are reachable via SSH.
+>On your Ansible host machine,
+>your first step is to install Ansible and any extension you may want to use.
+>See `using-vagrant-docker-and-ansible.md` to understand how to do this.
+
 On my Ansible server (my Linux desktop computer),
 I have created a specific SSH key for Ansible work.
 That key is `~/.ssh/ansible.pub`.
 I'll use one of the methods below to push that key to my Raspberry Pi.
 
-##### Method A: Copying Public Key Using ssh-copy-id - DONE
+##### Method 8A: Copying Public Key Using ssh-copy-id - DONE
 The simplest method to provide the SSH keys to the client computer
 is to use the `ssh-copy-id` tool.
 Launching from the Ansible server, the syntax is:
@@ -203,14 +360,14 @@ In my case:
 
 ```bash
 # from my desktop computer, copying public key using ssh-copy-id
-ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.79
+ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.205
 ```
 
 To test if this is successful,
-login to your Ansible client via SSH: `pi@192.168.1.79`
+login to your Ansible client via SSH: `pi@192.168.1.205`
 and you should get in without being prompted for a password.
 
-##### Method B: Copying Public Key Using SSH
+##### Method 8B: Copying Public Key Using SSH
 If you do not have `ssh-copy-id` available on your computer,
 but you have password-based SSH access to an account on your server,
 you can upload your keys using a conventional SSH method:
@@ -220,7 +377,7 @@ you can upload your keys using a conventional SSH method:
 cat ~/.ssh/ansible.pub | ssh pi@test-pi "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod -R go= ~/.ssh && cat >> ~/.ssh/authorized_keys"
 ```
 
-##### Method C: Copying Public Key Manually
+##### Method 8C: Copying Public Key Manually
 The final method is just to do it all manually.
 Assuming SSH is already established on your Ansible server,
 use the `cat` command to print the contents of your
@@ -239,7 +396,7 @@ and do the following:
 1. As the root user, open the `authorized_keys` within the `~/.ssh` directory:
 1. In the file, paste your Ansible server user’s SSH key, then save the file.
 
-### Step 7: Creating Inventory File - DONE
+#### Step 9: Creating Inventory File - DONE
 Ansible needs to know your remote server names or IP address.
 This information is stored in a file called `hosts`, or often refered to as your "inventory".
 The default file is `/etc/ansible/hosts`.
@@ -261,7 +418,7 @@ cat <<EOF > inventory
 
 # ansible managed hosts (aka nodes)
 [nodes]
-test-pi ansible_ssh_host=192.168.1.79 ansible_ssh_port=22 kubernetes_role=node
+test-pi ansible_ssh_host=192.168.1.205 ansible_ssh_port=22 kubernetes_role=node
 #node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
 #node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
 #node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
@@ -278,7 +435,7 @@ ansible_python_interpreter='/usr/bin/env python3'
 EOF
 ```
 
-#### Step 8: Test Ansible Configuration - DONE
+#### Step 10: Test Ansible Configuration - DONE
 Ansilbe support many ad-hoc commands that can be used to manage your nodes.
 You find a long list in the webpost "[How to Use Ansible: A Reference Guide][07]"
 and some listed below.
@@ -326,285 +483,169 @@ ansible test-pi -m apt -a "name=vim-nox" --become
 -----
 
 
-## Prepare Ansible
 
-#### Step 1: Installing Ansible on Ansible Server
-The Ansible host computers could exist anywhere as long as they are reachable via SSH.
-On your Ansible host machine,
-your first step is to install Ansible and any extension you may want to use.
-See `using-vagrant-docker-and-ansible.md` to understand how to do this.
+# Build test-pi Using Ansible Scripts
+With the above steps completed,
+I can begin leveraging Ansible to create the envirment I would like for `test-pi`.
+In my case, I want to create an envirment sutable for testing out [Home Assistant][91].
 
-#### Step 2: Copy SSH Keys to Client
-Ansible primarily communicates with client computers through SSH.
-While it has the ability to handle password-based SSH authentication,
-using SSH keys can help to keep things simple.
-(Check [here][67] if you need more information concerning SSH,
-how to generate keys, using keys, etc.)
-
-On my Ansible server, I have created a specific SSH key for Ansible work.
-That key is `~/.ssh/ansible.pub`.
-
-##### Method A: Copying Public Key Using ssh-copy-id
-The simplest method to provide the SSH keys to the client computer
-is to use the `ssh-copy-id` tool.
-Launching from the Ansible server, the syntax is:
-`ssh-copy-id username@remote_host`.
-In my case:
+#### Step 1: Update All packages - DONE
+Before we load any targetted aplications,
+We should update the currently load software to the latest versions, as shown below:
 
 ```bash
-# from my desktop computer, copying public key using ssh-copy-id
-ssh-copy-id -i ~/.ssh/ansible.pub pi@test-pi
+# go to the directory where the inventory file is located
+cd ~/src/linux-tools/rpi-loader/playbooks
 
-# or
-ssh-copy-id -i ~/.ssh/ansible.pub pi@192.168.1.203
+# validate the playbook 'update' role
+ansible-playbook -i inventory -l test-pi  playbook.yml --tags update --skip-tags uninstall --list-tasks
+
+# update all packages (equivalent to "apt update && apt full-upgrade")
+ansible-playbook -i inventory -l test-pi  playbook.yml --tags update --skip-tags uninstall
 ```
 
-To test if this is successful,
-login to your Ansible client via SSH: `pi@192.168.1.203`
-and you should get in without being prompted for a password.
+Source:
+* [Ansible apt update all packages on Ubuntu / Debian Linux][68]
 
-##### Method B: Copying Public Key Using SSH
-If you do not have `ssh-copy-id` available on your computer,
-but you have password-based SSH access to an account on your server,
-you can upload your keys using a conventional SSH method:
+#### Step 2: Install Battery Supply + Power Monitoring Tools
+The [LiFePO4wered/Pi3][95] (purchase on [Tindie][96])
+may be the best power solution for the Raspberry Pi 3.
+It combines both the UPS and power monitoring functions into a single solution.
+It also has PCB touch button that gives you clean shutdown instead of just pulling power.
+A ultra-low power [MSP430G2231 microcontroller][97] monitors the battery
+and also connected to the Pi's I2C bus and monitors the Pi's running state.
+You can find more information in the [LiFePO4wered/Pi3 Product Brief][98].
+
+The designer provides a [open source software package to interact with the LiFePO4wered/Pi3][99].
+It contains an application development library,
+a CLI interface to read/write device registers over the I2C bus,
+and a tiny daemon (`lifepo4wered-daemon`) that continually tracks the power state.
+The daemon can initiate a clean shutdown when the battery is empty
+or the user wants to turn the RPi off using the touch button.
+Touch button parameters, voltage thresholds,
+and an auto boot flag can be customized by the user and saved to flash.
+You can also set it up so the RPi will automatically boot whenever there is enough battery charge.
+There is also a wake up timer that can be set so the Pi can shut down,
+and automatically be started again after the wake timer expires.
+
+The LiFePO4wered/Pi3 is specifically designed for the heavy load conditions
+found on a typical Raspberry Pi 3 but can work on all the RPi versions.
+(**NOTE:** The [LiFePO4wered/Pi][95] is smaller and engineered for the Raspberry Pi Zero.)
+You can even get a case with room for the RPi3 and the LiFePO4wered/Pi3 [on Tindie][100].
+
+The LiFePO4wered/Pi3 requires software to be running on the Raspberry Pi to operate correctly.
+This software provides a daemon that automatically
+manages the power state and shutdown of the RPi,
+a library that allows integration of LiFePO4wered/Pi3 functionality in user programs,
+and a CLI (command line interface) program that allows the user to
+easily configure the LiFePO4wered/Pi3 or control it from shell scripts.
+
+To run the Ansible playbook for installing the LiFePO4wered/Pi,
+follow these instructions:
 
 ```bash
-# from my desktop computer, copying public key using ssh
-cat ~/.ssh/ansible.pub | ssh pi@test-pi "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod -R go= ~/.ssh && cat >> ~/.ssh/authorized_keys"
+# go to the directory where the inventory file is located
+cd ~/src/linux-tools/rpi-loader/playbooks
+
+# ansible dry-run checking for errors and showing results of a run
+ansible-playbook -i inventory -l test-pi playbook.yml --tags ups-pi --skip-tags uninstall --list-tasks
+
+# run the just the role 'ups-pi' playbook for real
+ansible-playbook -i inventory -l test-pi playbook.yml --tags ups-pi --skipp-tags uninstall
 ```
 
-##### Method C: Copying Public Key Manually
-The final method is just to do it all manually.
-Assuming SSH is already established on your Ansible server,
-use the `cat` command to print the contents of your
-non-root user’s SSH public key file to the terminal’s output:
+To completer this task,
+I need to run an installation step that I could get to work (yet) in Ansible.
+That task is running the following command:
+
+* Execute the tool via `sudo raspi-config`
+* Select **Interface Options** > **I2C** > **Yes**.
+* After a brief pause, select **Finish** and reboot.
+* On the Raspberry Pi, change directory to `/home/pi/src/LiFePO4wered-Pi` and
+  run the comand `sudo make user-install` to install the daemon.
+
+>**NOTE:** You need to restart for some configuration changes (such as enabling the I2C device) to take effect.
+
+You can now power the Rasberry Pi via the LiFePO4wered/Pi3 using using its USB connection
+and make use of the start/stop button.
+
+You can check if the `LiFePO4wered` daemon and I2C services are running:
 
 ```bash
-# copy this public ssh key
-cat ~/.ssh/id_rsa.pub
+# ask systemctl to report on services that are in the running state
+$ systemctl --type=service --state=running
+  UNIT                        LOAD   ACTIVE SUB     DESCRIPTION
+  avahi-daemon.service        loaded active running Avahi mDNS/DNS-SD Stack
+  bluetooth.service           loaded active running Bluetooth service
+  cron.service                loaded active running Regular background program processing daemon
+  dbus.service                loaded active running D-Bus System Message Bus
+  getty@tty1.service          loaded active running Getty on tty1
+  lifepo4wered-daemon.service loaded active running Daemon for LiFePO4wered power manager
+  ModemManager.service        loaded active running Modem Manager
+  NetworkManager.service      loaded active running Network Manager
+  ntpsec.service              loaded active running Network Time Service
+  polkit.service              loaded active running Authorization Manager
+  serial-getty@ttyS0.service  loaded active running Serial Getty on ttyS0
+  ssh.service                 loaded active running OpenBSD Secure Shell server
+  systemd-journald.service    loaded active running Journal Service
+  systemd-logind.service      loaded active running User Login Management
+  systemd-udevd.service       loaded active running Rule-based Manager for Device Events and Files
+  triggerhappy.service        loaded active running triggerhappy global hotkey daemon
+  user@1000.service           loaded active running User Manager for UID 1000
+  wpa_supplicant.service      loaded active running WPA supplicant
+
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+
+# show what I2C modules are loaded
+$ lsmod | grep i2c
+i2c_dev                20480  0
+i2c_bcm2835            20480  0
+
+# read the state of the I2C port (0 = true = i2c port is enabled)
+$ sudo raspi-config nonint get_i2c
+0
+
+# scan the I2C address range
+$ sudo i2cdetect -y 1
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:                         -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- 43 -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
 ```
 
-Copy the resulting output to your clipboard,
-then open a new terminal and connect to one of your Ansible hosts using SSH,
-and do the following:
-
-1. Switch to the client machine’s root user.
-1. As the root user, open the `authorized_keys` within the `~/.ssh` directory:
-1. In the file, paste your Ansible server user’s SSH key, then save the file.
-
-### Step 3: Creating Hosts File
-Ansible needs to know your remote server names or IP address.
-This information is stored in a file called `hosts`, or often refered to as your "inventory".
-The default file is `/etc/ansible/hosts`.
-You can edit this one or create a new one in your `$HOME` directory,
-or better yet, place the `hosts` file in your projects directory referance it
-on the command-line when running `ansible`.
+#### Step X: Run remaining Ansible Scripts
 
 ```bash
-# create the hosts (aka inventory) file for your raspberry pi
-cat <<EOF > inventory
-# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
-# Version:      0.0.1
+# go to the directory where the inventory file is located
+cd ~/src/linux-tools/rpi-loader/playbooks
 
-# aka ansible hosts file
+# ansible dry-run checking for errors and showing results of a run
+ansible-playbook -i inventory -l test-pi playbook.yml --tags "prerequisites, sys-env, net-tools" --skip-tags uninstall --list-tasks
 
-# ansible control node
-#[controller]
-#127.0.0.1 ansible_connection=local
-
-# ansible managed hosts (aka nodes)
-[nodes]
-test-pi ansible_ssh_host=192.168.1.203 ansible_ssh_port=22 kubernetes_role=node
-#node-1 ansible_ssh_host=192.168.33.231 ansible_ssh_port=22 kubernetes_role=master
-#node-2 ansible_ssh_host=192.168.33.232 ansible_ssh_port=22 kubernetes_role=node
-#node-3 ansible_ssh_host=192.168.33.233 ansible_ssh_port=22 kubernetes_role=node
-
-# ansible varables applied to [nodes]
-[nodes:vars]
-ansible_user='pi'
-ansible_ssh_user=pi
-deploy_target=pi
-ansible_become=yes
-ansible_become_method=sudo
-ansible_python_interpreter='/usr/bin/env python3'
-#ansible_python_interpreter=/usr/bin/python3
-EOF
+# run the just the role 'ups-pi' playbook for real
+ansible-playbook -i inventory -l test-pi playbook.yml --tags "prerequisites, sys-env, net-tools" --skip-tags uninstall
 ```
 
-#### Step 4: Test Ansible Configuration
-Ansilbe support many ad-hoc commands that can be used to manage your nodes.
-You find a long list in the webpost "[How to Use Ansible: A Reference Guide][68]"
-and some listed below.
-Use them to test your Ansible setup so far.
+Sources
+* [Enabling and checking I2C on the Raspberry Pi using the command line for your own scripts](https://pi3g.com/enabling-and-checking-i2c-on-the-raspberry-pi-using-the-command-line-for-your-own-scripts/)
 
-```bash
-# check your inventory
-ansible-inventory -i inventory --list -y
 
-# gather facts about a node
-ansible test-pi -i inventory -m setup
+-----
 
-# connectivity test, including localhost (aka controller)
-ansible all -i inventory -m ping
-
-# install the package vim on test-pi from your inventory
-ansible test-pi -i inventory -m apt -a "name=vim"
-
-# you can conduct a dry run to predict how the servers would be affected by your command
-ansible test-pi -i inventory -m apt -a "name=vim" --check
-
-# get current disk usage, including localhost (aka controller)
-$ ansible all -i inventory -m shell -a "df -h"
-
-# get current memory usage, including localhost (aka controller)
-$ ansible all -i inventory -m shell -a "free -m"
-
-# reboot all the linux hosts, but not localhost (aka controller)
-$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -r now" -b -B 60 -P 0
-
-# shut down all the linux hosts, but not localhost (aka controller)
-$ ansible nodes -i inventory -m shell -a "sleep 1s; shutdown -h now" -b -B 60 -P 0
-
-# uptime check for individual host 'test-pi'
-ansible test-pi -i inventory -a "uptime" -u root
-
-# specify multiple hosts by separating them with colons
-ansible test-pi:node-2 -i inventory -a "uptime" -u root
-
-# install vim-nox package on test-pi
-ansible test-pi -m apt -a "name=vim-nox" --become
-```
-
-To run a playbook and execute all the tasks defined within it, use the `ansible-playbook` command:
-
-```bash
-# use a playbook to install the LEMP stack on test-pi
-ansible-playbook -i inventory -l test-pi tasks/lemp.yml
-
-# to understand the impacted of a play book without making changes
-ansible-playbook -i inventory -l test-pi tasks/lemp.yml --list-tasks
-
-# Ansible will then skip anything that comes before the specified task
-ansible-playbook -i inventory -l test-pi tasks/lemp.yml --start-at-task="Set Up Nginx"
-
-# only execute tasks associated with specific tags
-ansible-playbook -i inventory -l test-pi tasks/lemp.yml --tags=mysql,nginx
-```
 
 
 
 -----
 
 
-### Step 3: Setup Hostname and Networking
-We now execute another script to run on the local system
-(aka `desktop`) while the against the SD Card.
-This sets up the hostname and networking features for the Raspberry Pi.
 
-```bash
-# DO NOT plug-in the USB SD Card reader yet
-
-# update the sd-card with networking information
-sudo ~/src/rpi-loader/part-2.sh
-```
-
-This completes the operations that will be performed on the SD-Card
-while on `desktop`.
-Next will place the SD-Card in the Raspberry Pi
-and complete all the remaining loading from there.
-
-### Step 4: Start Up the Raspberry Pi
-Place the SD-Card into the Raspberry Pi, power it up,
-and login via ssh via WiFi or via Ethernet.
-The hostname will be what you provided during the running
-of the `part-2.sh` script in Step 3.
-You will login as the `pi` user and password will be `raspberry`.
-
-```bash
-# login to the raspberry pi
-ssh -X pi@<hostname>
-```
-
-### Step 5: Clone the rpi-loader Tool
-The `rpi-loader` will be heavely used on the Raspberry Pi for installing software,
-but you now need to install it first.
-
-```bash
-# change direct to where the rpi-loader will be installed
-cd ~
-mkdir src
-cd src
-
-# clone the rpi-loader software
-git clone https://github.com/jeffskinnerbox/rpi-loader.git
-```
-
-Now you must do the final set of the install by running the `install.sh` script.
-Run it and just answer the questions when prompted.
-
-```bash
-# enter the rpi-loader directory
-cd rpi-loader
-
-# complete the install
-./install.sh
-```
-
-### Step 6: Package Update and Run rasp-config Utility
-Now your going to update the Linux package list and the currently installed packages.
-This is followed by running `raspi-config` as a non-interactive command line tool
-setting multiple low level options on the Raspberry Pi.
-
-```bash
-# run raspi-config tool and set the time zone
-sudo -H ~/src/rpi-loader/part-3.sh
-
-# reboot the raspberry pi
-sudo shutdown -r now
-```
-
->**NOTE:** This script runs `raspi-config` as a non-interactive command line tool.
-See "[Instructions of command-line in Raspi-config][01]"
-and you notice that the command takes the form
-`sudo raspi-config nonint <option> [<parameter>]`.
-Key to understanding how to use this command are the `#define`
-statments found within "[How could one automate the raspbian raspi-config setup?][02]".
-**This capabilitiy is not documented, and as such,
-could change without notice.**
-
-### Step 7: Update the Raspberry Pi Firmware
-Now we'll update the Raspberry Pi firmware.
-
-```bash
-# update raspberry pi firmware
-sudo -H ~/src/rpi-loader/part-4.sh
-
-# if if new firmware was installed, reboot the raspberry pi
-sudo shutdown -r now
-```
-
-### Step 8: Install Your Personal Tools
-At this point, I'm going to install my personal tools I use for Linux.
-
->**NOTE:** We are not using `sudo` to run this script.
-The tools your installing here should be owned by `pi` and not `root`.
-
-```bash
-# install your tools
-~/src/rpi-loader/part-6.sh
-```
-
-### Step 9: Install Development Tools and Other Utilities
-Now we'll install multiple Linux packages that will likely see the greatest use.
-There are many packages, and some are large, so this could run for up to an hour.
-
-```bash
-# load linux packages
-sudo -H ~/src/rpi-loader/part-5.sh
-```
-
-
------
 ## Building Image and Video Processing Tools
 
 ### Install GStreamer and FFmpeg
@@ -1330,24 +1371,24 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 ###############################################################################
 
 
-
+https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-10-10/2023-10-10-raspios-bookworm-arm64-lite.img.xz
 
 [01]:https://www.52pi.com/blog/19-instructions-of-command-line-in-raspi-config
 [02]:https://raspberrypi.stackexchange.com/questions/28907/how-could-one-automate-the-raspbian-raspi-config-setup
 [03]:http://jeffskinnerbox.me/posts/2016/Apr/27/howto-set-up-the-raspberry-pi-as-a-headless-device/
-[04]:
+[04]:https://lifepo4wered.com/lifepo4wered-pi.html
 [05]:https://blog.robseder.com/2015/09/29/scripts-to-update-the-raspberry-pi-and-debian-based-linux-distros/
 [06]:https://www.pyimagesearch.com/2017/10/09/optimizing-opencv-on-the-raspberry-pi/
 [07]:https://developer.arm.com/technologies/neon
 [08]:https://developer.arm.com/technologies/floating-point
 [09]:https://github.com/jeffskinnerbox/ts_dweepy
 [10]:http://dlib.net/
-[11]:https://www.raspberrypi.com/news/raspberry-pi-os-debian-bullseye/
+[11]:https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-10-10/2023-10-10-raspios-bookworm-arm64-lite.img.xz
 [12]:https://www.raspberrypi.org/downloads/raspbian/
 [13]:https://www.raspberrypi.com/software/operating-systems/
 [14]:http://www.amazon.com/gp/product/B00GVRHON2?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s01
 [15]:http://www.wirelesshack.org/best-micro-sd-card-for-the-raspberry-pi-model-2.html
-[16]:
+[16]:https://ozzmaker.com/check-raspberry-software-hardware-version-command-line/
 [17]:https://www.bitpi.co/2015/02/11/how-to-change-raspberry-pis-swapfile-size-on-rasbian/
 [18]:https://cdn-learn.adafruit.com/downloads/pdf/adafruits-raspberry-pi-lesson-5-using-a-console-cable.pdf
 [19]:https://jupyter-notebook.readthedocs.io/en/stable/public_server.html
@@ -1399,22 +1440,22 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [65]:https://petewarden.com/2017/08/20/cross-compiling-tensorflow-for-the-raspberry-pi/
 [66]:http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/86/
 [67]:https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804
-[68]:https://www.digitalocean.com/community/cheatsheets/how-to-use-ansible-cheat-sheet-guide
+[68]:https://www.cyberciti.biz/faq/ansible-apt-update-all-packages-on-ubuntu-debian-linux/
 [69]:https://www.youtube.com/watch?v=hx7DB7Iqslk
 [70]:https://www.linux-magazine.com/Online/Features/Using-ARP-for-Network-Recon
 [71]:https://shownotes.opensourceisawesome.com/netdiscover/
 [72]:https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804
 [73]:https://www.bleepingcomputer.com/news/security/raspberry-pi-removes-default-user-to-hinder-brute-force-attacks/
-[74]:https://www.raspberrypi.com/news/raspberry-pi-imager-imaging-utility/
-[75]:
+[74]:https://www.raspberrypi.com/software/
+[75]:https://forums.raspberrypi.com/viewtopic.php?t=357739
 [76]:https://gstreamer.freedesktop.org/
 [77]:http://developers-club.com/posts/236805/
-[78]:
-[79]:
+[78]:https://www.efficientip.com/what-is-dhcp-and-why-is-it-important/
+[79]:https://www.avast.com/c-static-vs-dynamic-ip-addresses
 [80]:http://www.jonobacon.org/2006/08/28/getting-started-with-gstreamer-with-python/
 [81]:https://arashafiei.files.wordpress.com/2012/12/gst-doc.pdf
 [82]:http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet
-[83]:
+[83]:https://roy.marples.name/projects/dhcpcd
 [84]:https://blog.adafruit.com/2015/12/18/how-to-run-a-pi-zero-and-other-pis-from-a-lipo-including-low-battery-raspberry_pi-piday-raspberypi/
 [85]:http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf
 [86]:http://www.ti.com/product/msp430g2231?utm_source=GOOGLE&utm_medium=cpc&utm_term=msp430g2231&utm_campaign=MSP_MSP_US_P_E_MSP430&utm_content=c97b21ff-897a-4a49-ab05-768cbb131e72&gclid=Cj0KEQiAperBBRDfuMf72sr56fIBEiQAPFXszTBkL4s4n9_P97FxDOL0d8UuoD1Gcq1jyD1Jw38jNbIaAs8j8P8HAQ
@@ -1422,4 +1463,14 @@ and for Bluetooth, you can use `sudo systemctl disable hciuart`.
 [88]:https://github.com/xorbit/LiFePO4wered-Pi
 [89]:https://hackaday.io/project/18041-lifepo4wered18650
 [90]:https://www.tindie.com/products/mjrice/enclosure-for-raspberry-pi-3-and-lifepo4weredpi/
+[91]:https://www.home-assistant.io/
+[92]:https://www.edgexfoundry.org/
+[93]:https://opencv.org/
+[94]:https://www.tensorflow.org/
+[95]:https://cdn.tindiemedia.com/images/resize/NS8E-8h1An68bOqZrKHhnukm44c=/full-fit-in/2400x1600/smart/58262/products/2016-12-15T20%3A35%3A06.599Z-IMGP8966.JPG
+[96]:https://www.tindie.com/products/xorbit/lifepo4weredpi3/
+[97]:https://lifepo4wered.com/lifepo4wered-pi.html
+[98]: https://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf
+[99]:https://github.com/xorbit/LiFePO4wered-Pi
+[100]:https://www.tindie.com/products/mjrice/enclosure-for-raspberry-pi-3-and-lifepo4weredpi3/
 

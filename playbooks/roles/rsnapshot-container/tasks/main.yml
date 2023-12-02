@@ -1,5 +1,18 @@
 
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
 # role file to create the container that runs the rsnapshot backup process
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/rsnapshot-container/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags rsnapshot-container --skip-tags uninstall --list-tasks
+
 
 ---
 
@@ -8,7 +21,7 @@
 
 - name: Install rsnapshot container
   block:
-    - name: create a rsnapshot container
+    - name: create a rsnapshot container (as root)
       docker_container:
         name: rsnapshot
         image: lscr.io/linuxserver/rsnapshot:latest
@@ -23,7 +36,7 @@
         detach: true                     # set to true to leave the container running in background
         restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
 
-    - name: change owner/group of rsnapshot volumes
+    - name: change owner/group of rsnapshot volumes (as root)
       file:
         path: "{{ backup_user_home }}/{{ rsnapshot_store }}"
         state: directory
@@ -36,24 +49,26 @@
 
 - name: Uninstall rsnapshot container
   block:
-    - name: make copy of rsnapshot configuration directory (i.e. synchronize two directories on remote)
+    - name: make copy of rsnapshot configuration directory (i.e. synchronize two directories on remote) (as root)
       synchronize:
         src: "{{ backup_user_home }}/{{ rsnapshot_store }}/{{ rsnapshot_config }}"
         dest: "{{ backup_user_home }}/tmp"
       delegate_to: "{{ inventory_hostname }}"
 
-    - name: stop rsnapshot container and remove
+    - name: stop rsnapshot container and remove (as root)
       docker_container:
         name: rsnapshot
         keep_volumes: false        # to retain anonymous volumes associated with the removed container
         state: absent              # must be one of: absent, present, stopped, started
         container_default_behavior: compatibility
 
-    - name: delete all rsnapshot volumes, data, files
+    - name: delete all rsnapshot volumes, data, files (as root)
       file:
         path: "{{ item }}"
         state: absent
       loop:
         - "{{ backup_user_home }}/{{ rsnapshot_store }}"
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+
+# ------------------------------------------------------------------------------
 

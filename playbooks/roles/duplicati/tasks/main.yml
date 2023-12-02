@@ -1,23 +1,36 @@
 
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
 # role file to create the the duplicati backup process
 #
 #  Testing
 #
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/duplicati/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags duplicati --skip-tags uninstall --list-tasks
+#
+
 
 ---
 
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install / Uninstall Duplicati
+- name: Install Duplicati
   block:
-    # - name: create directory for docker compose files and duplicati database
+    # - name: create directory for docker compose files and duplicati database (as user)
     #   become_user: "{{ backup_user }}"
     #   file:
     #     state: directory
     #     path: "{{ duplicati_compose_path }}"
 
-    # - name: copy docker compose file and environment variables
+    # - name: copy docker compose file and environment variables (as user)
     #   become_user: "{{ backup_user }}"
     #   copy:
     #     src: "files/{{ item }}"
@@ -27,7 +40,7 @@
     #     - duplicati-docker-compose.yml
     #     - environment
 
-    # - name: create a duplicati container via docker compose
+    # - name: create a duplicati container via docker compose (as root)
     #   docker_compose:
     #     project_src: "{{ duplicati_compose_path }}"
     #     state: present
@@ -35,13 +48,13 @@
     #     files:
     #       - duplicati-docker-compose.yml
 
-    - name: create a directory for duplicati configuration and database
+    - name: create a directory for duplicati configuration and database (as user)
       become_user: "{{ backup_user }}"
       file:
         state: directory
         path: "{{ duplicati_config_path }}"
 
-    - name: create a duplicati container via docker
+    - name: create a duplicati container via docker (as root)
       docker_container:
         name: duplicati
         state: started       # must be one of: absent, present, stopped, started
@@ -61,20 +74,20 @@
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall duplicati
+- name: Uninstall Duplicati
   block:
-    - name: stop the docker container
+    - name: stop the docker container (as root)
       docker_container:
         name: duplicati
         state: stopped
 
-    - name: remove the docker image and docker networks
+    - name: remove the docker image and docker networks (as root)
       docker_container:
         name: duplicati
         purge_networks: true
         state: absent
 
-    - name: delete the docker compose files and persistent data
+    - name: delete the docker compose files and persistent data (as root)
       file:
         state: absent
         path: "{{ item }}"
@@ -83,4 +96,6 @@
         - "{{ duplicati_config_path }}"
 
   tags: ['never', 'uninstall']     # 'never' implies you must pass the tag to execute this block
+
+# ------------------------------------------------------------------------------
 

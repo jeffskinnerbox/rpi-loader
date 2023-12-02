@@ -3,6 +3,15 @@
 # Version:      1.5.0
 #
 # task file for 'login-env' role - install tools for your shell / login environment
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/login-env/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags login-env --skip-tags uninstall --list-tasks
 
 ---
 
@@ -11,21 +20,21 @@
 
 - name: Install / Uninstall your login environment
   block:
-    - name: Install required prerequisites and desirable tools
+    - name: Install required prerequisites and desirable tools (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-        pkg: ['chromium-browser', 'git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'screen', 'wmctrl']
+        pkg: ['chromium-browser', 'git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'tmux', 'screen', 'wmctrl']
 
-    - name: clone .bash git repository
+    - name: clone .bash git repository (as user)
       become_user: "{{ app_user }}"
       git:
         repo: 'https://github.com/jeffskinnerbox/.bash.git'
         dest: '/home/{{ app_user }}/.bash'
         clone: true
 
-    - name: clean out the old bash environment (delete files)
+    - name: clean out the old bash environment (delete files) (as root)
       file:
         path: "{{ item }}"
         state: absent
@@ -36,7 +45,7 @@
         - "{{ app_user_home }}/.bash_logout"
         - "{{ app_user_home }}/.bash_profile"
 
-    - name: setup your new bash environment
+    - name: setup your new bash environment (as root)
       file:
         src: "{{ app_user_home }}/.bash/{{ item.src }}"
         dest: "{{ app_user_home }}/{{ item.dest }}"
@@ -50,21 +59,21 @@
         - {src: 'bash_logout', dest: '.bash_logout'}
         - {src: 'bash_profile', dest: '.bash_profile'}
 
-    - name: source/load the changes into your profile
+    - name: source/load the changes into your profile (as user)
       become_user: "{{ app_user }}"
       shell: |
         source ~/.bashrc
       args:
         executable: /usr/bin/bash
 
-    - name: clone .X git repository
+    - name: clone .X git repository (as user)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: 'https://github.com/jeffskinnerbox/.X.git'
         dest: '{{ app_user_home }}/.X'
         clone: true
 
-    - name: setup your x windows environment
+    - name: setup your x windows environment (as root)
       file:
         src: "{{ app_user_home }}/.X/{{ item.src }}"
         dest: "{{ app_user_home }}/{{ item.dest }}"
@@ -76,15 +85,15 @@
         - {src: 'Xresources', dest: '.Xresources'}
         - {src: 'xsessionrc', dest: '.xsessionrc'}
 
-    - name: rebuilding $HOME/.Xauthority to avoid MIT magic cookie error
-      become_user: "{{ app_user }}"
-      shell: |
-        cd ~
-        touch ~/.Xauthority
-        xauth generate :0 . trusted
-        xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
-      args:
-        executable: /usr/bin/bash
+    # - name: rebuilding $HOME/.Xauthority to avoid MIT magic cookie error (as user)
+      # become_user: "{{ app_user }}"
+      # shell: |
+        # cd ~
+        # touch ~/.Xauthority
+        # xauth generate :0 . trusted
+        # xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
+      # args:
+        # executable: /usr/bin/bash
   tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
@@ -101,17 +110,19 @@
     #   args:
     #     executable: /usr/bin/bash
 
-    - name: remove all login environment related files & directories
+    - name: remove all login environment related files & directories (as root)
       file:
         path: "{{ app_user_home }}/{{ item }}"
         state: absent
       loop: ['.bash_logout', '.inputrc', '.bashrc', '.bash_login', '.bash_logout', '.bash_profile', '.xbindkeysrc', '.Xresources', '.xsessionrc', '.Xauthority', '.bash', '.X']
 
-    - name: uninstall chromium-browser
+    - name: uninstall chromium-browser (as root)
       apt:
         name: chromium-browser
         state: absent            # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true          # cleans the local repository packages that can no longer be downloaded
         autoremove: true         # remove unused dependency with repository packages
   tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+
+# ------------------------------------------------------------------------------
 

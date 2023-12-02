@@ -3,6 +3,15 @@
 # Version:      1.5.0
 #
 # role file to install Apache2 HTTP server
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/apache/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags apache --skip-tags uninstall --list-tasks
 
 ---
 
@@ -11,21 +20,21 @@
 
 - name: Install latest version of Apache2 and its prerequisites
   block:
-    - name: Install latest version of Apache2 and its prerequisites
+    - name: Install latest version of Apache2 and its prerequisites (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: [apache2, ufw]
 
-    - name: Create document root (/var/www/{{ http_host }}) for your website
+    - name: Create document root (/var/www/{{ http_host }}) for your website (as root)
       file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
         state: directory         # must be one of: absent, directory, file, hard, link, touch
 
-    - name: Copy your index page to /var/www/{{ http_host }}/index.html
+    - name: Copy your index page to /var/www/{{ http_host }}/index.html (as root)
       template:
         src: "files/index.html.j2"
         dest: "/var/www/{{ http_host }}/index.html"
@@ -33,7 +42,7 @@
         mode: u=rw,g=r,o=r
       notify: restart-apache
 
-    - name: Set up virtual host in /etc/apache2/sites-available/{{ http_conf }}
+    - name: Set up virtual host in /etc/apache2/sites-available/{{ http_conf }} (as root)
       template:
         src: "files/apache.conf.j2"
         dest: "/etc/apache2/sites-available/{{ http_conf }}"
@@ -41,14 +50,14 @@
         mode: u=rw,g=r,o=r
       notify: restart-apache
 
-    - name: "UFW firewall allow HTTP on port {{ http_port }}"
+    - name: "UFW firewall allow HTTP on port {{ http_port }} (as root)"
       ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: "{{ http_port }}"
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
         state: enabled           # must be one of: enabled, disabled, reloaded, reset
 
-    - name: set UFW firewall to allow SSH on port 22 (so you are not locked out)
+    - name: set UFW firewall to allow SSH on port 22 (so you are not locked out) (as root)
       ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: ssh
@@ -60,21 +69,21 @@
 
 - name: Uninstall latest version of Apache2
   block:
-    - name: Uninstall Apache2 but leave its prerequisites
+    - name: Uninstall Apache2 but leave its prerequisites (as root)
       apt:
         state: absent        # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true      # cleans the local repository packages that can no longer be downloaded
         autoremove: true     # remove unused dependency with repository packages
         pkg: [apache2]
 
-    - name: Remove document root (/var/www/{{ http_host }}) for the website
+    - name: Remove document root (/var/www/{{ http_host }}) for the website (as root)
       file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
         state: absent            # must be one of: absent, directory, file, hard, link, touch
 
-    - name: Remove virtual host and stop Apache
+    - name: Remove virtual host and stop Apache (as root)
       file:
         path: "/etc/apache2/sites-available/{{ http_conf }}"
         owner: "{{ app_user }}"
@@ -82,7 +91,7 @@
         state: absent            # must be one of: absent, directory, file, hard, link, touch
       notify: stop-apache
 
-    - name: "UFW firewall deny HTTP on port {{ http_port }}"
+    - name: "UFW firewall deny HTTP on port {{ http_port }} (as root)"
       ufw:
         port: "{{ http_port }}"
         rule: deny               # must be one of: allow, deny, limit, reject
@@ -90,4 +99,5 @@
         state: reloaded          # must be one of: enabled, disabled, reloaded, reset
   tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
+# ------------------------------------------------------------------------------
 

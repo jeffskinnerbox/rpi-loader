@@ -157,6 +157,7 @@ sudo pip install ansible
 # OR using Unbutu's apt-get
 sudo apt install ansible
 
+# login to ssh server with a password using a shell script
 sudo apt-get install sshpass
 ```
 

@@ -65,3 +65,5 @@
       loop: ['.vim', '.vimrc']
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
+# ------------------------------------------------------------------------------
+

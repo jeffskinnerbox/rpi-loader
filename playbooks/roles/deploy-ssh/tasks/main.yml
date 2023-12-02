@@ -3,6 +3,15 @@
 # Version:      1.5.0
 #
 # task file for 'deploy-ssh' role - install useful devlopment utilities
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/deploy-ssh/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags deploy-ssh --skip-tags uninstall --list-tasks
 
 ---
 
@@ -11,22 +20,22 @@
 
 - name: Install / Unisntall SSH Authentication
   block:
-    - name: Add a new user named provision
+    - name: Add a new user named provision (as root)
       user:
         name=provision
         password={{ provision_password }}
 
-    - name: Add provision user to the sudoers
+    - name: Add provision user to the sudoers (as root)
       copy:
         dest: "/etc/sudoers.d/provision"
         content: "provision  ALL=(ALL)  NOPASSWD: ALL"
 
-    - name: Deploy SSH Key
+    - name: Deploy SSH Key (as root)
       authorized_key: user=provision
         key="{{ lookup('file', '/home/provision/.ssh/id_rsa.pub') }}"
         state=present
 
-    - name: Disable Password Authentication
+    - name: Disable Password Authentication (as root)
       lineinfile:
         dest=/etc/ssh/sshd_config
         regexp='^PasswordAuthentication'
@@ -36,7 +45,7 @@
       notify:
         - restart ssh
 
-    - name: Disable Root Login
+    - name: Disable Root Login (as root)
       lineinfile:
         dest=/etc/ssh/sshd_config
         regexp='^PermitRootLogin'
@@ -49,4 +58,12 @@
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
+- name: Uninstall SSH
+  block:
+    - name: message to user
+      debug:
+        msg: Nothing needs to be uninstalled, therefore, it is not
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+
+# ------------------------------------------------------------------------------
 

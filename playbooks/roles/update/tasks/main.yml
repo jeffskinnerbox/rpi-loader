@@ -3,6 +3,13 @@
 # Version:      1.5.0
 #
 # role file to update all packages (equivalent to "apt update && apt full-upgrade")
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/update/tasks
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags update --skip-tags uninstall --list-tasks
+
 
 ---
 
@@ -11,40 +18,40 @@
 
 - name: Install full-upgrade, add required packages, and reboot if needed
   block:
-    - name: update the apt repository cache
+    - name: update the apt repository cache (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: execute script to create list of upgrades needed
+    - name: execute script to create list of upgrades needed (as root)
       shell:
         cmd: apt list --upgradeable
       register: cmd_output
       args:
         executable: /bin/bash
 
-    - name: script output - the list of upgrades needed
+    - name: script output - the list of upgrades needed (as root)
       debug:
         var: cmd_output.stdout_lines
 
-    - name: upgrade all apt repository packages
+    - name: upgrade all apt repository packages (as root)
       apt:
         state: latest
         upgrade: dist
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: remove apt repositories not needed anymore
+    - name: remove apt repositories not needed anymore (as root)
       apt:
         autoremove: true
 
-    - name: check if a reboot is needed because of kernel changes, etc.
+    - name: check if a reboot is needed because of kernel changes, etc. (as root)
       register: reboot_required_file
       stat:
         path: var/run/reboot-required
         get_md5: false
 
-    - name: reboot the box if needed
+    - name: reboot the box if needed (as root)
       reboot:
         msg: "Reboot Initiated By Ansible"
         connect_timeout: 5
@@ -57,10 +64,12 @@
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall full-upgrade on all packages
+- name: Uninstall full-upgrade on all packages (as root)
   block:
     - name: message to user
       debug:
         msg: Nothing done. Packages newly installed and up-grades are unchanged.
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+
+# ------------------------------------------------------------------------------
 

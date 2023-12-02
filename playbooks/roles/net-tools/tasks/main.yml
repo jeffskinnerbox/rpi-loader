@@ -4,6 +4,15 @@
 #
 # task file for 'network-tools' role - install various networking related tools
 #
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/net-tools/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags net-tools --skip-tags uninstall --list-tasks
+#
 # See: https://github.com/mrlesmithjr/ansible-network-tools
 
 ---
@@ -13,7 +22,7 @@
 
 - name: Install Networking Tools
   block:
-    - name: install various networking tools / packages
+    - name: install various networking tools / packages (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
@@ -28,15 +37,16 @@
           - 'dnsutils'
           - 'ifstat'
           - 'iftop'
-          - 'iperf3'          # network performance testing & monitoring
+          - 'iperf3'             # network performance testing & monitoring
           - 'iproute2'
           - 'lldpd'
           - 'lsof'
           - 'nbtscan'
-          - 'netcat'
-          - 'netdiscover'    # try 'sudo netdiscover -c 3 -s 10 -L -N -r 192.168.1.0/24'
+          - 'ncat'               # nc, ncat, and netcat are three names for the same program
+          - 'socat'              # socat can do serial line stuff, netcat cannot, socat can do fairly advanced functionality
+          - 'netdiscover'        # try 'sudo netdiscover -c 3 -s 10 -L -N -r 192.168.1.0/24'
           - 'netdiag'
-          - 'nethogs'       # network performance testing & monitoring
+          - 'nethogs'            # network performance testing & monitoring
           - 'netperf'
           - 'netsniff-ng'
           - 'net-tools'
@@ -46,8 +56,7 @@
           - 'nload'
           - 'nmap'
           - 'rfkill'
-          - 'socat'
-          - 'sysstat'         # display statistics about your cpu, i/o, network file system, etc.
+          - 'sysstat'            # display statistics about your cpu, i/o, network file system, etc.
           - 'tcpdump'
           - 'tcpflow'
           - 'tcpstat'
@@ -55,20 +64,20 @@
           - 'tcptrack'
           - 'telnet'
           - 'traceroute'
-          - 'ufw'            # installed but not enabled or configured
+          - 'ufw'                # installed but not enabled or configured
           - 'wavemon'
-          - 'avahi-daemon'   # so you can discover hosts via Multicast Domain Name System (mDNS)
+          - 'avahi-daemon'       # so you can discover hosts via Multicast Domain Name System (mDNS)
 
-    - name: install encryption and certificate packages
+    - name: install encryption and certificate packages (as root)
       apt:
-        state: latest          # must be one of: absent, build-dep, fixed, latest, present
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
-    - name: install useful formating tools
+    - name: install useful formating tools (as root)
       apt:
-        state: latest          # must be one of: absent, build-dep, fixed, latest, present
+        state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['jq']
-  tags: ['never', 'install']   # 'never' implies you must pass the tag to execute this block
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
@@ -78,11 +87,11 @@
       debug:
         msg: Some, but not all, packages are being removed.
 
-    - name: uninstall various networking tools / packages ... but not all
+    - name: uninstall various networking tools / packages ... but not all (as root)
       apt:
-        state: absent        # must be one of: absent, build-dep, fixed, latest, present
-        autoclean: true      # cleans the local repository packages that can no longer be downloaded
-        autoremove: true     # remove unused dependency with repository packages
+        state: absent            # must be one of: absent, build-dep, fixed, latest, present
+        autoclean: true          # cleans the local repository packages that can no longer be downloaded
+        autoremove: true         # remove unused dependency with repository packages
         pkg:
           # - 'net-tools'
           # - 'curl'
@@ -93,15 +102,16 @@
           - 'dnsutils'
           - 'ifstat'
           - 'iftop'
-          - 'iperf3'          # network performance testing & monitoring
+          - 'iperf3'
           - 'iproute2'
           - 'lldpd'
           - 'lsof'
           - 'nbtscan'
-          # - 'netcat'
+          # - 'ncat'
+          - 'socat'
           # - 'netdiscover'
           - 'netdiag'
-          - 'nethogs'        # network performance testing & monitoring
+          - 'nethogs'
           - 'netperf'
           - 'netsniff-ng'
           - 'net-tools'
@@ -111,7 +121,6 @@
           - 'nload'
           # - 'nmap'
           - 'rfkill'
-          - 'socat'
           - 'sysstat'
           - 'tcpdump'
           - 'tcpflow'
@@ -123,4 +132,6 @@
           # - 'ufw'
           - 'wavemon'
   tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
+
+# ------------------------------------------------------------------------------
 

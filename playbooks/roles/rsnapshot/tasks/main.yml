@@ -1,11 +1,24 @@
 
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
 # role file to create the the rsnapshot backup process
 #
 #  Testing
 #
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/rsnapshot/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags rsnapshot --skip-tags uninstall --list-tasks
+#
 #     sudo rsnapshot configtest
 #     sudo rsnapshot -t hourly
 #     sudo /home/backup_user/bin/rsnapshot-wrapper.sh hourly
+
 
 ---
 
@@ -14,7 +27,7 @@
 
 - name: Install / Uninstall rsnapshot and the automation backup shell scripts that use it
   block:
-    - name: Install prerequisite tools
+    - name: Install prerequisite tools (as root)
       apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
@@ -30,7 +43,7 @@
         - src
         - bin
 
-    - name: check if rsnapshot git repository exists
+    - name: check if rsnapshot git repository exists (as user)
       become_user: "{{ backup_user }}"
       stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
@@ -60,14 +73,14 @@
       loop:
         - install
 
-    - name: copy the configuration file to it destination
+    - name: copy the configuration file to it destination (as root)
       shell:
         cmd: cp /etc/rsnapshot.conf.default /etc/rsnapshot.conf
       args:
         executable: /bin/bash
         creates: /etc/rsnapshot.conf
 
-    - name: copy the rsnapshot executable to /usr/bin
+    - name: copy the rsnapshot executable to /usr/bin (as root)
       shell:
         cmd: cp /usr/local/bin/rsnapshot /usr/bin/rsnapshot
       args:
@@ -76,7 +89,7 @@
 
     # --------------------------------------------------------------------------
 
-    - name: copy backup's shell scripts to ~/backup_user/bin
+    - name: copy backup's shell scripts to ~/backup_user/bin (as root)
       become_user: "{{ backup_user }}"
       copy:
         src: "./scripts/{{ item }}"
@@ -89,7 +102,7 @@
         - rsync-wrapper.sh
         - apprise.sh
 
-    - name: copy rsync exclude files and secrets to ~/backup_user
+    - name: copy rsync exclude files and secrets to ~/backup_user (as user)
       become_user: "{{ backup_user }}"
       copy:
         src: ./files/{{ item }}
@@ -100,7 +113,7 @@
         - rsync-exclude-RPi
         - secret.env
 
-    - name: creates the rsnapshot cron file under /etc/cron.d
+    - name: creates the rsnapshot cron file under /etc/cron.d (as root)
       copy:
         src: ./files/{{ item }}
         dest: "/etc/cron.d/{{ item }}"
@@ -111,7 +124,7 @@
         - rsnapshot.crontab
       notify: restart-cron
 
-    - name: copy the rsnapshot configuration file and backup any existing file
+    - name: copy the rsnapshot configuration file and backup any existing file (as root)
       copy:
         src: ./files/rsnapshot.conf
         dest: /etc/rsnapshot.conf
@@ -125,12 +138,12 @@
 
 - name: Uninstall rsnapshot and my shell scripts to use it
   block:
-    - name: check if rsnapshot git repository exists
+    - name: check if rsnapshot git repository exists (as root)
       stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
       register: file_exists
 
-    - name: clean-up rsnapshot build
+    - name: clean-up rsnapshot build (as root)
       make:
         chdir: "{{ backup_user_home }}/src/rsnapshot"
         target: "{{ item }}"
@@ -138,13 +151,13 @@
         - clean
       when: file_exists.stat.exists
 
-    - name: remove rsnapshot git repository
+    - name: remove rsnapshot git repository (as root)
       file:
         state: absent
         path: "{{ backup_user_home }}/src/rsnapshot"
       when: file_exists.stat.exists
 
-    - name: delete the configuration files
+    - name: delete the configuration files (as root)
       file:
         state: absent
         path: "{{ item }}"
@@ -157,7 +170,7 @@
 
     # --------------------------------------------------------------------------
 
-    - name: remove backup shell scripts from ~/backup_user/bin
+    - name: remove backup shell scripts from ~/backup_user/bin (as user)
       become_user: "{{ backup_user }}"
       file:
         path: "{{ backup_user_home }}/bin/{{ item }}"
@@ -168,7 +181,7 @@
         - rsync-wrapper.sh
         - apprise.sh
 
-    - name: remove rsync exclude files from ~/backup_user
+    - name: remove rsync exclude files from ~/backup_user (as user)
       become_user: "{{ backup_user }}"
       file:
         path: "{{ backup_user_home }}/{{ item }}"
@@ -177,7 +190,7 @@
         - rsync-exclude-RPi
         - secret.env
 
-    - name: remove the rsnapshot cron file from /etc/cron.d
+    - name: remove the rsnapshot cron file from /etc/cron.d (as root)
       file:
         path: "/etc/cron.d/{{ item }}"
         state: absent
@@ -186,4 +199,6 @@
       notify: restart-cron
 
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+
+# ------------------------------------------------------------------------------
 

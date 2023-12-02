@@ -3,6 +3,17 @@
 # Version:      1.5.0
 #
 # role file to install desirable and required prerequisites
+#
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/prerequisites/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags prerequisites --skip-tags uninstall --list-tasks
+#
+
 
 ---
 
@@ -11,35 +22,43 @@
 
 - name: Install desirable and required prerequisites
   block:
-    - name: run the equivalent of "apt-get update"
+    - name: run the equivalent of "apt-get update" (as root)
       apt:
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: install required prerequisite packages
+    - name: install required prerequisite packages (as root)
       apt:
-        name: ['git', 'curl', 'wget', 'ntp', 'apt-transport-https', 'gnupg2']
         state: present
+        name: ['git', 'curl', 'wget', 'ntp', 'apt-transport-https', 'gnupg2']
 
-    - name: install desirable prerequisite packages
+    - name: install desirable prerequisite packages (as root)
       apt:
         state: latest
         update_cache: false
         pkg: ['ca-certificates', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
 
-    - name: install these packages for ansible, needed in some situations
+    - name: install these desirable packages for ansible, needed in some situations (as root)
       apt:
         state: latest
         update_cache: false
         pkg: ['acl']
+
+    - name: install these desirable packages for raspberry pi device interfaces (as root)
+      apt:
+        state: latest
+        update_cache: false
+        pkg: ['i2c-tools']
   tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall desirable and required prerequisites
   block:
-    - name: message to user
+    - name: message to user (as root)
       debug:
         msg: Nothing done. Packages newly installed and up-grades are unchanged.
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+
+# ------------------------------------------------------------------------------
 
