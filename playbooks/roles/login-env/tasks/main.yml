@@ -25,7 +25,7 @@
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-        pkg: ['chromium-browser', 'git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'tmux', 'screen', 'wmctrl']
+        pkg: ['chromium-browser', 'stow', git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'tmux', 'screen', 'wmctrl']
 
     - name: clone .bash git repository (as user)
       become_user: "{{ app_user }}"

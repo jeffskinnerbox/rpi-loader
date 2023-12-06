@@ -1,0 +1,94 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# ????
+
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/dotfiles/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags dotfiles --skip-tags uninstall --list-tasks
+#
+# https://www.iduoad.com/posts/treat-your-dotfiles-better/
+
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install Configuration Files Defined in .dotfiles
+  block:
+    - name: install required packages to suport .dotfiles (as root)
+      apt:
+        state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['stow', vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
+
+    - name: clone the .dotfiles github repository (as user)
+      become_user: "{{ app_user }}"
+      git:
+        repo: 'http://github.com/jeffskinnerbox/.dotfiles.git'
+        dest: '{{ app_user_home }}/.dotfiles'
+        clone: true
+        update: true    # perform an update on submodules in this git repository
+
+    - name: stow the .dotfiles targetted for $HOME (as user)
+      become_user: '{{ app_user }}'
+      ansible.builtin.shell:
+        cmd: "stow --dir=$HOME/.dotfiles --target=$HOME --stow {{ item }}"
+      loop:
+        - pkg-X
+        # - pkg-i3
+        - pkg-vim
+        - pkg-tmux
+        - pkg-bash
+        # - pkg-conky
+        - pkg-screen
+
+    - name: stow the .dotfiles targetted for $HOME/$XDG_CONFIG_HOME (as user)
+      become_user: '{{ app_user }}'
+      ansible.builtin.shell:
+        cmd: "stow --dir=$HOME/.dotfiles --target=$XDG_CONFIG_HOME --stow {{ item }}"
+      loop:
+        - pkg-nvim
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Uninstall Configuration Files Defined in .dotfiles
+  block:
+    - name: remove all stow symbolic links within $HOME (as user)
+      become_user: '{{ app_user }}'
+      ansible.builtin.shell:
+        cmd: "stow --dir=$HOME/.dotfiles --target=$HOME --delete {{ item }}"
+      loop:
+        - pkg-X
+        # - pkg-i3
+        - pkg-vim
+        - pkg-tmux
+        - pkg-bash
+        # - pkg-conky
+        - pkg-screen
+
+    - name: remove all stow symbolic links within $XDG_CONFIG_HOME (as user)
+      become_user: '{{ app_user }}'
+      ansible.builtin.shell:
+        cmd: "stow --dir=$HOME/.dotfiles --target=$XDG_CONFIG_HOME --delete {{ item }}"
+      loop:
+        - pkg-nvim
+
+    - name: remove the .dotfiles directory (as user)
+      become_user: '{{ app_user }}'
+      file:
+        path: "{{ app_user_home }}/.dotfiles"
+        state: absent
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+
+# ------------------------------------------------------------------------------
+

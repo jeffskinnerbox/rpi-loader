@@ -85,7 +85,8 @@
     - {import_role: {name: net-tools}, tags: net-tools}
     - {import_role: {name: crypto-tools}, tags: crypto-tools}
     - {import_role: {name: login-env}, tags: login-env}
-    - {import_role: {name: vim-config}, tags: vim-config}
+    # - {import_role: {name: vim-config}, tags: vim-config}
+    - {import_role: {name: dotfiles}, tags: dotfiles}
     - {import_role: {name: dev-env}, tags: dev-env}
     - {import_role: {name: dev-tools}, tags: dev-tools}
     - {import_role: {name: docker}, tags: docker}

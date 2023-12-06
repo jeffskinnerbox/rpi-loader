@@ -3,8 +3,17 @@
 # Version:      1.5.0
 #
 # role file to install resource file (.vimrc) and plugins for vi/vim editor
-#
 # See: https://www.redhat.com/sysadmin/ansible-configure-vim
+
+# YAML linter to spot Ansible YAML syntax errors
+#    yamllint playbook.yml roles/vim-config/tasks
+#
+# Ansible linter to spot Ansible playbook syntax errors
+#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#
+# Ansible dry-run to understand what task will be executed without making changes
+#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags vim-config --skip-tags uninstall --list-tasks
+
 
 ---
 
@@ -13,14 +22,14 @@
 
 - name: Install Vim Terminal Visual Editor With Custom .vimrc and Plugins
   block:
-    - name: install required packages to suport vim
+    - name: install required packages to suport vim (as root)
       apt:
         state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-        pkg: ['vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
+        pkg: ['stow', vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
 
-    - name: clone the .vim github repository
+    - name: clone the .vim github repository (as user)
       become_user: "{{ app_user }}"
       git:
         repo: 'http://github.com/jeffskinnerbox/.vim.git'
@@ -28,7 +37,7 @@
         clone: true
         update: true    # perform an update on submodules in this git repository
 
-    - name: create symbolic links for .vimrc and .gvimrc
+    - name: create symbolic links for .vimrc and .gvimrc (as user)
       become_user: '{{ app_user }}'
       file:
         src: "{{ app_user_home }}/.vim/{{ item }}"
@@ -40,7 +49,7 @@
         - vimrc
         # - gvimrc
 
-    - name: ensure .vim/backup, .vim/tmp directories are created
+    - name: ensure .vim/backup, .vim/tmp directories are created (as user)
       become_user: '{{ app_user }}'
       file:
         path: "{{ app_user_home }}/.vim/{{ item }}"
@@ -58,7 +67,7 @@
 
 - name: Uninstall Vim Terminal Visual Editor
   block:
-    - name: remove all login vim related files & directories
+    - name: remove all login vim related files & directories (as root)
       file:
         path: "{{ app_user_home }}/{{ item }}"
         state: absent
