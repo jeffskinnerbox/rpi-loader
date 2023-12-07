@@ -24,24 +24,42 @@
 - name: Install Configuration Files Defined in .dotfiles
   block:
     - name: install required packages to suport .dotfiles (as root)
-      apt:
+      ansible.builtin.apt:
         state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-        pkg: ['stow', vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
+        pkg:
+          - 'git'
+          - 'stow'
+          - 'snapd'
+          - 'vim'
+          - 'tmux'
+          - 'vim-gtk3'
+          - 'screen'
+          - 'gnome-terminal'
+          - 'wmctrl'
+          - 'libcanberra-gtk-module'
+          - 'libcanberra-gtk3-module'
+
+    - name: install the latest version of nvim via snap (as root)
+      community.general.snap:
+        state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
+        name: nvim
+        classic: true
 
     - name: clone the .dotfiles github repository (as user)
       become_user: "{{ app_user }}"
-      git:
+      ansible.builtin.git:
         repo: 'http://github.com/jeffskinnerbox/.dotfiles.git'
         dest: '{{ app_user_home }}/.dotfiles'
+        force: true              # if true, any modified files in the working repository will be discarded
         clone: true
-        update: true    # perform an update on submodules in this git repository
+        update: true             # perform an update on submodules in this git repository
 
     - name: stow the .dotfiles targetted for $HOME (as user)
       become_user: '{{ app_user }}'
       ansible.builtin.shell:
-        cmd: "stow --dir=$HOME/.dotfiles --target=$HOME --stow {{ item }}"
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --stow {{ item }}"
       loop:
         - pkg-X
         # - pkg-i3
@@ -51,10 +69,20 @@
         # - pkg-conky
         - pkg-screen
 
-    - name: stow the .dotfiles targetted for $HOME/$XDG_CONFIG_HOME (as user)
+    - name: make sure ~/.config directory is created (as user)
+      become_user: '{{ app_user }}'
+      ansible.builtin.file:
+        path: "{{ app_user_home }}/.config"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        state: directory
+        recurse: true
+        mode: 0750     # mode 0750 = user can rwx, the group write, and others cannot read, write, or execute
+
+    - name: stow the .dotfiles targetted for ~/.config (as user)
       become_user: '{{ app_user }}'
       ansible.builtin.shell:
-        cmd: "stow --dir=$HOME/.dotfiles --target=$XDG_CONFIG_HOME --stow {{ item }}"
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --stow {{ item }}"
       loop:
         - pkg-nvim
   tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
@@ -66,7 +94,7 @@
     - name: remove all stow symbolic links within $HOME (as user)
       become_user: '{{ app_user }}'
       ansible.builtin.shell:
-        cmd: "stow --dir=$HOME/.dotfiles --target=$HOME --delete {{ item }}"
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --delete {{ item }}"
       loop:
         - pkg-X
         # - pkg-i3
@@ -76,16 +104,16 @@
         # - pkg-conky
         - pkg-screen
 
-    - name: remove all stow symbolic links within $XDG_CONFIG_HOME (as user)
+    - name: remove all stow symbolic links within ~/.config (as user)
       become_user: '{{ app_user }}'
       ansible.builtin.shell:
-        cmd: "stow --dir=$HOME/.dotfiles --target=$XDG_CONFIG_HOME --delete {{ item }}"
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --delete {{ item }}"
       loop:
         - pkg-nvim
 
     - name: remove the .dotfiles directory (as user)
       become_user: '{{ app_user }}'
-      file:
+      ansible.builtin.file:
         path: "{{ app_user_home }}/.dotfiles"
         state: absent
   tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block

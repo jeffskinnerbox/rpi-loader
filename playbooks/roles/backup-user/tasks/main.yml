@@ -21,7 +21,7 @@
 - name: Create user with approprate access rights
   block:
     - name: Create a 'no-login' user account for {{ backup_user }} (as root)
-      user:
+      ansible.builtin.user:
         state: present           # taking action if the state is different from what is stated
         name: "{{ backup_user }}"
         home: "{{ backup_user_home }}"
@@ -31,7 +31,7 @@
         generate_ssh_key: true
 
     - name: Create /etc/sudoers.d/{{ backup_user }} file with proper owner/group/mode (as root)
-      file:
+      ansible.builtin.file:
         state: touch
         path: "/etc/sudoers.d/{{ backup_user }}"
         owner: root
@@ -39,7 +39,7 @@
         mode: u+rw,g-w,o-w
 
     - name: Add "{{ backup_user }}" file to /etc/sudoers.d directory (as root)
-      copy:
+      ansible.builtin.copy:
         dest: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for creation
         follow: true                              # if true, 'dest' will be overwritten by 'content'
         content: |
@@ -53,13 +53,13 @@
 - name: Remove the user
   block:
     - name: remove "{{ backup_user }}" user account (as root)
-      user:
+      ansible.builtin.user:
         state: absent
         name: "{{ backup_user }}"
         remove: true                 # if true, remove the directories associated with the user
 
     - name: Remove "{{ backup_user }}" from /etc/sudoers directory (as root)
-      file:
+      ansible.builtin.file:
         state: absent
         path: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for deletion
   tags: ['never', 'uninstall']       # 'never' implies you must pass the other tag to execute this block

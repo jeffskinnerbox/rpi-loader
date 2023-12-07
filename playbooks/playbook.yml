@@ -10,9 +10,6 @@
 # Ansible linter to spot Ansible playbook syntax errors
 #    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
 #
-# Ansible dry-run to generate a list of avilable tags
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags install --list-tags
-#
 # Ansible dry-run to idenify tasks that are not tagged
 #    ansible-playbook -i inventory -l test-pi  playbook.yml --tags untagged --list-tasks
 #
@@ -62,8 +59,8 @@
     # ----- used by backup-user & rsnapshot & rsnapshot-container --------------
     backup_user: "backup_user"
     backup_user_home: "/home/backup_user"
-    rsnapshot_store: "rsnapshot"            # root directory for rsnapshot data, files, tect
-    rsnapshot_config: config                # contains all relevant configuration files
+    rsnapshot_store: "rsnapshot"             # root directory for rsnapshot data, files, tect
+    rsnapshot_config: config                 # contains all relevant configuration files
     rsnapshop_source_data: zzz               # optional - storage location for data to be backed up
     rsnapshop_sink_data: xxx                 # optional - storage location for all snapshots
 
@@ -79,13 +76,13 @@
 
   tasks:
     - {import_role: {name: update}, tags: update}
-    - {import_role: {name: ups-pi}, tags: ups-pi}          # requires activation of i2c via 'sudo raspi-config'
+    - {import_role: {name: ups-pi}, tags: ups-pi}                            # requires activation of i2c via 'sudo raspi-config'
     - {import_role: {name: prerequisites}, tags: prerequisites}
     - {import_role: {name: sys-env}, tags: sys-env}
     - {import_role: {name: net-tools}, tags: net-tools}
     - {import_role: {name: crypto-tools}, tags: crypto-tools}
-    - {import_role: {name: login-env}, tags: login-env}
-    # - {import_role: {name: vim-config}, tags: vim-config}
+    # - {import_role: {name: login-env}, tags: login-env}                      # replaced by 'dotfiles' role
+    # - {import_role: {name: vim-config}, tags: vim-config}                    # replaced by 'dotfiles' role
     - {import_role: {name: dotfiles}, tags: dotfiles}
     - {import_role: {name: dev-env}, tags: dev-env}
     - {import_role: {name: dev-tools}, tags: dev-tools}
@@ -94,8 +91,8 @@
     - {import_role: {name: backup-user}, tags: backup-user}
     - {import_role: {name: deploy-ssh}, tags: deploy-ssh}
     - {import_role: {name: duplicati}, tags: duplicati}
-    # - {import_role: {name: rsnapshot}, tags: rsnapshot}
-    # - {import_role: {name: rsnapshot-container}, tags: rsnapshot-container}
+    # - {import_role: {name: rsnapshot}, tags: rsnapshot}                      # not working yet
+    # - {import_role: {name: rsnapshot-container}, tags: rsnapshot-container}  # not working yet
 
   # --- Handlers ---------------------------------------------------------------
 

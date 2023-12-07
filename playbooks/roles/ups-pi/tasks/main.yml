@@ -23,7 +23,7 @@
 - name: Install LiFePO4wered-Pi UPS
   block:
     - name: Install prerequisite tools (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
@@ -31,19 +31,19 @@
 
     - name: Create a '~/src' directory if it does not exist (as user)
       become_user: "{{ app_user }}"
-      file:
+      ansible.builtin.file:
         path: "{{ app_user_home }}/src"
         state: directory
 
     - name: check if LiFePO4wered-Pi UPS git repository exists (as user)
       become_user: "{{ app_user }}"
-      stat:
+      ansible.builtin.stat:
         path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
       register: file_exists
 
     - name: clone the LiFePO4wered-Pi UPS repository (as user)
       become_user: "{{ app_user }}"
-      git:
+      ansible.builtin.git:
         repo: "https://github.com/xorbit/LiFePO4wered-Pi.git"
         dest: "{{ app_user_home }}/src/LiFePO4wered-Pi"
         clone: true
@@ -51,14 +51,14 @@
 
     - name: build LiFePO4wered-Pi UPS tools & daemon (as user)
       become_user: "{{ app_user }}"
-      make:
+      community.general.make:
         chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
         target: "{{ item }}"
       loop:
         - all
 
   # - name: install LiFePO4wered-Pi UPS tools & daemon (as root)         # currently not working, requires activation of i2c via 'sudo raspi-config'
-  #   make:
+  #   community.general.make:
   #     chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
   #     target: "{{ item }}"
   #   loop:
@@ -71,13 +71,13 @@
 - name: Uninstall LiFePO4wered-Pi UPS (really disable daemon & remove repository)
   block:
     - name: disable LiFePO4wered-Pi daemon (as root)
-      systemd:
+      ansible.builtin.systemd:
         name: lifepo4wered-daemon.service
         state: stopped        # must be one of: reloaded, restarted, started, stopped
         enabled: false        # start on boot? - must be true or false
 
     - name: remove LiFePO4wered-Pi UPS git repository (as root)
-      file:
+      ansible.builtin.file:
         state: absent
         path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
   tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block

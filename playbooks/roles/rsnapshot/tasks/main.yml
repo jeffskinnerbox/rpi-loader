@@ -28,7 +28,7 @@
 - name: Install / Uninstall rsnapshot and the automation backup shell scripts that use it
   block:
     - name: Install prerequisite tools (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
@@ -36,7 +36,7 @@
 
     - name: Create a '~/src' and '~/bin' directory if don't exist (as user)
       become_user: "{{ backup_user }}"
-      file:
+      ansible.builtin.file:
         path: "{{ backup_user_home }}/{{ item }}"
         state: directory
       loop:
@@ -45,13 +45,13 @@
 
     - name: check if rsnapshot git repository exists (as user)
       become_user: "{{ backup_user }}"
-      stat:
+      ansible.builtin.stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
       register: file_exists
 
     - name: clone the rsnapshot repository (as user)
       become_user: "{{ backup_user }}"
-      git:
+      ansible.builtin.git:
         repo: "https://github.com/rsnapshot/rsnapshot.git"
         dest: "{{ backup_user_home }}/src/rsnapshot"
         clone: true
@@ -59,7 +59,7 @@
 
     - name: do the preparation work so you can perform the build (as user)
       become_user: "{{ backup_user }}"
-      shell:
+      ansible.builtin.shell:
         cmd: "{{ item }}"
         chdir: "{{ backup_user_home }}/src/rsnapshot"
       loop:
@@ -67,21 +67,21 @@
         - ./configure --sysconfdir=/etc
 
     - name: build rsnapshot tools (as root)
-      make:
+      community.general.make:
         chdir: "{{ backup_user_home }}/src/rsnapshot"
         target: "{{ item }}"
       loop:
         - install
 
     - name: copy the configuration file to it destination (as root)
-      shell:
+      ansible.builtin.shell:
         cmd: cp /etc/rsnapshot.conf.default /etc/rsnapshot.conf
       args:
         executable: /bin/bash
         creates: /etc/rsnapshot.conf
 
     - name: copy the rsnapshot executable to /usr/bin (as root)
-      shell:
+      ansible.builtin.shell:
         cmd: cp /usr/local/bin/rsnapshot /usr/bin/rsnapshot
       args:
         executable: /bin/bash
@@ -91,7 +91,7 @@
 
     - name: copy backup's shell scripts to ~/backup_user/bin (as root)
       become_user: "{{ backup_user }}"
-      copy:
+      ansible.builtin.copy:
         src: "./scripts/{{ item }}"
         dest: "{{ backup_user_home }}/bin/{{ item }}"
         mode: u+rwx,g-rwx,o-rwx
@@ -104,7 +104,7 @@
 
     - name: copy rsync exclude files and secrets to ~/backup_user (as user)
       become_user: "{{ backup_user }}"
-      copy:
+      ansible.builtin.copy:
         src: ./files/{{ item }}
         dest: "{{ backup_user_home }}/{{ item }}"
         mode: u+rw,g-rwx,o-rwx
@@ -114,7 +114,7 @@
         - secret.env
 
     - name: creates the rsnapshot cron file under /etc/cron.d (as root)
-      copy:
+      ansible.builtin.copy:
         src: ./files/{{ item }}
         dest: "/etc/cron.d/{{ item }}"
         mode: u+rw,g+rw,o+r
@@ -125,7 +125,7 @@
       notify: restart-cron
 
     - name: copy the rsnapshot configuration file and backup any existing file (as root)
-      copy:
+      ansible.builtin.copy:
         src: ./files/rsnapshot.conf
         dest: /etc/rsnapshot.conf
         mode: u+rw,g+rw,o+r
@@ -139,12 +139,12 @@
 - name: Uninstall rsnapshot and my shell scripts to use it
   block:
     - name: check if rsnapshot git repository exists (as root)
-      stat:
+      ansible.builtin.stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
       register: file_exists
 
     - name: clean-up rsnapshot build (as root)
-      make:
+      community.general.make:
         chdir: "{{ backup_user_home }}/src/rsnapshot"
         target: "{{ item }}"
       loop:
@@ -152,13 +152,13 @@
       when: file_exists.stat.exists
 
     - name: remove rsnapshot git repository (as root)
-      file:
+      ansible.builtin.file:
         state: absent
         path: "{{ backup_user_home }}/src/rsnapshot"
       when: file_exists.stat.exists
 
     - name: delete the configuration files (as root)
-      file:
+      ansible.builtin.file:
         state: absent
         path: "{{ item }}"
       loop:
@@ -172,7 +172,7 @@
 
     - name: remove backup shell scripts from ~/backup_user/bin (as user)
       become_user: "{{ backup_user }}"
-      file:
+      ansible.builtin.file:
         path: "{{ backup_user_home }}/bin/{{ item }}"
         state: absent
       loop:
@@ -183,7 +183,7 @@
 
     - name: remove rsync exclude files from ~/backup_user (as user)
       become_user: "{{ backup_user }}"
-      file:
+      ansible.builtin.file:
         path: "{{ backup_user_home }}/{{ item }}"
         state: absent
       loop:
@@ -191,7 +191,7 @@
         - secret.env
 
     - name: remove the rsnapshot cron file from /etc/cron.d (as root)
-      file:
+      ansible.builtin.file:
         path: "/etc/cron.d/{{ item }}"
         state: absent
       loop:

@@ -50,12 +50,12 @@
 
     - name: create a directory for duplicati configuration and database (as user)
       become_user: "{{ backup_user }}"
-      file:
+      ansible.builtin.file:
         state: directory
         path: "{{ duplicati_config_path }}"
 
     - name: create a duplicati container via docker (as root)
-      docker_container:
+      community.general.docker_container:
         name: duplicati
         state: started       # must be one of: absent, present, stopped, started
         image: linuxserver/duplicati:latest
@@ -77,18 +77,18 @@
 - name: Uninstall Duplicati
   block:
     - name: stop the docker container (as root)
-      docker_container:
+      community.general.docker_container:
         name: duplicati
         state: stopped
 
     - name: remove the docker image and docker networks (as root)
-      docker_container:
+      community.general.docker_container:
         name: duplicati
         purge_networks: true
         state: absent
 
     - name: delete the docker compose files and persistent data (as root)
-      file:
+      ansible.builtin.file:
         state: absent
         path: "{{ item }}"
       loop:

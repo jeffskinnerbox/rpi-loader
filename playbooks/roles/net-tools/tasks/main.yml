@@ -23,7 +23,7 @@
 - name: Install Networking Tools
   block:
     - name: install various networking tools / packages (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
@@ -69,12 +69,12 @@
           - 'avahi-daemon'       # so you can discover hosts via Multicast Domain Name System (mDNS)
 
     - name: install encryption and certificate packages (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
     - name: install useful formating tools (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['jq']
   tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
@@ -84,11 +84,11 @@
 - name: Uninstall networking tools
   block:
     - name: message to user
-      debug:
+      ansible.builtin.debug:
         msg: Some, but not all, packages are being removed.
 
     - name: uninstall various networking tools / packages ... but not all (as root)
-      apt:
+      ansible.builtin.apt:
         state: absent            # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true          # cleans the local repository packages that can no longer be downloaded
         autoremove: true         # remove unused dependency with repository packages

@@ -23,33 +23,33 @@
 - name: Install Docker, Docker Compose, and Portainer
   block:
   - name: install docker's required system packages (as root)
-    apt:
+    ansible.builtin.apt:
       state: latest            # must be one of: absent, build-dep, fixed, latest, present
       update_cache: true       # update the apt repository list cache
       cache_valid_time: 86400  # update the apt cache if it is older than this seconds
       pkg: ['aptitude', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
 
   - name: pulldown docker installation script (as root)
-    get_url:
+    ansible.builtin.get_url:
       url: https://get.docker.com
       dest: "{{ tmp_path }}/get-docker.sh"
       # owner: "{{ user }}"
       mode: u+rwx
 
   - name: install docker via executing docker installation script (as root)
-    shell:
+    ansible.builtin.shell:
       cmd: "sh {{ tmp_path }}/get-docker.sh"
     args:
       creates: "{{ docker_path }}/docker"
       executable: /usr/bin/bash
 
   - name: install docker-compose (as root)
-    pip:
+    ansible.builtin.pip:
       name: docker-compose
       state: present
 
   - name: create test container (hello-world) (as root)
-    docker_container:
+    community.general.docker_container:
       name: hello-world
       image: hello-world
       state: started       # must be one of: absent, present, stopped, started
@@ -57,7 +57,7 @@
       auto_remove: true    # auto-removal of the container when the container's process exits
 
   - name: create a portainer container (as root)
-    docker_container:
+    community.general.docker_container:
       name: portainer
       state: started       # must be one of: absent, present, stopped, started
       image: portainer/portainer-ce:latest
@@ -72,7 +72,7 @@
       restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
 
   - name: create a portainer agent (as root)
-    docker_container:
+    community.general.docker_container:
       name: portainer-agent
       state: started       # must be one of: absent, present, stopped, started
       image: portainer/agent:latest
@@ -91,7 +91,7 @@
 - name: Uninstall Docker, Docker Compose, and Portainer
   block:
     - name: stop portainer & portainer-agent containers and remove (as root)
-      docker_container:
+      community.general.docker_container:
         name: "{{ item }}"
         state: absent              # must be one of: absent, present, stopped, started
         keep_volumes: false        # to retain anonymous volumes associated with the removed container
@@ -100,7 +100,7 @@
         - portainer-agent
 
     - name: delete all portainer volumes (as root)
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
@@ -108,23 +108,23 @@
         - "{{ app_user_home }}/{{ portainer_volumes }}"
 
     - name: purging all unused or dangling images, containers, volumes, and networks (as root)
-      shell:
+      ansible.builtin.shell:
         cmd: docker system prune -a
       args:
         executable: /usr/bin/bash
 
     - name: uninstall docker engine (as root)
-      apt:
+      ansible.builtin.apt:
         pkg: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
         state: absent              # must be one of: absent, build-dep, fixed, latest, present
 
     - name: Uninstall docker-compose executable (delete file) (as root)
-      pip:
+      ansible.builtin.pip:
         name: docker-compose
         state: absent
 
     - name: remove any very old versions of docker that may have been left behind (as root)
-      apt:
+      ansible.builtin.apt:
         pkg: ['docker', 'docker-engine docker.io', 'containerd', 'runc']
         state: absent              # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true            # cleans the local repository packages that can no longer be downloaded

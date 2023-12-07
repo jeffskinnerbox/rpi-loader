@@ -21,12 +21,12 @@
 - name: Install / Unisntall SSH Authentication
   block:
     - name: Add a new user named provision (as root)
-      user:
+      ansible.builtin.user:
         name=provision
         password={{ provision_password }}
 
     - name: Add provision user to the sudoers (as root)
-      copy:
+      ansible.builtin.copy:
         dest: "/etc/sudoers.d/provision"
         content: "provision  ALL=(ALL)  NOPASSWD: ALL"
 
@@ -36,7 +36,7 @@
         state=present
 
     - name: Disable Password Authentication (as root)
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest=/etc/ssh/sshd_config
         regexp='^PasswordAuthentication'
         line="PasswordAuthentication no"
@@ -46,7 +46,7 @@
         - restart ssh
 
     - name: Disable Root Login (as root)
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest=/etc/ssh/sshd_config
         regexp='^PermitRootLogin'
         line="PermitRootLogin no"
@@ -61,7 +61,7 @@
 - name: Uninstall SSH
   block:
     - name: message to user
-      debug:
+      ansible.builtin.debug:
         msg: Nothing needs to be uninstalled, therefore, it is not
   tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
 

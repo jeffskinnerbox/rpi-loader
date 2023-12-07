@@ -21,21 +21,21 @@
 - name: Install latest version of Apache2 and its prerequisites
   block:
     - name: Install latest version of Apache2 and its prerequisites (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: [apache2, ufw]
 
     - name: Create document root (/var/www/{{ http_host }}) for your website (as root)
-      file:
+      ansible.builtin.file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
         state: directory         # must be one of: absent, directory, file, hard, link, touch
 
     - name: Copy your index page to /var/www/{{ http_host }}/index.html (as root)
-      template:
+      ansible.builtin.template:
         src: "files/index.html.j2"
         dest: "/var/www/{{ http_host }}/index.html"
         owner: "{{ app_user }}"
@@ -43,7 +43,7 @@
       notify: restart-apache
 
     - name: Set up virtual host in /etc/apache2/sites-available/{{ http_conf }} (as root)
-      template:
+      ansible.builtin.template:
         src: "files/apache.conf.j2"
         dest: "/etc/apache2/sites-available/{{ http_conf }}"
         owner: "{{ app_user }}"
@@ -51,14 +51,14 @@
       notify: restart-apache
 
     - name: "UFW firewall allow HTTP on port {{ http_port }} (as root)"
-      ufw:
+      community.general.ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: "{{ http_port }}"
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
         state: enabled           # must be one of: enabled, disabled, reloaded, reset
 
     - name: set UFW firewall to allow SSH on port 22 (so you are not locked out) (as root)
-      ufw:
+      community.general.ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: ssh
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
@@ -70,21 +70,21 @@
 - name: Uninstall latest version of Apache2
   block:
     - name: Uninstall Apache2 but leave its prerequisites (as root)
-      apt:
+      ansible.builtin.apt:
         state: absent        # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true      # cleans the local repository packages that can no longer be downloaded
         autoremove: true     # remove unused dependency with repository packages
         pkg: [apache2]
 
     - name: Remove document root (/var/www/{{ http_host }}) for the website (as root)
-      file:
+      ansible.builtin.file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
         state: absent            # must be one of: absent, directory, file, hard, link, touch
 
     - name: Remove virtual host and stop Apache (as root)
-      file:
+      ansible.builtin.file:
         path: "/etc/apache2/sites-available/{{ http_conf }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
@@ -92,7 +92,7 @@
       notify: stop-apache
 
     - name: "UFW firewall deny HTTP on port {{ http_port }} (as root)"
-      ufw:
+      community.general.ufw:
         port: "{{ http_port }}"
         rule: deny               # must be one of: allow, deny, limit, reject
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah

@@ -21,28 +21,28 @@
 - name: Install your system environment
   block:
     - name: Install git tools
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: [git, git-lfs]
 
     - name: install the trash tool
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: [trash-cli]
 
     - name: install the network time protocal (ntp) tool
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: [ntp]
 
     - name: set the timezone
-      timezone:
+      community.general.timezone:
         name: America/New_York
 
     - name: install the ufw firewall tool but don't enable
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         pkg: [ufw]
   tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
@@ -52,7 +52,7 @@
 - name: Uninstall system environment
   block:
     - name: message to user
-      debug:
+      ansible.builtin.debug:
         msg: Nothing needs to be uninstalled, therefore, it is not
   tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 

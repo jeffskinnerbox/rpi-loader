@@ -21,14 +21,14 @@
 - name: Install cryptography and certificate tools
   block:
     - name: install encryption and certificate packages (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
     - name: install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
-      apt:
+      ansible.builtin.apt:
         state: latest            # must be one of: absent, build-dep, fixed, latest, present
         update_cache: false      # update the apt repository list cache
         pkg: ['hashalot']
@@ -39,7 +39,7 @@
 - name: Uninstall cryptography and certificate tools (as root)
   block:
     - name: message to user
-      debug:
+      ansible.builtin.debug:
         msg: Nothing needs to be uninstalled, therefore, it is not
   tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
 

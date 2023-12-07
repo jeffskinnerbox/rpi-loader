@@ -1,3 +1,35 @@
+
+[submodule "bundle/ansible-vim"]
+	path = bundle/ansible-vim
+	url = https://github.com/pearofducks/ansible-vim.git
+[submodule "bundle/conky-syntax.vim"]
+	path = bundle/conky-syntax.vim
+	url = https://github.com/smancill/conky-syntax.vim.git
+[submodule "bundle/matchit"]
+	path = bundle/matchit
+	url = https://github.com/redguardtoo/evil-matchit.git
+[submodule "bundle/nerdcommenter"]
+	path = bundle/nerdcommenter
+	url = https://github.com/preservim/nerdcommenter.git
+[submodule "bundle/nerdtree"]
+	path = bundle/nerdtree
+	url = https://github.com/preservim/nerdtree.git
+[submodule "bundle/python-mode"]
+	path = bundle/python-mode
+	url = https://github.com/python-mode/python-mode.git
+[submodule "bundle/ScrollColors"]
+	path = bundle/ScrollColors
+	url = https://github.com/vim-scripts/ScrollColors.git
+[submodule "bundle/supertab"]
+	path = bundle/supertab
+	url = https://github.com/ervandew/supertab.git
 [submodule "bundle/vim-arduino-syntax"]
 	path = bundle/vim-arduino-syntax
 	url = https://github.com/sudar/vim-arduino-syntax.git
+[submodule "bundle/vim-markdown"]
+	path = bundle/vim-markdown
+	url = https://github.com/preservim/vim-markdown.git
+[submodule "bundle/vim-openscad"]
+	path = bundle/vim-openscad
+	url = https://github.com/sirtaj/vim-openscad.git
+

@@ -23,7 +23,7 @@
 - name: Install Vim Terminal Visual Editor With Custom .vimrc and Plugins
   block:
     - name: install required packages to suport vim (as root)
-      apt:
+      ansible.builtin.apt:
         state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
@@ -31,7 +31,7 @@
 
     - name: clone the .vim github repository (as user)
       become_user: "{{ app_user }}"
-      git:
+      ansible.builtin.git:
         repo: 'http://github.com/jeffskinnerbox/.vim.git'
         dest: '{{ app_user_home }}/.vim'
         clone: true
@@ -39,7 +39,7 @@
 
     - name: create symbolic links for .vimrc and .gvimrc (as user)
       become_user: '{{ app_user }}'
-      file:
+      ansible.builtin.file:
         src: "{{ app_user_home }}/.vim/{{ item }}"
         dest: "{{ app_user_home }}/.{{ item }}"
         owner: "{{ app_user }}"
@@ -51,7 +51,7 @@
 
     - name: ensure .vim/backup, .vim/tmp directories are created (as user)
       become_user: '{{ app_user }}'
-      file:
+      ansible.builtin.file:
         path: "{{ app_user_home }}/.vim/{{ item }}"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
@@ -68,7 +68,7 @@
 - name: Uninstall Vim Terminal Visual Editor
   block:
     - name: remove all login vim related files & directories (as root)
-      file:
+      ansible.builtin.file:
         path: "{{ app_user_home }}/{{ item }}"
         state: absent
       loop: ['.vim', '.vimrc']
