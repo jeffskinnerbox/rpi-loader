@@ -13,6 +13,9 @@
 #
 # Ansible dry-run to understand what task will be executed without making changes
 #    ansible-playbook -i inventory -l test-pi  playbook.yml --tags vim-config --skip-tags uninstall --list-tasks
+#
+#  --   Deprecated   --   Deprecated   --   Deprecated   --   Deprecated   --
+#
 
 
 ---

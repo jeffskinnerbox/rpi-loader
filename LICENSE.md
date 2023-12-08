@@ -7,7 +7,7 @@ Version:      0.1
 
 ## [The Open Source Initiative (OSI)][osl], [MIT License (MIT)][mit]
 
-*Copyright (c) 2022 Jeffrey C. Irland*
+*Copyright (c) 2023 Jeffrey C. Irland*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -47,4 +47,4 @@ stuff sufficiently challenging, who needs all this legal mumbo jumbo!
 [fsf]:http://www.fsf.org/
 [gpl]:http://www.gnu.org/licenses/gpl.html
 [osl]:http://opensource.org/licenses
-[logo]:http://opensource.org/trademarks/opensource/OSI-logo-100x117.png
+[logo]:https://i0.wp.com/opensource.org/wp-content/uploads/2023/03/cropped-OSI-horizontal-large.png?fit=320%2C229&ssl=1

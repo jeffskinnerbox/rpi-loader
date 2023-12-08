@@ -26,7 +26,7 @@
 
 ---
 
-- name: Create your system environment on the host
+- name: Create Default System Environment on a Raspberry Pi
   hosts: all
   become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
   become_method: sudo
@@ -42,7 +42,7 @@
     - name: Install custom raspberry pi configuration
       block:
         - name: message to user
-          debug:
+          ansible.builtin.debug:
             msg: WARNING - No action taken. You can't do an install via this playbook.  Uses rpi-config.yml instead.
       tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
@@ -51,7 +51,7 @@
     - name: Uninstall custom raspberry pi configuration
       block:
         - name: enable ssh password authentication
-          lineinfile:
+          ansible.builtin.lineinfile:
             state: present
             dest: "/etc/ssh/sshd_config"
             regexp: "^PasswordAuthentication"
@@ -59,26 +59,26 @@
           notify: reboot host and wait for it to restart
 
         - name: re-establish '/etc/dhcpcd.conf' to its original state
-          copy:
+          ansible.builtin.copy:
             src: ./files/default-dhcpcd.conf
             dest: /etc/dhcpcd.conf
           notify: reboot host and wait for it to restart
 
         - name: update /etc/hosts with new 'raspberrypi'
-          lineinfile:
+          ansible.builtin.lineinfile:
             dest: /etc/hosts
             regexp: "^127.0.1.1\t*"
             line: "127.0.1.1\traspberrypi"
             state: present
 
         - name: set a 'pi' user account passward to default 'raspberry'
-          user:
+          ansible.builtin.user:
             name: "pi"
             password: "{{ rpi_default_password | password_hash('sha512') }}"
             state: present
 
         - name: set the hostname back to default of 'rapsberrypi'
-          command: hostnamectl set-hostname "raspberrypi"
+          ansible.builtin.command: hostnamectl set-hostname "raspberrypi"
           notify: reboot host and wait for it to restart
       tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
@@ -86,10 +86,15 @@
 
   handlers:
     - name: reboot host and wait for it to restart
-      reboot:
+      ansible.builtin.reboot:
         msg: "Ansible reboot triggered to finish install/uninstall tasks"
         pre_reboot_delay: 0       # seconds to wait before reboot
         post_reboot_delay: 30     # seconds to wait after the reboot command was successful before attempting to validate
         reboot_timeout: 600       # keep attempting to connect for 10 minutes (600 seconds)
         connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
         test_command: whoami      # validate the node is up and working
+
+# --- Install Block of Tasks ---------------------------------------------------
+# --- Uninstall Block of Tasks -------------------------------------------------
+# ------------------------------------------------------------------------------
+

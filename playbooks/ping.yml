@@ -11,8 +11,12 @@
 
 ---
 
-- name: Test Ping
+- name: Test Ping Each Host
   hosts: all
+  become: true           # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: false
 
   tasks:
   - action: ping
+

@@ -5,28 +5,28 @@
 # While your within playbook directory, check the following prior to doing the play
 #
 # YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/*/tasks
+#    yamllint rpi-loader.yml roles/*/tasks
 #
 # Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
 # Ansible dry-run to idenify tasks that are not tagged
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags untagged --list-tasks
+#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags untagged --list-tasks
 #
 # Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags install --list-tasks
+#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
 #
 # Ansible dry-run to understand what task will be executed for a tag without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags install --list-tasks --tags "ups-pi, uninstall"
+#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
 #
 # Ansible dry-run checking for errors and showing results of a run without making changes
-#    ansible-playbook -i inventory -l test-pi playbook.yml --tags install --check
+#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install --check
 #
 # Run the entire playbook for real
-#    ansible-playbook -i inventory -l test-pi playbook.yml --tags install
+#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install
 #
 # Run just the role 'update' & 'dev-env' and skip the 'uninstall' tasks
-#    ansible-playbook -i inventory -l test-pi playbook.yml --tags "update, dev-env" --skip-tags uninstall --list-tasks
+#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags "update, dev-env" --skip-tags uninstall --list-tasks
 
 ---
 
@@ -41,7 +41,9 @@
     # ----- used by all --------------------------------------------------------
     login_env_host: "test-pi"
     app_user: "pi"
+    app_user_password: "raspberry"
     app_user_home: "/home/pi"
+    ansible_ssh: "/home/jeff/.ssh/ansible.pub"
     tmp_path: /tmp                           # location for temporary files / executables
 
     # ----- used by docker -----------------------------------------------------
@@ -75,21 +77,22 @@
 
 
   tasks:
+    - {import_role: {name: ansible-ssh}, tags: deploy-ssh}
     - {import_role: {name: update}, tags: update}
     - {import_role: {name: ups-pi}, tags: ups-pi}                            # requires activation of i2c via 'sudo raspi-config'
     - {import_role: {name: prerequisites}, tags: prerequisites}
     - {import_role: {name: sys-env}, tags: sys-env}
     - {import_role: {name: net-tools}, tags: net-tools}
     - {import_role: {name: crypto-tools}, tags: crypto-tools}
-    # - {import_role: {name: login-env}, tags: login-env}                      # replaced by 'dotfiles' role
-    # - {import_role: {name: vim-config}, tags: vim-config}                    # replaced by 'dotfiles' role
+    # - {import_role: {name: login-env}, tags: login-env}                      # Deprecated  -  replaced by 'dotfiles' role
+    # - {import_role: {name: vim-config}, tags: vim-config}                    # Deprecated  -  replaced by 'dotfiles' role
     - {import_role: {name: dotfiles}, tags: dotfiles}
     - {import_role: {name: dev-env}, tags: dev-env}
     - {import_role: {name: dev-tools}, tags: dev-tools}
     - {import_role: {name: docker}, tags: docker}
     - {import_role: {name: apache}, tags: apache}
     - {import_role: {name: backup-user}, tags: backup-user}
-    - {import_role: {name: deploy-ssh}, tags: deploy-ssh}
+    # - {import_role: {name: deploy-ssh}, tags: deploy-ssh}                    # not working yet
     - {import_role: {name: duplicati}, tags: duplicati}
     # - {import_role: {name: rsnapshot}, tags: rsnapshot}                      # not working yet
     # - {import_role: {name: rsnapshot-container}, tags: rsnapshot-container}  # not working yet
@@ -98,7 +101,7 @@
 
   handlers:
     - name: reboot-host
-      reboot:
+      ansible.builtin.reboot:
         msg: "Ansible reboot triggered to finish install/uninstall tasks"
         pre_reboot_delay: 0       # seconds to wait before reboot
         post_reboot_delay: 30     # seconds to wait after the reboot command was successful before validate
@@ -107,27 +110,27 @@
         test_command: whoami      # validate the node is up and working
 
     - name: start-apache
-      service:
+      ansible.builtin.service:
         name: apache2
         state: started
 
     - name: restart-apache
-      service:
+      ansible.builtin.service:
         name: apache2
         state: restarted
 
     - name: stop-apache
-      service:
+      ansible.builtin.service:
         name: apache2
         state: stopped
 
     - name: restart-ssh
-      service:
+      ansible.builtin.service:
         name: sshd
         state: restarted
 
     - name: restart-cron
-      service:
+      ansible.builtin.service:
         name: cron
         state: restarted
 

@@ -26,7 +26,7 @@
 
 ---
 
-- name: Create your system environment on a Raspberry Pi
+- name: Create Your System Environment on a Raspberry Pi
   hosts: all
   become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
   become_method: sudo
@@ -46,8 +46,8 @@
     - name: "user_password"
       prompt: "Password"
       default: "raspberry"
-      private: true
       encrypt: "sha512_crypt"
+      private: true
       confirm: true
 
     - name: "comment"
@@ -66,12 +66,12 @@
       private: false
 
     - name: "routers"
-      prompt: "Routers (comma separated)"
+      prompt: "Gateway Router IP address (comma separated)"
       default: "192.168.1.1"
       private: false
 
     - name: "dns_servers"
-      prompt: "DNS servers (space separated)"
+      prompt: "DNS servers IP address (space separated)"
       default: "192.168.1.1 1.1.1.1 1.0.0.1"
       private: false
 
@@ -79,10 +79,10 @@
 
     # --- Install Block of Tasks ---------------------------------------------------
 
-    - name: Install custom raspberry pi configuration
+    - name: install custom raspberry pi configuration
       block:
         - name: install raspberry pi firmware update tool
-          apt:
+          ansible.builtin.apt:
             state: latest            # must be one of: absent, build-dep, fixed, latest, present
             update_cache: true       # update the apt repository list cache
             cache_valid_time: 86400  # update the apt cache if it is older than this seconds
@@ -96,7 +96,7 @@
         # notify: reboot host and wait for it to restart
 
         - name: execute raspi-config to enable raspberry pi hardware features
-          command: "{{ item }}"
+          ansible.builtin.command: "{{ item }}"
           loop:
             - raspi-config nonint do_ssh 0                   # enable ssh
             - raspi-config nonint do_spi 0                   # enable SPI controller (/dev/spidev0.0 and /dev/spidev0.1)
@@ -109,24 +109,24 @@
           notify: reboot host and wait for it to restart
 
         # - name: disable un-needed features that waste power or slows performance
-        #   command: "{{ item }}"
+        #   ansible.builtin.command: "{{ item }}"
         #   loop:
         #     - systemctl set-default multi-user.target     # set to multi-user mode and don't use graphic user interface
         #     - "sed -i '/exit 0/i # disable HDMI\n\/usr\/bin\/tvservice -o\n' /etc/rc.local"     # disable hdmi since your working headless and this saves power
         # notify: reboot host and wait for it to restart
 
         - name: set a new password for "{{ user_name }}" user account
-          user:
+          ansible.builtin.user:
             name: "{{ user_name }}"
             comment: "{{ comment }}"
             password: "{{ user_password | password_hash('sha512') }}"
 
         - name: set the hostname
-          command: hostnamectl set-hostname "{{ host_name }}"
+          ansible.builtin.command: hostnamectl set-hostname "{{ host_name }}"
           notify: reboot host and wait for it to restart
 
         - name: update /etc/hosts with new hostname
-          lineinfile:
+          ansible.builtin.lineinfile:
             dest: /etc/hosts
             regexp: "^127.0.1.1\traspberrypi$"
             line: "127.0.1.1\t{{ host_name }}"
@@ -134,7 +134,7 @@
           notify: reboot host and wait for it to restart
 
         - name: add static ip-address to end of '/etc/dhcpcd.conf'
-          lineinfile:
+          ansible.builtin.lineinfile:
             state: present
             insertafter: EOF
             dest: /etc/dhcpcd.conf
@@ -150,10 +150,10 @@
 
     # --- Uninstall Block of Tasks -------------------------------------------------
 
-    - name: Uninstall custom raspberry pi configuration
+    - name: uninstall custom raspberry pi configuration
       block:
         - name: message to user
-          debug:
+          ansible.builtin.debug:
             msg: WARNING - No action taken.  You can't do an uninstall via this playbook.  Uses rpi-default-config.yml instead.
       tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
@@ -161,10 +161,13 @@
 
   handlers:
     - name: reboot host and wait for it to restart
-      reboot:
+      ansible.builtin.reboot:
         msg: "Ansible reboot triggered to finish install/uninstall tasks"
         pre_reboot_delay: 0       # seconds to wait before reboot
         post_reboot_delay: 30     # seconds to wait after the reboot command was successful before attempting to validate
         reboot_timeout: 600       # keep attempting to connect for 10 minutes (600 seconds)
         connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
         test_command: whoami      # validate the node is up and working
+
+  # ------------------------------------------------------------------------------
+

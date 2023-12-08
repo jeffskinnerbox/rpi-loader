@@ -18,55 +18,55 @@
 
 ---
 
-- name: Parses the network interfaces and lists them out so you can spot the ethernet interface
+- name: Parses The Network Interfaces and Lists Them To Identify Ethernet Interface
   hosts: all
   become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
   become_method: sudo
-  gather_facts: true
+  gather_facts: false
 
   vars:
     host_path_playbooks: "/home/jeff/src/linux-tools/rpi-loader/playbooks"
 
   tasks:
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    - name: query raspberry pi network interface information
-      shell:
+    - name: query raspberry pi network interface information (as root)
+      ansible.builtin.shell:
         cmd: ip address | grep default | awk '{ print $2 }' | awk '{ print substr( $0, 1, length($0)-1 ) }'
       register: cmd_output
       args:
         executable: /bin/bash
 
-    - name: script output - the host's network interfaces
-      debug:
+    - name:
+      ansible.builtin.debug:
         var: cmd_output.stdout_lines
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    - name: query raspberry pi model information
-      shell:
+    - name: query raspberry pi model information (as root)
+      ansible.builtin.shell:
         cmd: cat /proc/cpuinfo | grep 'Hardware\|Revision\|Serial\|Model' | sed 's/\t//g'
       register: cmd_output
       args:
         executable: /bin/bash
 
-    - name: script output - the host's hardware version
-      debug:
+    - name:
+      ansible.builtin.debug:
         var: cmd_output.stdout_lines
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    - name: query raspberry pi ram memory information
-      shell:
+    - name: query raspberry pi ram memory information (as root)
+      ansible.builtin.shell:
         cmd: "cat /proc/meminfo | grep MemTotal | sed 's/ //g' | sed 's/:/: /'"
       register: cmd_output
       args:
         executable: /bin/bash
 
-    - name: script output - the host's RAM memory information
-      debug:
+    - name:
+      ansible.builtin.debug:
         var: cmd_output.stdout_lines
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
