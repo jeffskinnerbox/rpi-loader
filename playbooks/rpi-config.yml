@@ -2,26 +2,29 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# While your within playbook directory, check the following prior to doing the play
+# DESCRIPTION
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint rpi-config.yml roles/*/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-config.yml roles/*/tasks
+#       ansible-lint rpi-config.yml roles/*/tasks
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi rpi-config.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-config.yml --syntax-check
 #
-# Generate a list of tasks that will be executed for the tags
-#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --list-tasks
 #
-# Ansible dry-run checking for errors and showing results of a run
-#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --check
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install --check
 #
-# Run the playbook for real (assuming 'inventory' is up to date)
-#    ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install
+# EXECUTION
+#    Run the playbook for real (assuming 'inventory' is up to date)
+#       ansible-playbook -i inventory -l test-pi rpi-config.yml --tags install
 #
-# Run the playbook for real for the first time or after you did an 'uninstall'
-# Requires 'hosts: all' in the playbook and the ',' after the <ip address>
-#    ansible-playbook -i <ip address>, rpi-config.yml --user pi --ask-pass --tags install
+# SOURCES
+#    Handling secrets in your Ansible playbooks - https://www.redhat.com/sysadmin/ansible-playbooks-secrets
+#    How to Accept User Input using vars_prompt and Command line? - https://crunchify.com/ansible-how-to-accept-user-input-using-vars-prompt-and-command-line/
 #
 
 ---
@@ -77,26 +80,29 @@
 
   tasks:
 
-    # --- Install Block of Tasks ---------------------------------------------------
+    # --- Install Block of Tasks -----------------------------------------------
 
-    - name: install custom raspberry pi configuration
+    - name: Install custom raspberry pi configuration
+      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
       block:
-        - name: install raspberry pi firmware update tool
+        - name: Install raspberry pi firmware update tool
           ansible.builtin.apt:
-            state: latest            # must be one of: absent, build-dep, fixed, latest, present
+            state: present           # must be one of: absent, build-dep, fixed, latest, present
             update_cache: true       # update the apt repository list cache
             cache_valid_time: 86400  # update the apt cache if it is older than this seconds
             pkg: ['rpi-update']
 
-        # - name: check for and install any required Raspberry Pi firmware upgrades
+        # - name: Check for and install any required Raspberry Pi firmware upgrades
         #   shell:
         #     cmd: "BRANCH=next rpi-update"
         #     args:
         #       executable: /usr/bin/bash
         # notify: reboot host and wait for it to restart
 
-        - name: execute raspi-config to enable raspberry pi hardware features
+        - name: Execute raspi-config to enable raspberry pi hardware features
           ansible.builtin.command: "{{ item }}"
+          register: my_output                                # registers the command output
+          changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
           loop:
             - raspi-config nonint do_ssh 0                   # enable ssh
             - raspi-config nonint do_spi 0                   # enable SPI controller (/dev/spidev0.0 and /dev/spidev0.1)
@@ -115,25 +121,27 @@
         #     - "sed -i '/exit 0/i # disable HDMI\n\/usr\/bin\/tvservice -o\n' /etc/rc.local"     # disable hdmi since your working headless and this saves power
         # notify: reboot host and wait for it to restart
 
-        - name: set a new password for "{{ user_name }}" user account
+        - name: Set a new password for user account "{{ user_name }}"
           ansible.builtin.user:
             name: "{{ user_name }}"
             comment: "{{ comment }}"
             password: "{{ user_password | password_hash('sha512') }}"
 
-        - name: set the hostname
+        - name: Set the hostname
           ansible.builtin.command: hostnamectl set-hostname "{{ host_name }}"
+          register: my_output                                # registers the command output
+          changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
           notify: reboot host and wait for it to restart
 
-        - name: update /etc/hosts with new hostname
+        - name: Update /etc/hosts with new hostname
           ansible.builtin.lineinfile:
             dest: /etc/hosts
-            regexp: "^127.0.1.1\traspberrypi$"
-            line: "127.0.1.1\t{{ host_name }}"
+            regexp: "^127.0.1.1   raspberrypi$"
+            line: "127.0.1.1   {{ host_name }}"
             state: present
           notify: reboot host and wait for it to restart
 
-        - name: add static ip-address to end of '/etc/dhcpcd.conf'
+        - name: Add static ip-address to end of '/etc/dhcpcd.conf'
           ansible.builtin.lineinfile:
             state: present
             insertafter: EOF
@@ -146,21 +154,20 @@
             - "static routers={{ routers }}"
             - "static domain_name_servers={{ dns_servers }}"
           notify: reboot host and wait for it to restart
-      tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
-    # --- Uninstall Block of Tasks -------------------------------------------------
+    # --- Uninstall Block of Tasks ---------------------------------------------
 
-    - name: uninstall custom raspberry pi configuration
+    - name: Uninstall custom raspberry pi configuration
+      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
       block:
-        - name: message to user
+        - name: Message to user
           ansible.builtin.debug:
             msg: WARNING - No action taken.  You can't do an uninstall via this playbook.  Uses rpi-default-config.yml instead.
-      tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
-  # ------------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
 
   handlers:
-    - name: reboot host and wait for it to restart
+    - name: Reboot host and wait for it to restart
       ansible.builtin.reboot:
         msg: "Ansible reboot triggered to finish install/uninstall tasks"
         pre_reboot_delay: 0       # seconds to wait before reboot
@@ -169,5 +176,5 @@
         connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
         test_command: whoami      # validate the node is up and working
 
-  # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 

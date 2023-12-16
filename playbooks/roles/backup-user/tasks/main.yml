@@ -2,16 +2,30 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to create a new user account for the filesystem backup process owner
+# DESCRIPTION
+#    Role file to create a new user account for the filesystem backup process owner
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/backup-user/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/backup-user/tasks
+#       ansible-lint roles/backup-user/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags backup-user --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags backup-user --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags backup-user --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags backup-user --skip-tags uninstall
+#
+# SOURCES
+#
+
 
 ---
 
@@ -19,8 +33,9 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Create user with approprate access rights
+  tags: ['never', 'install']         # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: Create a 'no-login' user account for {{ backup_user }} (as root)
+    - name: Create a 'no-login' user account for {{ backup_user }}    # (as root)
       ansible.builtin.user:
         state: present           # taking action if the state is different from what is stated
         name: "{{ backup_user }}"
@@ -30,7 +45,7 @@
         shell: /sbin/nologin
         generate_ssh_key: true
 
-    - name: Create /etc/sudoers.d/{{ backup_user }} file with proper owner/group/mode (as root)
+    - name: Create proper owner/group/mode for file /etc/sudoers.d/{{ backup_user }}     # (as root)
       ansible.builtin.file:
         state: touch
         path: "/etc/sudoers.d/{{ backup_user }}"
@@ -38,31 +53,33 @@
         group: root
         mode: u+rw,g-w,o-w
 
-    - name: Add "{{ backup_user }}" file to /etc/sudoers.d directory (as root)
+    - name: To /etc/sudoers.d directory, add file "{{ backup_user }}"    # (as root)
       ansible.builtin.copy:
         dest: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for creation
         follow: true                              # if true, 'dest' will be overwritten by 'content'
+        owner: root
+        group: root
+        mode: u+rw,g-w,o-wr
         content: |
           {{ backup_user }}    ALL=NOPASSWD:    /usr/bin/rsync
           {{ backup_user }}    ALL=NOPASSWD:    /usr/bin/rsnapshot
         # validate: /usr/sbin/visudo -csf %s
-  tags: ['never', 'install']         # 'never' implies you must pass the other tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Remove the user
+  tags: ['never', 'uninstall']       # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: remove "{{ backup_user }}" user account (as root)
+    - name: Remove user account "{{ backup_user }}"     # (as root)
       ansible.builtin.user:
         state: absent
         name: "{{ backup_user }}"
         remove: true                 # if true, remove the directories associated with the user
 
-    - name: Remove "{{ backup_user }}" from /etc/sudoers directory (as root)
+    - name: From directory /etc/sudoers remove "{{ backup_user }}"     # (as root)
       ansible.builtin.file:
         state: absent
         path: "/etc/sudoers.d/{{ backup_user }}"  # this is the target file for deletion
-  tags: ['never', 'uninstall']       # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

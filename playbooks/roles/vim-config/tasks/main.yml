@@ -2,17 +2,29 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to install resource file (.vimrc) and plugins for vi/vim editor
-# See: https://www.redhat.com/sysadmin/ansible-configure-vim
-
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/vim-config/tasks
+# DESCRIPTION
+#    Role file to install resource file (.vimrc) and plugins for vi/vim editor
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/vim-config/tasks
+#       ansible-lint roles/vim-config/tasks/main.yml
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags vim-config --skip-tags uninstall --list-tasks
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags vim-config --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags vim-config --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags vim-config --skip-tags uninstall
+#
+# SOURCES
+#    How to use Ansible to configure Vim - https://www.redhat.com/sysadmin/ansible-configure-vim
 #
 #  --   Deprecated   --   Deprecated   --   Deprecated   --   Deprecated   --
 #
@@ -24,23 +36,29 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Vim Terminal Visual Editor With Custom .vimrc and Plugins
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: install required packages to suport vim (as root)
+    - name: Install required packages to suport vim (as root)
       ansible.builtin.apt:
         state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['stow', vim', 'vim-gtk3', 'libcanberra-gtk-module', 'libcanberra-gtk3-module', 'git']
 
-    - name: clone the .vim github repository (as user)
+    - name: Clone the .vim github repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: 'http://github.com/jeffskinnerbox/.vim.git'
         dest: '{{ app_user_home }}/.vim'
-        clone: true
-        update: true    # perform an update on submodules in this git repository
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
+      when: not file_exists.stat.exists
 
-    - name: create symbolic links for .vimrc and .gvimrc (as user)
+    - name: Create symbolic links for .vimrc and .gvimrc (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
       ansible.builtin.file:
         src: "{{ app_user_home }}/.vim/{{ item }}"
@@ -52,7 +70,8 @@
         - vimrc
         # - gvimrc
 
-    - name: ensure .vim/backup, .vim/tmp directories are created (as user)
+    - name: Ensure .vim/backup, .vim/tmp directories are created (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
       ansible.builtin.file:
         path: "{{ app_user_home }}/.vim/{{ item }}"
@@ -64,18 +83,17 @@
       loop:
         - backup
         - tmp
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall Vim Terminal Visual Editor
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: remove all login vim related files & directories (as root)
+    - name: Remove all login vim related files & directories (as root)
       ansible.builtin.file:
         path: "{{ app_user_home }}/{{ item }}"
         state: absent
       loop: ['.vim', '.vimrc']
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

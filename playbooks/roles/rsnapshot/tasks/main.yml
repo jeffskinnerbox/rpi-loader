@@ -2,22 +2,33 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to create the the rsnapshot backup process
+# DESCRIPTION
+#    Role file to create the the rsnapshot backup process
 #
-#  Testing
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/rsnapshot/tasks
+#       ansible-lint roles/rsnapshot/tasks/main.yml
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/rsnapshot/tasks
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags rsnapshot --skip-tags uninstall --list-tasks
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags rsnapshot --skip-tags uninstall --list-tasks
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags rsnapshot --skip-tags uninstall --check
 #
-#     sudo rsnapshot configtest
-#     sudo rsnapshot -t hourly
-#     sudo /home/backup_user/bin/rsnapshot-wrapper.sh hourly
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags rsnapshot --skip-tags uninstall
+#
+#        sudo rsnapshot configtest
+#        sudo rsnapshot -t hourly
+#        sudo /home/backup_user/bin/rsnapshot-wrapper.sh hourly
+#
+# SOURCES
+#
 
 
 ---
@@ -25,62 +36,73 @@
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install / Uninstall rsnapshot and the automation backup shell scripts that use it
+- name: Install Rsnapshot and the Automation Backup Shell Scripts that Use It
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
     - name: Install prerequisite tools (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev', 'grsync']
 
     - name: Create a '~/src' and '~/bin' directory if don't exist (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.file:
         path: "{{ backup_user_home }}/{{ item }}"
         state: directory
+        mode: a+rwx, g-w, o-w
       loop:
         - src
         - bin
 
-    - name: check if rsnapshot git repository exists (as user)
+    - name: Check if rsnapshot git repository exists (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
       register: file_exists
 
-    - name: clone the rsnapshot repository (as user)
+    - name: Clone the rsnapshot repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.git:
         repo: "https://github.com/rsnapshot/rsnapshot.git"
         dest: "{{ backup_user_home }}/src/rsnapshot"
-        clone: true
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
       when: not file_exists.stat.exists
 
-    - name: do the preparation work so you can perform the build (as user)
+    - name: Do the preparation work so you can perform the build (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "{{ item }}"
         chdir: "{{ backup_user_home }}/src/rsnapshot"
+      register: my_output                                # registers the command output
+      changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
       loop:
         - ./autogen.sh                 # generates the configure script
         - ./configure --sysconfdir=/etc
 
-    - name: build rsnapshot tools (as root)
+    - name: Build rsnapshot tools (as root)
       community.general.make:
         chdir: "{{ backup_user_home }}/src/rsnapshot"
         target: "{{ item }}"
       loop:
         - install
 
-    - name: copy the configuration file to it destination (as root)
+    - name: Copy the configuration file to it destination (as root)
       ansible.builtin.shell:
         cmd: cp /etc/rsnapshot.conf.default /etc/rsnapshot.conf
       args:
         executable: /bin/bash
         creates: /etc/rsnapshot.conf
 
-    - name: copy the rsnapshot executable to /usr/bin (as root)
+    - name: Copy the rsnapshot executable to /usr/bin (as root)
       ansible.builtin.shell:
         cmd: cp /usr/local/bin/rsnapshot /usr/bin/rsnapshot
       args:
@@ -89,7 +111,8 @@
 
     # --------------------------------------------------------------------------
 
-    - name: copy backup's shell scripts to ~/backup_user/bin (as root)
+    - name: Copy backup's shell scripts to ~/backup_user/bin (as root)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.copy:
         src: "./scripts/{{ item }}"
@@ -102,7 +125,8 @@
         - rsync-wrapper.sh
         - apprise.sh
 
-    - name: copy rsync exclude files and secrets to ~/backup_user (as user)
+    - name: Copy rsync exclude files and secrets to ~/backup_user (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.copy:
         src: ./files/{{ item }}
@@ -113,7 +137,7 @@
         - rsync-exclude-RPi
         - secret.env
 
-    - name: creates the rsnapshot cron file under /etc/cron.d (as root)
+    - name: Creates the rsnapshot cron file under /etc/cron.d (as root)
       ansible.builtin.copy:
         src: ./files/{{ item }}
         dest: "/etc/cron.d/{{ item }}"
@@ -124,7 +148,7 @@
         - rsnapshot.crontab
       notify: restart-cron
 
-    - name: copy the rsnapshot configuration file and backup any existing file (as root)
+    - name: Copy the rsnapshot configuration file and backup any existing file (as root)
       ansible.builtin.copy:
         src: ./files/rsnapshot.conf
         dest: /etc/rsnapshot.conf
@@ -132,18 +156,17 @@
         remote_src: false
         backup: true                  # make backup if it already exists
 
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
-
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall rsnapshot and my shell scripts to use it
+- name: Uninstall Rsnapshot and My Shell Scripts to Use It
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: check if rsnapshot git repository exists (as root)
+    - name: Check if rsnapshot git repository exists (as root)
       ansible.builtin.stat:
         path: '{{ backup_user_home }}/src/rsnapshot'
       register: file_exists
 
-    - name: clean-up rsnapshot build (as root)
+    - name: Clean-up rsnapshot build (as root)
       community.general.make:
         chdir: "{{ backup_user_home }}/src/rsnapshot"
         target: "{{ item }}"
@@ -151,13 +174,13 @@
         - clean
       when: file_exists.stat.exists
 
-    - name: remove rsnapshot git repository (as root)
+    - name: Remove rsnapshot git repository (as root)
       ansible.builtin.file:
         state: absent
         path: "{{ backup_user_home }}/src/rsnapshot"
       when: file_exists.stat.exists
 
-    - name: delete the configuration files (as root)
+    - name: Delete the configuration files (as root)
       ansible.builtin.file:
         state: absent
         path: "{{ item }}"
@@ -170,7 +193,8 @@
 
     # --------------------------------------------------------------------------
 
-    - name: remove backup shell scripts from ~/backup_user/bin (as user)
+    - name: Remove backup shell scripts from ~/backup_user/bin (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.file:
         path: "{{ backup_user_home }}/bin/{{ item }}"
@@ -181,7 +205,8 @@
         - rsync-wrapper.sh
         - apprise.sh
 
-    - name: remove rsync exclude files from ~/backup_user (as user)
+    - name: Remove rsync exclude files from ~/backup_user (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.file:
         path: "{{ backup_user_home }}/{{ item }}"
@@ -190,15 +215,13 @@
         - rsync-exclude-RPi
         - secret.env
 
-    - name: remove the rsnapshot cron file from /etc/cron.d (as root)
+    - name: Remove the rsnapshot cron file from /etc/cron.d (as root)
       ansible.builtin.file:
         path: "/etc/cron.d/{{ item }}"
         state: absent
       loop:
         - rsnapshot.crontab
       notify: restart-cron
-
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

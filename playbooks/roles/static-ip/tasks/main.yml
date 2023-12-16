@@ -1,0 +1,95 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# DESCRIPTION
+#    Role file for 'static-ip' role - install tools for your shell / login environment
+#
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/static-ip/tasks
+#       Ansible-lint roles/static-ip/tasks/main.yml
+#
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags static-ip --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags static-ip --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags static-ip --skip-tags uninstall
+#
+# SOURCES
+#
+#  --   Deprecated   --   Deprecated   --   Deprecated   --   Deprecated   --
+#
+
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Establish Static IP Address on Ethernet Port
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+  block:
+    - name: Install required prerequisite packages (as root)
+      ansible.builtin.apt:
+        state: present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        name: ['network-manager']
+
+    - name: Set the static ip address, gateway, and dns server addresses (as root)
+      ansible.builtin.command:
+        cmd: "nmcli con mod 'Wired connection 1' {{ item }}"
+      changed_when: false        # since the task never changes anything detectable
+      loop:
+        - "ipv4.addresses 192.168.1.205/24"   # provision the static ip address
+        - "ipv4.gateway 192.168.1.1"          # provision the gateway address
+        - "ipv4.dns 192.168.1.1,8.8.8.8"      # provision the dns server address
+        - "ipv4.method manual"                # change the addressing from DHCP to static
+
+    # - name: restart the network connection (as root)
+    #   ansible.builtin.shell:
+    #     cmd: {{ item }}
+    #   loop:
+    #     - nmcli c down 'Wired connection 1'"  # shutdown the ethernet connection
+    #     - nmcli c up 'Wired connection 1'"    # startup the ethernet connection
+
+    - name: Reboot the raspberry pi to set ip address changes (as root)
+      ansible.builtin.reboot:
+        msg: "Reboot Initiated By Ansible, IP Addressing Set to Static"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
+# --- Uninstall Block of Tasks -------------------------------------------------
+
+- name: Remove Static IP Address and Replace with DHCP Provisioned IP Address on Ethernet Port
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
+  block:
+    - name: Set the ip addressing to DHCP
+      ansible.builtin.command:
+        cmd: "nmcli con mod 'Wired connection 1' {{ item }}"
+      changed_when: false        # since the task never changes anything detectable
+      loop:
+        - "ipv4.method auto"     # change the addressing to DHCP
+
+    - name: Reboot the raspberry pi to set ip address changes (as root)
+      ansible.builtin.reboot:
+        msg: "Reboot Initiated By Ansible, IP Addressing Set to DHCP"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
+# ------------------------------------------------------------------------------
+

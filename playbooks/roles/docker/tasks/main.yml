@@ -2,17 +2,29 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-
-# role file to install docker, docker compose, and portainer
+# DESCRIPTION
+#    Role file to install docker, docker compose, and portainer
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/docker/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/docker/tasks
+#       ansible-lint roles/docker/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags docker --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags docker --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags docker --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags docker --skip-tags uninstall
+#
+# SOURCES
+#
 
 
 ---
@@ -21,76 +33,77 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Docker, Docker Compose, and Portainer
-  block:
-  - name: install docker's required system packages (as root)
-    ansible.builtin.apt:
-      state: latest            # must be one of: absent, build-dep, fixed, latest, present
-      update_cache: true       # update the apt repository list cache
-      cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-      pkg: ['aptitude', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
-
-  - name: pulldown docker installation script (as root)
-    ansible.builtin.get_url:
-      url: https://get.docker.com
-      dest: "{{ tmp_path }}/get-docker.sh"
-      # owner: "{{ user }}"
-      mode: u+rwx
-
-  - name: install docker via executing docker installation script (as root)
-    ansible.builtin.shell:
-      cmd: "sh {{ tmp_path }}/get-docker.sh"
-    args:
-      creates: "{{ docker_path }}/docker"
-      executable: /usr/bin/bash
-
-  - name: install docker-compose (as root)
-    ansible.builtin.pip:
-      name: docker-compose
-      state: present
-
-  - name: create test container (hello-world) (as root)
-    community.general.docker_container:
-      name: hello-world
-      image: hello-world
-      state: started       # must be one of: absent, present, stopped, started
-      container_default_behavior: compatibility
-      auto_remove: true    # auto-removal of the container when the container's process exits
-
-  - name: create a portainer container (as root)
-    community.general.docker_container:
-      name: portainer
-      state: started       # must be one of: absent, present, stopped, started
-      image: portainer/portainer-ce:latest
-      ports:
-        - "{{ portainer_port }}:9000"
-      volumes:
-        - /etc/localtime:/etc/localtime:ro
-        - /var/run/docker.sock:/var/run/docker.sock
-        - "{{ app_user_home }}/{{ portainer_data }}:/data"
-      detach: true                     # set to true to leave the container running in background
-      container_default_behavior: compatibility
-      restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
-
-  - name: create a portainer agent (as root)
-    community.general.docker_container:
-      name: portainer-agent
-      state: started       # must be one of: absent, present, stopped, started
-      image: portainer/agent:latest
-      ports:
-        - "{{ portainer_agent_port }}:9001"
-      volumes:
-        - "/var/run/docker.sock:/var/run/docker.sock"
-        - "{{ app_user_home }}/{{ portainer_volumes }}:/var/lib/docker/volumes"
-      detach: true                     # set to true to leave the container running in background
-      container_default_behavior: compatibility
-      restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
   tags: ['never', 'install']           # 'never' implies you must pass the tag to execute this block
+  block:
+    - name: Install docker's required system packages (as root)
+      ansible.builtin.apt:
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['aptitude', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: Pulldown docker installation script (as root)
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: "{{ tmp_path }}/get-docker.sh"
+        # owner: "{{ user }}"
+        mode: u+rwx
+
+    - name: Install docker via executing docker installation script (as root)
+      ansible.builtin.shell:
+        cmd: "sh {{ tmp_path }}/get-docker.sh"
+      args:
+        creates: "{{ docker_path }}/docker"
+        executable: /usr/bin/bash
+
+    - name: Install docker-compose (as root)
+      ansible.builtin.pip:
+        name: docker-compose
+        state: present
+
+    - name: Create test container (hello-world) (as root)
+      community.general.docker_container:
+        name: hello-world
+        image: hello-world
+        state: started       # must be one of: absent, present, stopped, started
+        container_default_behavior: compatibility
+        auto_remove: true    # auto-removal of the container when the container's process exits
+
+    - name: Create a portainer container (as root)
+      community.general.docker_container:
+        name: portainer
+        state: started       # must be one of: absent, present, stopped, started
+        image: portainer/portainer-ce:latest
+        ports:
+          - "{{ portainer_port }}:9000"
+        volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /var/run/docker.sock:/var/run/docker.sock
+          - "{{ app_user_home }}/{{ portainer_data }}:/data"
+        detach: true                     # set to true to leave the container running in background
+        container_default_behavior: compatibility
+        restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
+
+    - name: Create a portainer agent (as root)
+      community.general.docker_container:
+        name: portainer-agent
+        state: started       # must be one of: absent, present, stopped, started
+        image: portainer/agent:latest
+        ports:
+          - "{{ portainer_agent_port }}:9001"
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+          - "{{ app_user_home }}/{{ portainer_volumes }}:/var/lib/docker/volumes"
+        detach: true                     # set to true to leave the container running in background
+        container_default_behavior: compatibility
+        restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall Docker, Docker Compose, and Portainer
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
   block:
-    - name: stop portainer & portainer-agent containers and remove (as root)
+    - name: Stop portainer & portainer-agent containers and remove (as root)
       community.general.docker_container:
         name: "{{ item }}"
         state: absent              # must be one of: absent, present, stopped, started
@@ -99,7 +112,7 @@
         - portainer
         - portainer-agent
 
-    - name: delete all portainer volumes (as root)
+    - name: Delete all portainer volumes (as root)
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
@@ -107,13 +120,15 @@
         - "{{ app_user_home }}/{{ portainer_data }}"
         - "{{ app_user_home }}/{{ portainer_volumes }}"
 
-    - name: purging all unused or dangling images, containers, volumes, and networks (as root)
+    - name: Purging all unused or dangling images, containers, volumes, and networks (as root)
       ansible.builtin.shell:
         cmd: docker system prune -a
+      register: my_output                                # registers the command output
+      changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
       args:
         executable: /usr/bin/bash
 
-    - name: uninstall docker engine (as root)
+    - name: Uninstall docker engine (as root)
       ansible.builtin.apt:
         pkg: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
         state: absent              # must be one of: absent, build-dep, fixed, latest, present
@@ -123,13 +138,12 @@
         name: docker-compose
         state: absent
 
-    - name: remove any very old versions of docker that may have been left behind (as root)
+    - name: Remove any very old versions of docker that may have been left behind (as root)
       ansible.builtin.apt:
         pkg: ['docker', 'docker-engine docker.io', 'containerd', 'runc']
         state: absent              # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true            # cleans the local repository packages that can no longer be downloaded
         autoremove: true           # remove unused dependency with repository packages
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
 # ------------------------------------------------------------------------------
 

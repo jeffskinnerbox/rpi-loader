@@ -2,18 +2,30 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# ????
-
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/dotfiles/tasks
+# DESCRIPTION
+#    Role file to install and setup my dot files (e.g. .~/vim, ~/.bashrc, etc.) required by my home Ubuntu Linux machine
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/dotfiles-pi/tasks
+#       ansible-lint roles/dotfiles-pi/tasks/main.yml
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags dotfiles --skip-tags uninstall --list-tasks
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# https://www.iduoad.com/posts/treat-your-dotfiles-better/
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags dotfiles-pi --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags dotfiles-pi --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags dotfiles-pi --skip-tags uninstall
+#
+# SOURCES
+#    The holy setup - Treat your dotfiles better - https://www.iduoad.com/posts/treat-your-dotfiles-better/
+#
 
 
 ---
@@ -22,12 +34,13 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Configuration Files Defined in .dotfiles
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: install required packages to suport .dotfiles (as root)
+    - name: Install required packages to suport .dotfiles (as root)
       ansible.builtin.apt:
-        state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
-        update_cache: true       # update the apt repository list cache
-        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        state: present                       # for packages, use 'present' or 'latest' to install and 'absent' to remove
+        update_cache: true                   # update the apt repository list cache
+        cache_valid_time: 86400              # update the apt cache if it is older than this seconds
         pkg:
           - 'git'
           - 'stow'
@@ -41,35 +54,40 @@
           - 'libcanberra-gtk-module'
           - 'libcanberra-gtk3-module'
 
-    - name: install the latest version of nvim via snap (as root)
+    - name: Install version of nvim via snap (as root)
       community.general.snap:
-        state: present           # for packages, use 'present' or 'latest' to install and 'absent' to remove
+        state: present                       # for packages, use 'present' or 'latest' to install and 'absent' to remove
         name: nvim
         classic: true
 
-    - name: clone the .dotfiles github repository (as user)
+    - name: Clone the .dotfiles github repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: 'http://github.com/jeffskinnerbox/.dotfiles.git'
         dest: '{{ app_user_home }}/.dotfiles'
-        force: true              # if true, any modified files in the working repository will be discarded
-        clone: true
-        update: true             # perform an update on submodules in this git repository
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
 
-    - name: stow the .dotfiles targetted for $HOME (as user)
+    - name: Stow the .dotfiles targetted for $HOME (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
-      ansible.builtin.shell:
-        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --stow {{ item }}"
+      ansible.builtin.command:
+        cmd: stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --stow {{ item.package }}
+        creates: "{{ app_user_home }}/{{ item.object }}"
       loop:
-        - pkg-X
-        # - pkg-i3
-        - pkg-vim
-        - pkg-tmux
-        - pkg-bash
-        # - pkg-conky
-        - pkg-screen
+        - {package: 'pkg-vim', object: '.vim'}
+        - {package: 'pkg-tmux', object: '.tmux'}
+        - {package: 'pkg-bash', object: '.bashrc'}
+        - {package: 'pkg-X', object: '.xsessionrc'}
+        - {package: 'pkg-screen', object: '.screenrc'}
+        # - {package: 'pkg-i3', object: '.i3'}
+        # - {package: 'pkg-conky', object: '.conky'}
 
-    - name: make sure ~/.config directory is created (as user)
+    - name: Make sure ~/.config directory is created (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
       ansible.builtin.file:
         path: "{{ app_user_home }}/.config"
@@ -79,44 +97,55 @@
         recurse: true
         mode: 0750     # mode 0750 = user can rwx, the group write, and others cannot read, write, or execute
 
-    - name: stow the .dotfiles targetted for ~/.config (as user)
+    - name: Stow the .dotfiles targetted for $XDG_CONFIG_HOME (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
-      ansible.builtin.shell:
-        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --stow {{ item }}"
+      ansible.builtin.command:
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --stow {{ item.package }}"
+        creates: "{{ app_user_home }}/{{ item.object }}"
       loop:
-        - pkg-nvim
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+        - {package: 'pkg-nvim', object: '.config/nvim'}
+        - {package: 'pkg-yamllint', object: '.config/yamllint'}
+        - {package: 'pkg-ansible-lint', object: '.config/ansible-lint.yml'}
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall Configuration Files Defined in .dotfiles
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: remove all stow symbolic links within $HOME (as user)
+    - name: Remove all stow symbolic links within $HOME (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
-      ansible.builtin.shell:
-        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --delete {{ item }}"
+      ansible.builtin.command:
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }} --delete {{ item.package }}"
+        removes: "{{ app_user_home }}/{{ item.object }}"
       loop:
-        - pkg-X
-        # - pkg-i3
-        - pkg-vim
-        - pkg-tmux
-        - pkg-bash
-        # - pkg-conky
-        - pkg-screen
+        - {package: 'pkg-vim', object: '.vim'}
+        - {package: 'pkg-tmux', object: '.tmux'}
+        - {package: 'pkg-bash', object: '.bashrc'}
+        - {package: 'pkg-X', object: '.xsessionrc'}
+        - {package: 'pkg-screen', object: '.screenrc'}
+        # - {package: 'pkg-i3', object: '.i3'}
+        # - {package: 'pkg-conky', object: '.conky'}
 
-    - name: remove all stow symbolic links within ~/.config (as user)
+
+    - name: Remove all stow symbolic links within $XDG_CONFIG_HOME (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
-      ansible.builtin.shell:
-        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --delete {{ item }}"
+      ansible.builtin.command:
+        cmd: "stow --dir={{ app_user_home }}/.dotfiles --target={{ app_user_home }}/.config --delete {{ item.package }}"
+        removes: "{{ app_user_home }}/{{ item.object }}"
       loop:
-        - pkg-nvim
+        - {package: 'pkg-nvim', object: '.config/nvim'}
+        - {package: 'pkg-yamllint', object: '.config/yamllint'}
+        - {package: 'pkg-ansible-lint', object: '.config/ansible-lint.yml'}
 
-    - name: remove the .dotfiles directory (as user)
+    - name: Remove the .dotfiles directory (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: '{{ app_user }}'
       ansible.builtin.file:
         path: "{{ app_user_home }}/.dotfiles"
         state: absent
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

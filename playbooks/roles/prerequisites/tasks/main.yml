@@ -2,16 +2,28 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to install desirable and required prerequisites
+# DESCRIPTION
+#    Role file to install desirable and required prerequisites
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/prerequisites/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/prerequisites/tasks
+#       ansible-lint roles/prerequisites/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags prerequisites --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags prerequisites --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags prerequisites --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags prerequisites --skip-tags uninstall
+#
+# SOURCES
 #
 
 
@@ -20,45 +32,45 @@
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install desirable and required prerequisites
+- name: Install Desirable and Required Prerequisites
+  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: run the equivalent of "apt-get update" (as root)
+    - name: Run the equivalent of "apt-get update" (as root)
       ansible.builtin.apt:
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: install required prerequisite packages (as root)
+    - name: Install required prerequisite packages (as root)
       ansible.builtin.apt:
         state: present
         name: ['git', 'curl', 'wget', 'ntp', 'apt-transport-https', 'gnupg2']
 
-    - name: install desirable prerequisite packages (as root)
+    - name: Install desirable prerequisite packages (as root)
       ansible.builtin.apt:
-        state: latest
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: false
         pkg: ['ca-certificates', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
 
-    - name: install these desirable packages for ansible, needed in some situations (as root)
+    - name: Install these desirable packages for ansible, needed in some situations (as root)
       ansible.builtin.apt:
-        state: latest
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: false
         pkg: ['acl']
 
-    - name: install these desirable packages for raspberry pi device interfaces (as root)
+    - name: Install these desirable packages for raspberry pi device interfaces (as root)
       ansible.builtin.apt:
-        state: latest
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: false
         pkg: ['i2c-tools']
-  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall desirable and required prerequisites
+- name: Uninstall Desirable and Required Prerequisites
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: message to user (as root)
+    - name: Message to user (as root)
       ansible.builtin.debug:
         msg: Nothing done. Packages newly installed and up-grades are unchanged.
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

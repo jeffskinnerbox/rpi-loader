@@ -28,6 +28,14 @@ Version:      0.0.1
 
 
 
+# Playbooks
+* ansible-setup - This Ansible playbook provides an alternative to manually preparing a server to be administered / provisioned by Ansible. Is primary function is to establish a login to be used by Ansible and the SSH keys to access that login.
+* pi-query
+* ping
+* rpi-loader
+* rpi-config
+* rpi-default-config
+
 
 # Ansible's Interactive Input `vars_prompt`
 If you want your playbook to prompt the user for certain input,
@@ -715,6 +723,12 @@ ansible home-assist:node-2 -i inventory -a "uptime" -u root
 
 # install vim-nox package on home-assist
 ansible home-assist -m apt -a "name=vim-nox" --become
+
+# reboot all the raspberry pi
+ansible all -i inventory -m shell -a "sleep 1s; shutdown -r now" -b -B 60 -P 0
+
+# shut down all the raspberry pi
+ansible all -i inventory -m shell -a "sleep 1s; shutdown -h now" -b -B 60 -P 0
 ```
 
 To run a playbook and execute all the tasks defined within it, use the `ansible-playbook` command:

@@ -2,16 +2,28 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# task file for 'login-env' role - install tools for your shell / login environment
+# DESCRIPTION
+#    Task file for 'login-env' role - install tools for your shell / login environment
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/login-env/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/login-env/tasks
+#       ansible-lint roles/login-env/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags login-env --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags login-env --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags login-env --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags login-env --skip-tags uninstall
+#
+# SOURCES
 #
 #  --   Deprecated   --   Deprecated   --   Deprecated   --   Deprecated   --
 #
@@ -22,23 +34,28 @@
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install / Uninstall your login environment
+- name: Install Your Login Environment
+  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
   block:
     - name: Install required prerequisites and desirable tools (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['chromium-browser', 'stow', git', 'git-lfs', 'apt-transport-https', 'gnome-terminal', 'jq', 'markdown', 'tmux', 'screen', 'wmctrl']
 
-    - name: clone .bash git repository (as user)
+    - name: Clone .bash git repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: 'https://github.com/jeffskinnerbox/.bash.git'
         dest: '/home/{{ app_user }}/.bash'
-        clone: true
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
 
-    - name: clean out the old bash environment (delete files) (as root)
+    - name: Clean out the old bash environment (delete files) (as root)
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
@@ -49,7 +66,7 @@
         - "{{ app_user_home }}/.bash_logout"
         - "{{ app_user_home }}/.bash_profile"
 
-    - name: setup your new bash environment (as root)
+    - name: Setup your new bash environment (as root)
       ansible.builtin.file:
         src: "{{ app_user_home }}/.bash/{{ item.src }}"
         dest: "{{ app_user_home }}/{{ item.dest }}"
@@ -63,21 +80,27 @@
         - {src: 'bash_logout', dest: '.bash_logout'}
         - {src: 'bash_profile', dest: '.bash_profile'}
 
-    - name: source/load the changes into your profile (as user)
+    - name: Load the changes into your profile (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.shell: |
         source ~/.bashrc
       args:
         executable: /usr/bin/bash
+      changed_when: false
 
-    - name: clone .X git repository (as user)
+    - name: Clone .X git repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: 'https://github.com/jeffskinnerbox/.X.git'
         dest: '{{ app_user_home }}/.X'
-        clone: true
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
 
-    - name: setup your x windows environment (as root)
+    - name: Setup your x windows environment (as root)
       ansible.builtin.file:
         src: "{{ app_user_home }}/.X/{{ item.src }}"
         dest: "{{ app_user_home }}/{{ item.dest }}"
@@ -89,22 +112,13 @@
         - {src: 'Xresources', dest: '.Xresources'}
         - {src: 'xsessionrc', dest: '.xsessionrc'}
 
-    # - name: rebuilding $HOME/.Xauthority to avoid MIT magic cookie error (as user)
-    #   become_user: "{{ app_user }}"
-    #   ansible.builtin.shell: |
-    #     cd ~
-    #     touch ~/.Xauthority
-    #     xauth generate :0 . trusted
-    #     xauth add ${HOST}:0 . `xxd -l 16 -p /dev/urandom`
-    #   args:
-    #     executable: /usr/bin/bash
-  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
-
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall your login environment
+- name: Uninstall Your Login Environment
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
   block:
     # - name: remove all login environment related files & directories
+    #   become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
     #   become_user: "{{ app_user }}"
     #   ansible.builtin.shell: |
     #     cd ~
@@ -114,19 +128,18 @@
     #   args:
     #     executable: /usr/bin/bash
 
-    - name: remove all login environment related files & directories (as root)
+    - name: Remove all login environment related files & directories (as root)
       ansible.builtin.file:
         path: "{{ app_user_home }}/{{ item }}"
         state: absent
       loop: ['.bash_logout', '.inputrc', '.bashrc', '.bash_login', '.bash_logout', '.bash_profile', '.xbindkeysrc', '.Xresources', '.xsessionrc', '.Xauthority', '.bash', '.X']
 
-    # - name: uninstall chromium-browser (as root)
-    # ansible.builtin.apt:
-    #   name: chromium-browser
-    #   state: absent            # must be one of: absent, build-dep, fixed, latest, present
-    #   autoclean: true          # cleans the local repository packages that can no longer be downloaded
-    #   autoremove: true         # remove unused dependency with repository packages
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
+    - name: Uninstall chromium-browser (as root)
+      ansible.builtin.apt:
+        state: absent            # must be one of: absent, build-dep, fixed, latest, present
+        autoclean: true          # cleans the local repository packages that can no longer be downloaded
+        autoremove: true         # remove unused dependency with repository packages
+        pkg: ['chromium-browser']
 
 # ------------------------------------------------------------------------------
 

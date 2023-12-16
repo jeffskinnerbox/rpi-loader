@@ -1,0 +1,121 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# DESCRIPTION
+#
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-setup-ansible.yml
+#       ansible-lint rpi-setup-ansible.yml
+#
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook rpi-setup-ansible.yml -i 192.168.1.79, --user pi --ask-pass --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook rpi-setup-ansible.yml -i 192.168.1.79, --user pi --ask-pass --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook rpi-setup-ansible.yml -i 192.168.1.79, --user pi --ask-pass --check
+#
+# EXECUTION
+#    Run the playbook for real (assuming 'inventory' is up to date)
+#       ansible-playbook rpi-setup-ansible.yml -i 192.168.1.79, --user pi --ask-pass
+#
+# VALIDATION
+#    Execute this command to validate succesful provisioning. You should login
+#    without a password from the ansible control node.
+#       ssh ansible@192.168.1.79
+#
+# SOURCES
+#    How to Use Ansible to Automate Initial Server Setup on Ubuntu 22.04 - https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-automate-initial-server-setup-on-ubuntu-22-04
+#    Ansible: sudo without password - https://stackoverflow.com/questions/37434598/ansible-sudo-without-password
+#    How to Use SSH Keys with Ansible for Secure Server Management? - https://jhooq.com/ansible-ssh-keys-for-server-mgmt/
+#
+
+---
+
+- name: Setup Server For Ansible Provisioning Via SSH Keys
+  hosts: all
+  become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+
+  vars:
+    ansible_user_name: ansible
+    ansible_ssh_key: ".ssh/ansible.pub"
+
+  tasks:
+    - name: Install required system packages (as root)
+      ansible.builtin.apt:
+        state: present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg:
+          - aptitude             # install aptitude since ansible prefers it
+          - curl
+          - vim
+          - git
+          - ufw
+
+    - name: Allow members of group 'sudo' to execute any command without entering a password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'       # allow passwordless use of 'sudo' command for all members of the group 'sudo'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Create a new user for ansible, called 'ansible', with sudo privileges (as root)
+      ansible.builtin.user:
+        name: "{{ ansible_user_name }}"
+        comment: "This user account will be used by Ansible"
+        state: present
+        shell: /bin/bash
+        groups: sudo
+        append: true
+        create_home: true
+
+    - name: Set authorized key for ansible user (as root)
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user_name }}"
+        state: present
+        key: "{{ lookup('file', lookup('env', 'HOME') + '/' + '{{ ansible_ssh_key }}') }}"
+
+    - name: Disable password authentication for root (as root)
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+      notify:
+        - Restart SSH
+
+    - name: UFW firewall set to allow ssh connections (as root)
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: UFW firewall is enabled and deny set by default (as root)
+      community.general.ufw:
+        state: enabled
+        default: deny
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+        enabled: true
+      when: ansible_distribution == 'Debian'
+
+# ------------------------------------------------------------------------------
+
+# - name: remove the user ansible (as root)
+#   ansible.builtin.user:
+#     name: "{{ ansible_user_name }}"
+#     state: absent
+#     remove: true
+
+# ------------------------------------------------------------------------------
+

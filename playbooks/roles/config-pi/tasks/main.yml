@@ -1,0 +1,79 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# DESCRIPTION
+#    Role file to install ssh keys for Ansible useage
+#
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/config-pi/tasks
+#       ansible-lint roles/config-pi/tasks/main.yml
+#
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags config-pi --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags config-pi --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags config-pi --skip-tags uninstall
+#
+# SOURCES
+#
+
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Make Raspberry Pi Configuration Changes (as root)
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+  block:
+    - name: Install required prerequisite packages (as root)
+      ansible.builtin.apt:
+        state: present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than these seconds
+        name: ['raspi-config']
+
+    - name: Execute raspi-config to enable raspberry pi hardware features (as root)
+      ansible.builtin.command: "{{ item }}"
+      register: my_output                                # registers the command output
+      changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+      loop:
+        - raspi-config nonint do_ssh 0                   # enable ssh
+        - raspi-config nonint do_spi 0                   # enable SPI controller (/dev/spidev0.0 and /dev/spidev0.1)
+        - raspi-config nonint do_i2c 0                   # enabling I2C bus /dev/i2c-1
+        - raspi-config nonint do_serial_cons 0           # enable serial console for console cables - https://github.com/raspberrypi/bookworm-feedback/issues/114
+        - raspi-config nonint do_camera 0                # enable camera
+        - raspi-config nonint do_onewire 0               # enable 1-wire
+        # - raspi-config nonint do_serial 0                # enable serial console for console cables
+        # - raspi-config nonint do_expand_rootfs           # expand partition to use 100% of remaining space
+        # - raspi-config nonint do_boot_behaviour B1       # require password to get console access
+
+    - name: Reboot the raspberry pi to establish configuration changes (as root)
+      ansible.builtin.reboot:
+        msg: "Reboot initiated By Ansible, activating configuration changes"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
+# --- Uninstall Block of Tasks ------------------------------------------------
+
+- name: No Need to Make Raspberry Pi Configuration Changes (as root)
+  tags: ['never', 'uninstall']     # 'never' implies you must pass the tag to execute this block
+  block:
+    - name: Message to user
+      ansible.builtin.debug:
+        msg: No changes made to Raspberry Pi configuration.
+
+# ------------------------------------------------------------------------------
+

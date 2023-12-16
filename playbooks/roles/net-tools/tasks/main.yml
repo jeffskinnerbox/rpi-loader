@@ -2,18 +2,31 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
+# DESCRIPTION
 # task file for 'network-tools' role - install various networking related tools
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/net-tools/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/net-tools/tasks
+#       ansible-lint roles/net-tools/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags net-tools --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags net-tools --skip-tags uninstall --list-tasks
 #
-# See: https://github.com/mrlesmithjr/ansible-network-tools
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags net-tools --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags net-tools --skip-tags uninstall
+#
+# SOURCES
+#       See Ansible Network Tools - https://github.com/mrlesmithjr/ansible-network-tools
+#
+
 
 ---
 
@@ -21,10 +34,11 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Networking Tools
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: install various networking tools / packages (as root)
+    - name: Install various networking tools / packages (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg:
@@ -68,26 +82,26 @@
           - 'wavemon'
           - 'avahi-daemon'       # so you can discover hosts via Multicast Domain Name System (mDNS)
 
-    - name: install encryption and certificate packages (as root)
+    - name: Install encryption and certificate packages (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
-    - name: install useful formating tools (as root)
+    - name: Install useful formating tools (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         pkg: ['jq']
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall networking tools
+- name: Uninstall Networking Tools
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
   block:
-    - name: message to user
+    - name: Message to user
       ansible.builtin.debug:
         msg: Some, but not all, packages are being removed.
 
-    - name: uninstall various networking tools / packages ... but not all (as root)
+    - name: Uninstall various networking tools / packages ... but not all (as root)
       ansible.builtin.apt:
         state: absent            # must be one of: absent, build-dep, fixed, latest, present
         autoclean: true          # cleans the local repository packages that can no longer be downloaded
@@ -131,7 +145,6 @@
           # - 'traceroute'
           # - 'ufw'
           - 'wavemon'
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
 # ------------------------------------------------------------------------------
 

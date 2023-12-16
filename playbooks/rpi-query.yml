@@ -1,0 +1,81 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# DESCRIPTION
+#
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-query.yml roles/*/tasks
+#       ansible-lint rpi-query.yml roles/*/tasks
+#
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-query.yml --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-query.yml --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i <ip address>, rpi-query.yml --user pi --ask-pass --check
+#
+# EXECUTION
+#    Run the playbook for real
+#       ansible-playbook -i inventory rpi-query.yml
+#       ansible-playbook -i <ip address>, rpi-query.yml --user pi --ask-pass
+#
+# SOURCES
+#
+
+
+---
+
+
+- name: Parses The Network Interfaces and Lists Them To Identify Ethernet Interface
+  hosts: all
+  become: true             # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+
+  tasks:
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi network interface information (as root)
+      ansible.builtin.shell:
+        cmd: set -o pipefail && ip address | grep default | awk '{ print $2 }' | awk '{ print substr( $0, 1, length($0)-1 ) }'
+        register: my_output                                # registers the command output
+        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        executable: /bin/bash
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi model information (as root)
+      ansible.builtin.shell:
+        cmd: set -o pipefail && cat /proc/cpuinfo | grep 'Hardware\|Revision\|Serial\|Model' | sed 's/\t//g'
+        register: my_output                                # registers the command output
+        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        executable: /bin/bash
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi ram memory information (as root)
+      ansible.builtin.shell:
+        cmd: set -o pipefail && cat /proc/meminfo | grep MemTotal | sed 's/ //g' | sed 's/:/: /'
+        register: my_output                                # registers the command output
+        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        executable: /bin/bash
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+# ------------------------------------------------------------------------------
+

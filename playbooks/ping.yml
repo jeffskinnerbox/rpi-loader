@@ -2,21 +2,26 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# Ansible's ping
-#    ansible all -i inventory -m ping
+# DESCRIPTION
 #
-# Run the playbook
-#    ansible-playbook -i inventory ping.yml
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-config.yml roles/*/tasks
+#       ansible-lint rpi-config.yml# Ansible's ping
+#
+# EXECUTION
+#    Run the playbook for real (assuming 'inventory' is up to date)
+#       ansible-playbook -i inventory ping.yml
 #
 
 ---
-
 - name: Test Ping Each Host
   hosts: all
-  become: true           # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become: true                   # set to 'true' to activate privilege escalation => use sudo and be root by default
   become_method: sudo
   gather_facts: false
 
   tasks:
-  - action: ping
+    - name: Test ping each host
+      ansible.builtin.ping:
 

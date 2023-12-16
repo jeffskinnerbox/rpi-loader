@@ -2,16 +2,30 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# task file for 'dev-tools' role - install useful devlopment utilities
+# DESCRIPTION
+#    Role file for 'dev-tools' role - install useful devlopment utilities
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/dev-tools/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/dev-tools/tasks
+#       ansible-lint roles/dev-tools/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags dev-tools --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags dev-tools --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags dev-tools --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags dev-tools --skip-tags uninstall
+#
+# SOURCES
+#
+
 
 ---
 
@@ -19,87 +33,87 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Useful Devlopment Utilities
+  tags: ['never', 'install']           # 'never' implies you must pass the tag to execute this block
   block:
-    - name: run the equivalent of "apt update" (as root)
+    - name: Run the equivalent of "apt update" (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: install general development tools (as root)
+    - name: Install general development tools (as root)
       ansible.builtin.apt:
         name: ['gnome-terminal', 'screen', 'telnet', 'jq', 'markdown']
-        state: latest
+        state: present
 
-    - name: install software version control tools (as root)
+    - name: Install software version control tools (as root)
       ansible.builtin.apt:
         name: ['git', 'git-lfs']
-        state: latest
+        state: present
 
-    - name: install needed compilers (as root)
+    - name: Install needed compilers (as root)
       ansible.builtin.apt:
         name: ['build-essential', 'cmake', 'unzip', 'pkg-config']
-        state: latest
+        state: present
 
-    - name: install ansible and yaml tools (as root)
+    - name: Install ansible and yaml tools (as root)
       ansible.builtin.apt:
         name: ['yamllint', 'ansible-lint']
-        state: latest
+        state: present
 
-    - name: install X windows libraries and OpenGL libraries (as root)
+    - name: Install X windows libraries and OpenGL libraries (as root)
       ansible.builtin.apt:
         name: ['libxmu-dev', 'libxi-dev', 'libglu1-mesa', 'libglu1-mesa-dev']
-        state: latest
+        state: present
 
-    - name: install optimization algorithums libraries (as root)
+    - name: Install optimization algorithums libraries (as root)
       ansible.builtin.apt:
         name: ['libopenblas-dev', 'libatlas-base-dev', 'liblapack-dev', 'gfortran']
-        state: latest
+        state: present
 
-    - name: install HDF5 library for working with large datasets (as root)
+    - name: Install HDF5 library for working with large datasets (as root)
       ansible.builtin.apt:
         name: ['libhdf5-serial-dev']
-        state: latest
+        state: present
 
-    - name: install image and video libraries (as root)
+    - name: Install image and video libraries (as root)
       ansible.builtin.apt:
         name: ['libjpeg-dev', 'libpng-dev', 'libtiff-dev', 'libavcodec-dev', 'libavformat-dev', 'libswscale-dev', 'libv4l-dev', 'libxvidcore-dev', 'libx264-dev']
-        state: latest
+        state: present
 
-    - name: install node.js and npm (as root)
+    - name: Install node.js and npm (as root)
       ansible.builtin.apt:
         name: ['nodejs', 'npm']
-        state: latest
+        state: present
 
-    - name: install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
+    - name: Install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
       ansible.builtin.apt:
         name: ['hashalot']
-        state: latest
+        state: present
 
-    - name: install some X Window utilities (as root)
+    - name: Install some X Window utilities (as root)
       ansible.builtin.apt:
         name: ['x11-apps', 'x11-xserver-utils', 'xterm', 'wmctrl']
-        state: latest
+        state: present
 
-    - name: install tools for viewing and manipulating image & video files (as root)
+    - name: Install tools for viewing and manipulating image & video files (as root)
       ansible.builtin.apt:
         name: ['imagemagick', 'feh', 'mplayer']
-        state: latest
+        state: present
 
-    - name: install python 3 development libraries including TK and GTK GUI support (as root)
+    - name: Install python 3 development libraries including TK and GTK GUI support (as root)
       ansible.builtin.apt:
         name: ['python3-dev', 'python3-tk', 'libgtk-3-dev', 'libboost-all-dev', 'python3-widgetsnbextension', 'python3-testresources', 'build-essential', 'cmake', 'python3-pip']
-        state: latest
-  tags: ['never', 'install']           # 'never' implies you must pass the tag to execute this block
+        state: present
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall Useful Devlopment Utilities
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: message to user
+    - name: Message to user
       ansible.builtin.debug:
         msg: Nothing done. Packages newly installed and up-grades are unchanged.
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

@@ -1,0 +1,84 @@
+
+# Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
+# Version:      1.5.0
+#
+# DESCRIPTION
+#
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#        yamllint rpi-static-ip.yml
+#        ansible-lint rpi-static-ip.yml
+#
+#    Ansible linter to spot Ansible playbook syntax errors
+#        ansible-playbook rpi-static-ip.yml -i 192.168.1.79, --user pi --ask-pass --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#        ansible-playbook rpi-static-ip.yml -i 192.168.1.79, --user pi --ask-pass --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#        ansible-playbook rpi-static-ip.yml -i 192.168.1.79, --user pi --ask-pass --check
+#
+# EXECUTION
+#    Run the playbook for real (assuming 'inventory' is up to date)
+#        ansible-playbook rpi-static-ip.yml -i 192.168.1.79, --user pi --ask-pass
+#
+# VALIDATION
+#    Execute these command to validate succesful provisioning.
+#        ping 192.168.1.205
+#        ssh pi@192.168.1.205
+#
+# SOURCES
+#    Set a Static IP Address on Raspberry Pi OS Bookworm - https://www.abelectronics.co.uk/kb/article/31/set-a-static-ip-address-on-raspberry-pi-os-bookworm
+#
+
+
+---
+
+
+- name: Setup Server With Static IP Address
+  hosts: all
+  become: true           # set to 'true' to activate privilege escalation => use sudo and be root by default
+  become_method: sudo
+  gather_facts: true
+  vars:
+    static_ip_add: "ipv4.addresses 192.168.1.205/24"   # static ip address
+    gateway_ip_add: "ipv4.gateway 192.168.1.1"         # gateway address
+    dns_ip_add: "ipv4.dns 192.168.1.1,8.8.8.8"         # dns server addresses
+
+  tasks:
+    - name: Install required prerequisite package, network-manager (as root)
+      ansible.builtin.apt:
+        state: present
+        update_cache: true        # update the apt repository list cache
+        cache_valid_time: 86400   # update the apt cache if it is older than this seconds
+        name: ['network-manager']
+
+    - name: Set the static ip address, gateway, and dns server addresses (as root)
+      ansible.builtin.shell:
+        cmd: "nmcli con mod 'Wired connection 1' {{ item }}"
+        executable: /bin/bash
+        changed_when: true                    # 'nmcli' has no return code so assume it always changes
+      loop:
+        - static_ip_add   # static ip address
+        - gateway_ip_add  # gateway address
+        - dns_ip_add      # dns server addresses
+
+# ------------------------------------------------------------------------------
+
+#   - name: set the ip addressing to DHCP
+#     ansible.builtin.shell:
+#       cmd: "nmcli con mod 'Wired connection 1' {{ item }}"
+#     loop:
+#       - "ipv4.method auto"                  # change the addressing to DHCP
+
+#   - name: reboot the raspberry pi to set ip address changes (as root)
+#     ansible.builtin.reboot:
+#       msg: "Reboot Initiated By Ansible, IP Addressing Set to DHCP"
+#       connect_timeout: 5
+#       reboot_timeout: 300
+#       pre_reboot_delay: 0
+#       post_reboot_delay: 30
+#       test_command: uptime
+
+# ------------------------------------------------------------------------------
+

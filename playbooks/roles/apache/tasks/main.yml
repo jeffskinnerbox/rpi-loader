@@ -2,39 +2,53 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to install Apache2 HTTP server
+# DESCRIPTION
+#    Role file to install Apache2 HTTP server
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/apache/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/apache/tasks
+#       ansible-lint roles/apache/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags apache --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags apache --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags apache --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags apache --skip-tags uninstall
+#
+# SOURCES
+#
 
 ---
 
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install latest version of Apache2 and its prerequisites
+- name: Install version of Apache2 and its prerequisites
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: Install latest version of Apache2 and its prerequisites (as root)
+    - name: Install version of Apache2 and its prerequisites (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: [apache2, ufw]
 
-    - name: Create document root (/var/www/{{ http_host }}) for your website (as root)
+    - name: Create document root for your website /var/www/{{ http_host }}    # (as root)
       ansible.builtin.file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
         mode: u=rw,g=r,o=r
         state: directory         # must be one of: absent, directory, file, hard, link, touch
 
-    - name: Copy your index page to /var/www/{{ http_host }}/index.html (as root)
+    - name: Copy your index page to directory /var/www/{{ http_host }}    # (as root)
       ansible.builtin.template:
         src: "files/index.html.j2"
         dest: "/var/www/{{ http_host }}/index.html"
@@ -42,7 +56,7 @@
         mode: u=rw,g=r,o=r
       notify: restart-apache
 
-    - name: Set up virtual host in /etc/apache2/sites-available/{{ http_conf }} (as root)
+    - name: Set up virtual host in /etc/apache2/sites-available/{{ http_conf }}    # (as root)
       ansible.builtin.template:
         src: "files/apache.conf.j2"
         dest: "/etc/apache2/sites-available/{{ http_conf }}"
@@ -50,24 +64,24 @@
         mode: u=rw,g=r,o=r
       notify: restart-apache
 
-    - name: "UFW firewall allow HTTP on port {{ http_port }} (as root)"
+    - name: UFW firewall allow HTTP on port {{ http_port }}    # (as root)
       community.general.ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: "{{ http_port }}"
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
         state: enabled           # must be one of: enabled, disabled, reloaded, reset
 
-    - name: set UFW firewall to allow SSH on port 22 (so you are not locked out) (as root)
+    - name: Set UFW firewall to allow SSH on port 22 (so you are not locked out)    # (as root)
       community.general.ufw:
         rule: allow              # must be one of: allow, deny, limit, reject
         port: ssh
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
         state: enabled           # must be one of: enabled, disabled, reloaded, reset
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall latest version of Apache2
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
   block:
     - name: Uninstall Apache2 but leave its prerequisites (as root)
       ansible.builtin.apt:
@@ -76,7 +90,7 @@
         autoremove: true     # remove unused dependency with repository packages
         pkg: [apache2]
 
-    - name: Remove document root (/var/www/{{ http_host }}) for the website (as root)
+    - name: Remove document root for the website /var/www/{{ http_host }}    # (as root)
       ansible.builtin.file:
         path: "/var/www/{{ http_host }}"
         owner: "{{ app_user }}"
@@ -91,13 +105,12 @@
         state: absent            # must be one of: absent, directory, file, hard, link, touch
       notify: stop-apache
 
-    - name: "UFW firewall deny HTTP on port {{ http_port }} (as root)"
+    - name: UFW firewall deny HTTP on port {{ http_port }}    # (as root)
       community.general.ufw:
         port: "{{ http_port }}"
         rule: deny               # must be one of: allow, deny, limit, reject
         proto: tcp               # must be one of: any, tcp, udp, ipv6, esp, ah
         state: reloaded          # must be one of: enabled, disabled, reloaded, reset
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
 # ------------------------------------------------------------------------------
 

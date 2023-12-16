@@ -2,46 +2,60 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# task file for 'crypto-tools' role - install encryption and certificate packages
+# DESCRIPTION
+#    Rol file for 'crypto-tools' role - install encryption and certificate packages
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/crypto-tools/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/crypto-tools/tasks
+#       ansible-lint roles/crypto-tools/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags crypto-tools --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags crypto-tools --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags crypto-tools --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags crypto-tools --skip-tags uninstall
+#
+# SOURCES
+#
+
 
 ---
 
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install cryptography and certificate tools
+- name: Install Cryptography and Certificate Tools
+  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
   block:
-    - name: install encryption and certificate packages (as root)
+    - name: Install encryption and certificate packages (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
         pkg: ['apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg', 'lsb-release']
 
-    - name: install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
+    - name: Install secure hash algorithms (SHA) tools, specifically SHA256 (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: false      # update the apt repository list cache
         pkg: ['hashalot']
-  tags: ['never', 'install']     # 'never' implies you must pass the 'install' tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall cryptography and certificate tools (as root)
+- name: Uninstall Cryptography and Certificate Tools (as root)
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
   block:
-    - name: message to user
+    - name: Message to user
       ansible.builtin.debug:
         msg: Nothing needs to be uninstalled, therefore, it is not
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the 'install' tag to execute this block
 
 # ------------------------------------------------------------------------------
 

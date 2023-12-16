@@ -2,18 +2,28 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to create the the duplicati backup process
+# DESCRIPTION
+#    Role file to create the the duplicati backup process
 #
-#  Testing
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/duplicati/tasks
+#       ansible-lint roles/duplicati/tasks/main.yml
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/duplicati/tasks
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags duplicati --skip-tags uninstall --list-tasks
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags duplicati --skip-tags uninstall --list-tasks
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags duplicati --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags duplicati --skip-tags uninstall
+#
+# SOURCES
 #
 
 
@@ -23,14 +33,17 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install Duplicati
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    # - name: create directory for docker compose files and duplicati database (as user)
+    # - name: Create directory for docker compose files and duplicati database (as user)
+    #   become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
     #   become_user: "{{ backup_user }}"
     #   file:
     #     state: directory
     #     path: "{{ duplicati_compose_path }}"
 
-    # - name: copy docker compose file and environment variables (as user)
+    # - name: Copy docker compose file and environment variables (as user)
+    #   become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
     #   become_user: "{{ backup_user }}"
     #   copy:
     #     src: "files/{{ item }}"
@@ -40,7 +53,7 @@
     #     - duplicati-docker-compose.yml
     #     - environment
 
-    # - name: create a duplicati container via docker compose (as root)
+    # - name: Create a duplicati container via docker compose (as root)
     #   docker_compose:
     #     project_src: "{{ duplicati_compose_path }}"
     #     state: present
@@ -48,13 +61,15 @@
     #     files:
     #       - duplicati-docker-compose.yml
 
-    - name: create a directory for duplicati configuration and database (as user)
+    - name: Create a directory for duplicati configuration and database (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ backup_user }}"
       ansible.builtin.file:
         state: directory
+        mode: a+rwx, o-w
         path: "{{ duplicati_config_path }}"
 
-    - name: create a duplicati container via docker (as root)
+    - name: Create a duplicati container via docker (as root)
       community.general.docker_container:
         name: duplicati
         state: started       # must be one of: absent, present, stopped, started
@@ -70,24 +85,24 @@
         container_default_behavior: compatibility
         restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
 
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall Duplicati
+  tags: ['never', 'uninstall']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: stop the docker container (as root)
+    - name: Stop the docker container (as root)
       community.general.docker_container:
         name: duplicati
         state: stopped
 
-    - name: remove the docker image and docker networks (as root)
+    - name: Remove the docker image and docker networks (as root)
       community.general.docker_container:
         name: duplicati
         purge_networks: true
         state: absent
 
-    - name: delete the docker compose files and persistent data (as root)
+    - name: Delete the docker compose files and persistent data (as root)
       ansible.builtin.file:
         state: absent
         path: "{{ item }}"
@@ -95,7 +110,6 @@
         - "{{ backup_user_home }}/src/duplicati"
         - "{{ duplicati_config_path }}"
 
-  tags: ['never', 'uninstall']     # 'never' implies you must pass the tag to execute this block
 
 # ------------------------------------------------------------------------------
 

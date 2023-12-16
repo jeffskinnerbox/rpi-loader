@@ -2,16 +2,27 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# Role file to install LiFePO4wered-Pi UPS tools for Raspberry Pi
+# DESCRIPTION
+#    Role file to install LiFePO4wered-Pi UPS tools for Raspberry Pi
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/ups-pi/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/ups-pi/tasks
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags ups-pi --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags ups-pi --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags ups-pi --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags ups-pi --skip-tags uninstall
+#
+# SOURCES
 #
 
 
@@ -21,66 +32,71 @@
 # --- Install Block of Tasks ---------------------------------------------------
 
 - name: Install LiFePO4wered-Pi UPS
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
     - name: Install prerequisite tools (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        name: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev', 'i2c-tools']
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
-        pkg: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev', 'i2c-tools']
 
     - name: Create a '~/src' directory if it does not exist (as user)
-      become_user: "{{ app_user }}"
       ansible.builtin.file:
         path: "{{ app_user_home }}/src"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: u+rw,g+rx,o+rx
         state: directory
 
-    - name: check if LiFePO4wered-Pi UPS git repository exists (as user)
-      become_user: "{{ app_user }}"
+    - name: Check if LiFePO4wered-Pi UPS git repository exists (as user)
       ansible.builtin.stat:
         path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
       register: file_exists
 
-    - name: clone the LiFePO4wered-Pi UPS repository (as user)
+    - name: Clone the LiFePO4wered-Pi UPS repository (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       ansible.builtin.git:
         repo: "https://github.com/xorbit/LiFePO4wered-Pi.git"
         dest: "{{ app_user_home }}/src/LiFePO4wered-Pi"
-        clone: true
+        clone: true                          # if false, do not clone the repository even if it does not exist locally
+        force: true                          # if true, any modified files in the working repository will be discarded
+        update: true                         # perform an update on submodules in this git repository
+        version: HEAD                        # noqa: latest
       when: not file_exists.stat.exists
 
-    - name: build LiFePO4wered-Pi UPS tools & daemon (as user)
+    - name: Build LiFePO4wered-Pi UPS tools & daemon (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
       become_user: "{{ app_user }}"
       community.general.make:
         chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
-        target: "{{ item }}"
-      loop:
-        - all
+        target: all
+        make: /usr/bin/make
 
-  # - name: install LiFePO4wered-Pi UPS tools & daemon (as root)         # currently not working, requires activation of i2c via 'sudo raspi-config'
-  #   community.general.make:
-  #     chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
-  #     target: "{{ item }}"
-  #   loop:
-  #     - user-install
-  #   notify: reboot-host
-  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
+    # you will need to run 'sudo make user-install' manually since Makefile requires terminal graphics
+    - name: Install LiFePO4wered-Pi UPS tools & daemon (as root)         # requires activation of i2c via 'sudo raspi-config'
+      community.general.make:
+        chdir: "{{ app_user_home }}/src/LiFePO4wered-Pi"
+        target: user-install
+        make: /usr/bin/make
+      notify: reboot-host
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
 - name: Uninstall LiFePO4wered-Pi UPS (really disable daemon & remove repository)
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
   block:
-    - name: disable LiFePO4wered-Pi daemon (as root)
+    - name: Disable LiFePO4wered-Pi daemon (as root)
       ansible.builtin.systemd:
         name: lifepo4wered-daemon.service
         state: stopped        # must be one of: reloaded, restarted, started, stopped
         enabled: false        # start on boot? - must be true or false
 
-    - name: remove LiFePO4wered-Pi UPS git repository (as root)
+    - name: Remove LiFePO4wered-Pi UPS git repository (as root)
       ansible.builtin.file:
         state: absent
         path: '{{ app_user_home }}/src/LiFePO4wered-Pi'
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the tag to execute this block
 
 # ------------------------------------------------------------------------------
 

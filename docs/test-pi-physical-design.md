@@ -191,7 +191,7 @@ frequency(1)=250000000
 [06]:https://www.shapeways.com/
 [07]:https://en.wikipedia.org/wiki/STL_(file_format)
 [08]:https://www.protolabs.com/
-[09]:https://cdn.tindiemedia.com/images/resize/NS8E-8h1An68bOqZrKHhnukm44c=/full-fit-in/2400x1600/smart/58262/products/2016-12-15T20%3A35%3A06.599Z-IMGP8966.JPG
+[09]:https://lifepo4wered.com/lifepo4wered-pi3.html
 [10]:https://lifepo4wered.com/lifepo4wered-pi.html
 [11]:https://www.tindie.com/products/xorbit/lifepo4weredpi3/
 [12]:https://github.com/xorbit/LiFePO4wered-Pi

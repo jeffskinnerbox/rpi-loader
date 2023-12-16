@@ -2,13 +2,29 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to update all packages (equivalent to "apt update && apt full-upgrade")
+# DESCRIPTION
+#    Role file to update all packages (equivalent to "apt update && apt full-upgrade")
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/update/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/update/tasks
+#       ansible-lint  roles/update/tasks/main.yml
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags update --skip-tags uninstall --list-tasks
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
+#
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags update --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags update --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags update --skip-tags uninstall
+#
+# SOURCES
+#
 
 
 ---
@@ -16,42 +32,42 @@
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install full-upgrade, add required packages, and reboot if needed
+- name: Install Full-upgrade, Add Required Packages, and Reboot as Needed
+  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: update the apt repository cache (as root)
+    - name: Update the apt repository cache (as root)
       ansible.builtin.apt:
-        state: latest            # must be one of: absent, build-dep, fixed, latest, present
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
         update_cache: true       # update the apt repository list cache
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: execute script to create list of upgrades needed (as root)
-      ansible.builtin.shell:
+    - name: Execute script to create list of upgrades needed (as root)
+      ansible.builtin.command:
         cmd: apt list --upgradeable
-      register: cmd_output
-      args:
-        executable: /bin/bash
+      register: my_output                                # registers the command output
+      changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
 
-    - name: script output - the list of upgrades needed (as root)
+    - name: Script output - the list of upgrades needed (as root)
       ansible.builtin.debug:
         var: cmd_output.stdout_lines
 
-    - name: upgrade all apt repository packages (as root)
+    - name: Upgrade all apt repository packages (as root)
       ansible.builtin.apt:
-        state: latest
+        state: present
         upgrade: dist
         cache_valid_time: 86400  # update the apt cache if it is older than this seconds
 
-    - name: remove apt repositories not needed anymore (as root)
+    - name: Remove apt repositories not needed anymore (as root)
       ansible.builtin.apt:
         autoremove: true
 
-    - name: check if a reboot is needed because of kernel changes, etc. (as root)
+    - name: Check if a reboot is needed because of kernel changes, etc. (as root)
       register: reboot_required_file
       ansible.builtin.stat:
         path: var/run/reboot-required
         get_md5: false
 
-    - name: reboot the box if needed (as root)
+    - name: Reboot the box if needed (as root)
       ansible.builtin.reboot:
         msg: "Reboot Initiated By Ansible"
         connect_timeout: 5
@@ -60,16 +76,15 @@
         post_reboot_delay: 30
         test_command: uptime
       when: reboot_required_file.stat.exists
-  tags: ['never', 'install']     # 'never' implies you must pass the other tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall full-upgrade on all packages (as root)
+- name: Uninstall Full-upgrade on All Packages (as root)
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: message to user
+    - name: Message to user
       ansible.builtin.debug:
         msg: Nothing done. Packages newly installed and up-grades are unchanged.
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

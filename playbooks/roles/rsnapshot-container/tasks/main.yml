@@ -2,16 +2,29 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# role file to create the container that runs the rsnapshot backup process
+# DESCRIPTION
+#    Role file to create the container that runs the rsnapshot backup process
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint playbook.yml roles/rsnapshot-container/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors
+#       yamllint rpi-loader.yml roles/rsnapshot-container/tasks
+#       ansible-lint roles/rsnapshot-container/tasks/main.yml
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi playbook.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  playbook.yml --tags rsnapshot-container --skip-tags uninstall --list-tasks
+#    Generate a list of tasks that will be executed for the tags
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags rsnapshot-container --skip-tags uninstall --list-tasks
+#
+#    Ansible dry-run checking for errors and showing results of a run
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags rsnapshot-container --skip-tags uninstall --check
+#
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags rsnapshot-container --skip-tags uninstall
+#
+# SOURCES
+#
 
 
 ---
@@ -19,9 +32,40 @@
 
 # --- Install Block of Tasks ---------------------------------------------------
 
-- name: Install rsnapshot container
+- name: Install Rsnapshot and the Automation Backup Shell Scripts that Use It
+  tags: ['never', 'install']     # 'never' implies you must pass the tag to execute this block
   block:
-    - name: create a rsnapshot container (as root)
+    - name: Install prerequisite tools (as root)
+      ansible.builtin.apt:
+        state: present           # must be one of: absent, build-dep, fixed, latest, present
+        update_cache: true       # update the apt repository list cache
+        cache_valid_time: 86400  # update the apt cache if it is older than this seconds
+        pkg: ['git', 'git-lfs', 'build-essential', 'libsystemd-dev', 'grsync']
+
+    - name: Create a '~/src' and '~/bin' directory if don't exist (as user)
+      become: true                           # activates privilege escalation so 'become_user' can take effect (flagged by ansible-lint)
+      become_user: "{{ backup_user }}"
+      ansible.builtin.file:
+        path: "{{ backup_user_home }}/{{ item }}"
+        state: directory
+        mode: a+rwx, g-w, o-w
+      loop:
+        - src
+        - bin
+
+    - name: Check if rsnapshot git repository exists (as user)
+#
+
+
+---
+
+
+# --- Install Block of Tasks ---------------------------------------------------
+
+- name: Install Rsnapshot Container
+  tags: ['never', 'install']           # 'never' implies you must pass the other tag to execute this block
+  block:
+    - name: Create a rsnapshot container (as root)
       community.general.docker_container:
         name: rsnapshot
         image: lscr.io/linuxserver/rsnapshot:latest
@@ -36,39 +80,38 @@
         detach: true                     # set to true to leave the container running in background
         restart_policy: unless-stopped   # must be one of: no, on-failure, always, unless-stopped
 
-    - name: change owner/group of rsnapshot volumes (as root)
+    - name: Change owner/group of rsnapshot volumes (as root)
       ansible.builtin.file:
         path: "{{ backup_user_home }}/{{ rsnapshot_store }}"
         state: directory
         owner: "{{ backup_user }}"
         group: "{{ backup_user }}"
         recurse: true
-  tags: ['never', 'install']           # 'never' implies you must pass the other tag to execute this block
 
 # --- Uninstall Block of Tasks -------------------------------------------------
 
-- name: Uninstall rsnapshot container
+- name: Uninstall Rsnapshot Container
+  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
   block:
-    - name: make copy of rsnapshot configuration directory (i.e. synchronize two directories on remote) (as root)
+    - name: Make copy of rsnapshot configuration directory (i.e. synchronize two directories on remote) (as root)
       ansible.posix.synchronize:
         src: "{{ backup_user_home }}/{{ rsnapshot_store }}/{{ rsnapshot_config }}"
         dest: "{{ backup_user_home }}/tmp"
       delegate_to: "{{ inventory_hostname }}"
 
-    - name: stop rsnapshot container and remove (as root)
+    - name: Stop rsnapshot container and remove (as root)
       community.general.docker_container:
         name: rsnapshot
         keep_volumes: false        # to retain anonymous volumes associated with the removed container
         state: absent              # must be one of: absent, present, stopped, started
         container_default_behavior: compatibility
 
-    - name: delete all rsnapshot volumes, data, files (as root)
+    - name: Delete all rsnapshot volumes, data, files (as root)
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
         - "{{ backup_user_home }}/{{ rsnapshot_store }}"
-  tags: ['never', 'uninstall']   # 'never' implies you must pass the other tag to execute this block
 
 # ------------------------------------------------------------------------------
 

@@ -2,34 +2,37 @@
 # Maintainer:   jeffskinnerbox@yahoo.com / www.jeffskinnerbox.me
 # Version:      1.5.0
 #
-# While your within playbook directory, check the following prior to doing the play
+# DESCRIPTION
 #
-# YAML linter to spot Ansible YAML syntax errors
-#    yamllint rpi-loader.yml roles/*/tasks
+# TESTING
+#    YAML linter to spot Ansible YAML syntax errors:working_dir: dir
+#       ymllint rpi-loader.yml roles/*/tasks
+#       ansible-lint rpi-loader.yml roles/*/tasks
 #
-# Ansible linter to spot Ansible playbook syntax errors
-#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
+#    Ansible linter to spot Ansible playbook syntax errors
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --syntax-check
 #
-# Ansible dry-run to idenify tasks that are not tagged
-#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags untagged --list-tasks
+#    Ansible dry-run to idenify tasks that are not tagged
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags untagged --list-tasks
 #
-# Ansible dry-run to understand what task will be executed without making changes
-#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
+#    Ansible dry-run to understand what task will be executed without making changes
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
 #
-# Ansible dry-run to understand what task will be executed for a tag without making changes
-#    ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
+#    Ansible dry-run to understand what task will be executed for a tag without making changes
+#       ansible-playbook -i inventory -l test-pi  rpi-loader.yml --tags install --list-tasks
 #
-# Ansible dry-run checking for errors and showing results of a run without making changes
-#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install --check
+#    Ansible dry-run checking for errors and showing results of a run without making changes
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install --check
 #
-# Run the entire playbook for real
-#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install
+# EXECUTION
+#    Run the entire playbook for real
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags install
 #
-# Run just the role 'update' & 'dev-env' and skip the 'uninstall' tasks
-#    ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags "update, dev-env" --skip-tags uninstall --list-tasks
+#    Run just the role 'update' & 'dev-env' and skip the 'uninstall' tasks
+#       ansible-playbook -i inventory -l test-pi rpi-loader.yml --tags "update, dev-env" --skip-tags uninstall --list-tasks
+#
 
 ---
-
 
 - name: Install / Uninstall Raspberry Pi With Foundation Software
   hosts: all
@@ -41,9 +44,7 @@
     # ----- used by all --------------------------------------------------------
     login_env_host: "test-pi"
     app_user: "pi"
-    app_user_password: "raspberry"
     app_user_home: "/home/pi"
-    ansible_ssh: "/home/jeff/.ssh/ansible.pub"
     tmp_path: /tmp                           # location for temporary files / executables
 
     # ----- used by docker -----------------------------------------------------
@@ -75,32 +76,32 @@
     duplicati_config_path: "/home/backup_user/duplicati/config"
     duplicati_source_path: "/home/"
 
-
   tasks:
-    - {import_role: {name: ansible-ssh}, tags: deploy-ssh}
-    - {import_role: {name: update}, tags: update}
-    - {import_role: {name: ups-pi}, tags: ups-pi}                            # requires activation of i2c via 'sudo raspi-config'
-    - {import_role: {name: prerequisites}, tags: prerequisites}
-    - {import_role: {name: sys-env}, tags: sys-env}
-    - {import_role: {name: net-tools}, tags: net-tools}
-    - {import_role: {name: crypto-tools}, tags: crypto-tools}
-    # - {import_role: {name: login-env}, tags: login-env}                      # Deprecated  -  replaced by 'dotfiles' role
-    # - {import_role: {name: vim-config}, tags: vim-config}                    # Deprecated  -  replaced by 'dotfiles' role
-    - {import_role: {name: dotfiles}, tags: dotfiles}
-    - {import_role: {name: dev-env}, tags: dev-env}
-    - {import_role: {name: dev-tools}, tags: dev-tools}
-    - {import_role: {name: docker}, tags: docker}
-    - {import_role: {name: apache}, tags: apache}
-    - {import_role: {name: backup-user}, tags: backup-user}
-    # - {import_role: {name: deploy-ssh}, tags: deploy-ssh}                    # not working yet
-    - {import_role: {name: duplicati}, tags: duplicati}
-    # - {import_role: {name: rsnapshot}, tags: rsnapshot}                      # not working yet
-    # - {import_role: {name: rsnapshot-container}, tags: rsnapshot-container}  # not working yet
+    # - {ansible.builtin.import_role: {name: deploy-ssh}, tags: deploy-ssh}                    # Deprecated  -  turned into a playbook (setup-ansible.yml)
+    # - {ansible.builtin.import_role: {name: static-ip}, tags: static-ip}                      # Deprecated  -  turned into a playbook (static-ip.yml)
+    - {ansible.builtin.import_role: {name: config-pi}, tags: config-pi}
+    - {ansible.builtin.import_role: {name: ups-pi}, tags: ups-pi}                              # requires activation of i2c via 'sudo raspi-config'
+    - {ansible.builtin.import_role: {name: update}, tags: update}
+    - {ansible.builtin.import_role: {name: prerequisites}, tags: prerequisites}
+    - {ansible.builtin.import_role: {name: sys-env}, tags: sys-env}
+    - {ansible.builtin.import_role: {name: net-tools}, tags: net-tools}
+    - {ansible.builtin.import_role: {name: crypto-tools}, tags: crypto-tools}
+    # - {ansible.builtin.import_role: {name: login-env}, tags: login-env}                      # Deprecated  -  replaced by 'dotfiles' role
+    # - {ansible.builtin.import_role: {name: vim-config}, tags: vim-config}                    # Deprecated  -  replaced by 'dotfiles' role
+    - {ansible.builtin.import_role: {name: dotfiles}, tags: dotfiles}
+    - {ansible.builtin.import_role: {name: dev-env}, tags: dev-env}
+    - {ansible.builtin.import_role: {name: dev-tools}, tags: dev-tools}
+    - {ansible.builtin.import_role: {name: docker}, tags: docker}
+    - {ansible.builtin.import_role: {name: apache}, tags: apache}
+    - {ansible.builtin.import_role: {name: backup-user}, tags: backup-user}
+    - {ansible.builtin.import_role: {name: duplicati}, tags: duplicati}
+    # - {ansible.builtin.import_role: {name: rsnapshot}, tags: rsnapshot}                      # not working yet
+    # - {ansible.builtin.import_role: {name: rsnapshot-container}, tags: rsnapshot-container}  # not working yet
 
   # --- Handlers ---------------------------------------------------------------
 
   handlers:
-    - name: reboot-host
+    - name: RebootHost        # reboot-host
       ansible.builtin.reboot:
         msg: "Ansible reboot triggered to finish install/uninstall tasks"
         pre_reboot_delay: 0       # seconds to wait before reboot
@@ -109,27 +110,27 @@
         connect_timeout: 5        # disconnect after these seconds if ssh isn’t working, and try again
         test_command: whoami      # validate the node is up and working
 
-    - name: start-apache
+    - name: StartApache       # start-apache
       ansible.builtin.service:
         name: apache2
         state: started
 
-    - name: restart-apache
+    - name: RestartApache     # restart-apache
       ansible.builtin.service:
         name: apache2
         state: restarted
 
-    - name: stop-apache
+    - name: StopApache        # stop-apache
       ansible.builtin.service:
         name: apache2
         state: stopped
 
-    - name: restart-ssh
+    - name: RestartSSH        # restart-ssh
       ansible.builtin.service:
         name: sshd
         state: restarted
 
-    - name: restart-cron
+    - name: RestartCron       # restart-cron
       ansible.builtin.service:
         name: cron
         state: restarted
