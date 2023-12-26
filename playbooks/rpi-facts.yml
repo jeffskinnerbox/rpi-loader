@@ -23,7 +23,7 @@
 #       ansible-playbook rpi-facts.yml -i 192.168.1.79, --user pi --ask-pass
 #
 # VALIDATION
-#    Execute this command to validate succesful provisioning (you should login withour a password)
+#    Execute this command to validate succesful provisioning (you should login without a password)
 #       ssh ansible@192.168.1.79
 #
 # SOURCES
@@ -39,10 +39,29 @@
 
   tasks:
 
-    - name: Filter facts gathered and return only selected facts
+    # --------------------------------------------------------------------------
+
+    - name: Filter facts gathered and return only selected facts  <--- NOT WORKING
       ansible.builtin.setup:
         filter:
           - 'ansible_distribution'
           - 'ansible_machine_id'
           - 'ansible_*_mb'
+
+    - name: Print all the IP addresses
+      ansible.builtin.debug:
+        msg:
+          - "{{ ansible_all_ipv4_addresses }}"
+
+    - name: Print the operating system
+      ansible.builtin.debug:
+        msg:
+          - "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Print all the ansible facts
+      ansible.builtin.debug:
+        msg:
+          - "{{ ansible_facts }}"
+
+# ------------------------------------------------------------------------------
 

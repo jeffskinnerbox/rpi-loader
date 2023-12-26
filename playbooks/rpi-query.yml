@@ -24,7 +24,7 @@
 #       ansible-playbook -i <ip address>, rpi-query.yml --user pi --ask-pass
 #
 # SOURCES
-#
+#    You have a Raspberry Pi but you don't know the model, how to check it? - https://www.gearrice.com/update/you-have-a-raspberry-pi-but-you-dont-know-the-model-how-to-check-it/
 
 
 ---
@@ -40,12 +40,13 @@
 
     # --------------------------------------------------------------------------
 
-    - name: Query raspberry pi network interface information (as root)
+    - name: Query raspberry pi model information (as root)
       ansible.builtin.shell:
-        cmd: set -o pipefail && ip address | grep default | awk '{ print $2 }' | awk '{ print substr( $0, 1, length($0)-1 ) }'
-        register: my_output                                # registers the command output
-        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        cmd: set -o pipefail && cat /proc/cpuinfo | grep 'Hardware\|Revision\|Serial\|Model' | sed 's/\t//g'
+      register: cmd_output                                # registers the command output
+      args:
         executable: /bin/bash
+      changed_when: false
 
     - name: Print query results
       ansible.builtin.debug:
@@ -53,12 +54,13 @@
 
     # --------------------------------------------------------------------------
 
-    - name: Query raspberry pi model information (as root)
+    - name: Query raspberry pi network interface information (as root)
       ansible.builtin.shell:
-        cmd: set -o pipefail && cat /proc/cpuinfo | grep 'Hardware\|Revision\|Serial\|Model' | sed 's/\t//g'
-        register: my_output                                # registers the command output
-        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        cmd: set -o pipefail && ip address | grep default | awk '{ print $2 }' | awk '{ print substr( $0, 1, length($0)-1 ) }'
+      register: cmd_output                                # registers the command output
+      args:
         executable: /bin/bash
+      changed_when: false
 
     - name: Print query results
       ansible.builtin.debug:
@@ -68,10 +70,51 @@
 
     - name: Query raspberry pi ram memory information (as root)
       ansible.builtin.shell:
-        cmd: set -o pipefail && cat /proc/meminfo | grep MemTotal | sed 's/ //g' | sed 's/:/: /'
-        register: my_output                                # registers the command output
-        changed_when: my_output.rc != 0                    # uses the return code to define when the task has changed
+        cmd: "set -o pipefail && cat /proc/meminfo | grep MemTotal | sed 's/ //g' | sed 's/:/: /'"
+      register: cmd_output                                # registers the command output
+      args:
         executable: /bin/bash
+      changed_when: false
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi operating frequency of the CPU (as root)
+      ansible.builtin.shell:
+        cmd: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+      register: cmd_output                                # registers the command output
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi maximum operating frequency of the CPU (as root)
+      ansible.builtin.shell:
+        cmd: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+      register: cmd_output                                # registers the command output
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Print query results
+      ansible.builtin.debug:
+        var: cmd_output.stdout_lines
+
+    # --------------------------------------------------------------------------
+
+    - name: Query raspberry pi processor temperture (as root)
+      ansible.builtin.command:
+        cmd: vcgencmd measure_temp
+      register: cmd_output                                # registers the command output
+      changed_when: false
 
     - name: Print query results
       ansible.builtin.debug:
